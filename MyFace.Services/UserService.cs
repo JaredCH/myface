@@ -1,8 +1,8 @@
-using System.Security.Cryptography;
 using System.Text;
 using Microsoft.EntityFrameworkCore;
 using MyFace.Core.Entities;
 using MyFace.Data;
+using Isopoh.Cryptography.Argon2;
 
 namespace MyFace.Services;
 
@@ -65,13 +65,12 @@ public class UserService
 
     private static string HashPassword(string password)
     {
-        using var sha256 = SHA256.Create();
-        var bytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(password));
-        return Convert.ToBase64String(bytes);
+        // PHC formatted Argon2id hash
+        return Argon2.Hash(password);
     }
 
     private static bool VerifyPassword(string password, string hash)
     {
-        return HashPassword(password) == hash;
+        return Argon2.Verify(hash, password);
     }
 }

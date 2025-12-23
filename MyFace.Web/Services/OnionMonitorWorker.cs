@@ -14,7 +14,7 @@ public class OnionMonitorWorker : BackgroundService
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        // Run every 10 minutes
+        // Run every 5 minutes
         while (!stoppingToken.IsCancellationRequested)
         {
             using var scope = _services.CreateScope();
@@ -27,7 +27,7 @@ public class OnionMonitorWorker : BackgroundService
             {
                 // swallow errors in MVP
             }
-            await Task.Delay(TimeSpan.FromMinutes(10), stoppingToken);
+            await Task.Delay(TimeSpan.FromMinutes(5), stoppingToken);
         }
     }
 }

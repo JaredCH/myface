@@ -190,8 +190,24 @@ public class AccountController : Controller
             return RedirectToAction("Index", "User", new { username = user.Username });
         }
 
-        // MVP verification: compare provided response to challenge text
-        if (model.Response?.Trim() == latest.ChallengeText)
+        if (string.IsNullOrWhiteSpace(user.PgpPublicKey))
+        {
+            TempData["Error"] = "No PGP key attached.";
+            return RedirectToAction("Index", "User", new { username = user.Username });
+        }
+
+        // Validate fingerprint consistency (best-effort)
+        if (PgpVerifier.TryGetPrimaryPublicKey(user.PgpPublicKey!, out var pubKey, out var fpHex, out var fpErr))
+        {
+            if (!string.IsNullOrEmpty(latest.Fingerprint) && !string.IsNullOrEmpty(fpHex) && !string.Equals(latest.Fingerprint, fpHex, StringComparison.OrdinalIgnoreCase))
+            {
+                TempData["Error"] = $"Fingerprint mismatch (expected {latest.Fingerprint}).";
+                return RedirectToAction("Index", "User", new { username = user.Username });
+            }
+        }
+
+        // Verify ASCII-armored signature against the challenge
+        if (PgpVerifier.VerifySignature(user.PgpPublicKey!, model.Response, latest.ChallengeText, out var err))
         {
             latest.Verified = true;
             await _db.SaveChangesAsync();
@@ -199,7 +215,7 @@ public class AccountController : Controller
         }
         else
         {
-            TempData["Error"] = "Verification failed.";
+            TempData["Error"] = err ?? "Verification failed.";
         }
 
         return RedirectToAction("Index", "User", new { username = user.Username });

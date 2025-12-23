@@ -3,7 +3,14 @@
     ViewData["Title"] = "Onion Monitor";
 }
 <h1>Onion Monitor</h1>
-<p><a href="@Url.Action("Add")" class="button">Add Monitor</a> | <a href="@Url.Action("Monitor","Rss")">RSS</a></p>
+<p>
+    <a href="@Url.Action("Add")" class="button">Add Monitor</a> |
+    <a href="@Url.Action("Monitor","Rss")">RSS</a> |
+    <form asp-action="CheckAll" method="post" style="display:inline">
+        <button class="button" type="submit">Check All</button>
+    </form>
+    
+</p>
 
 <table>
     <thead>

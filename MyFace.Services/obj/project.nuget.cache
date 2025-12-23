@@ -1,12 +1,16 @@
 {
   "version": 2,
-  "dgSpecHash": "yjSJq3OUHpA=",
+  "dgSpecHash": "jo2lhfGLOd4=",
   "success": true,
-  "projectFilePath": "C:\\myface\\MyFace.Services\\MyFace.Services.csproj",
+  "projectFilePath": "c:\\myface\\MyFace.Services\\MyFace.Services.csproj",
   "expectedPackageFiles": [
+    "C:\\Users\\Jared\\.nuget\\packages\\isopoh.cryptography.argon2\\2.0.0\\isopoh.cryptography.argon2.2.0.0.nupkg.sha512",
+    "C:\\Users\\Jared\\.nuget\\packages\\isopoh.cryptography.blake2b\\2.0.0\\isopoh.cryptography.blake2b.2.0.0.nupkg.sha512",
+    "C:\\Users\\Jared\\.nuget\\packages\\isopoh.cryptography.securearray\\2.0.0\\isopoh.cryptography.securearray.2.0.0.nupkg.sha512",
     "C:\\Users\\Jared\\.nuget\\packages\\microsoft.entityframeworkcore\\8.0.4\\microsoft.entityframeworkcore.8.0.4.nupkg.sha512",
     "C:\\Users\\Jared\\.nuget\\packages\\microsoft.entityframeworkcore.abstractions\\8.0.4\\microsoft.entityframeworkcore.abstractions.8.0.4.nupkg.sha512",
     "C:\\Users\\Jared\\.nuget\\packages\\microsoft.entityframeworkcore.analyzers\\8.0.4\\microsoft.entityframeworkcore.analyzers.8.0.4.nupkg.sha512",
+    "C:\\Users\\Jared\\.nuget\\packages\\microsoft.entityframeworkcore.inmemory\\8.0.4\\microsoft.entityframeworkcore.inmemory.8.0.4.nupkg.sha512",
     "C:\\Users\\Jared\\.nuget\\packages\\microsoft.entityframeworkcore.relational\\8.0.4\\microsoft.entityframeworkcore.relational.8.0.4.nupkg.sha512",
     "C:\\Users\\Jared\\.nuget\\packages\\microsoft.extensions.caching.abstractions\\8.0.0\\microsoft.extensions.caching.abstractions.8.0.0.nupkg.sha512",
     "C:\\Users\\Jared\\.nuget\\packages\\microsoft.extensions.caching.memory\\8.0.0\\microsoft.extensions.caching.memory.8.0.0.nupkg.sha512",
@@ -25,7 +29,21 @@
     "C:\\Users\\Jared\\.nuget\\packages\\microsoft.extensions.primitives\\10.0.1\\microsoft.extensions.primitives.10.0.1.nupkg.sha512",
     "C:\\Users\\Jared\\.nuget\\packages\\npgsql\\8.0.3\\npgsql.8.0.3.nupkg.sha512",
     "C:\\Users\\Jared\\.nuget\\packages\\npgsql.entityframeworkcore.postgresql\\8.0.4\\npgsql.entityframeworkcore.postgresql.8.0.4.nupkg.sha512",
+    "C:\\Users\\Jared\\.nuget\\packages\\portable.bouncycastle\\1.9.0\\portable.bouncycastle.1.9.0.nupkg.sha512",
     "C:\\Users\\Jared\\.nuget\\packages\\system.diagnostics.diagnosticsource\\10.0.1\\system.diagnostics.diagnosticsource.10.0.1.nupkg.sha512"
   ],
-  "logs": []
+  "logs": [
+    {
+      "code": "NU1603",
+      "level": "Warning",
+      "message": "MyFace.Services depends on Isopoh.Cryptography.Argon2 (>= 1.4.2) but Isopoh.Cryptography.Argon2 1.4.2 was not found. Isopoh.Cryptography.Argon2 2.0.0 was resolved instead.",
+      "projectPath": "c:\\myface\\MyFace.Services\\MyFace.Services.csproj",
+      "warningLevel": 1,
+      "filePath": "c:\\myface\\MyFace.Services\\MyFace.Services.csproj",
+      "libraryId": "Isopoh.Cryptography.Argon2",
+      "targetGraphs": [
+        "net8.0"
+      ]
+    }
+  ]
 }

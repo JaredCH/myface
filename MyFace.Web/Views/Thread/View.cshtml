@@ -2,34 +2,51 @@
 @{
     ViewData["Title"] = Model.Title;
     var postScores = (Dictionary<int, int>)ViewBag.PostScores;
-    var currentUserId = (int?)ViewBag.CurrentUserId;
+    // Simple server-side pagination inside the view
+    var pageParam = ViewContext.HttpContext.Request.Query["page"].ToString();
+    var currPage = int.TryParse(pageParam, out var p) && p > 0 ? p : 1;
+    const int pageSize = 25;
+    var ordered = Model.Posts.OrderBy(p => p.CreatedAt).ToList();
+    var total = ordered.Count;
+    var skip = (currPage - 1) * pageSize;
+    var pagePosts = ordered.Skip(skip).Take(pageSize).ToList();
+    var hasPrev = currPage > 1;
+    var hasNext = skip + pagePosts.Count < total;
 }
 <h1>@Model.Title</h1>
 <p class="meta">Started @Model.CreatedAt.ToString("u") by @(Model.IsAnonymous ? "Anonymous" : Model.User?.Username ?? "Anonymous")</p>
 
-@foreach (var post in Model.Posts.OrderBy(p => p.CreatedAt))
+@foreach (var post in pagePosts)
 {
     <div class="card" id="post-@post.Id">
         <p>@post.Content</p>
         <p class="meta">@post.CreatedAt.ToString("u") by @(post.IsAnonymous ? "Anonymous" : post.User?.Username ?? "Anonymous")</p>
         <p class="score">Score: @postScores[post.Id]</p>
-        @if (currentUserId != null)
-        {
-            <form asp-action="Vote" method="post" style="display:inline">
-                <input type="hidden" name="postId" value="@post.Id" />
-                <input type="hidden" name="isUpvote" value="true" />
-                <button class="button" type="submit">Upvote</button>
-            </form>
-            <form asp-action="Vote" method="post" style="display:inline">
-                <input type="hidden" name="postId" value="@post.Id" />
-                <input type="hidden" name="isUpvote" value="false" />
-                <button class="button" type="submit">Downvote</button>
-            </form>
-        }
+        <form asp-controller="Vote" asp-action="Up" method="post" style="display:inline">
+            <input type="hidden" name="postId" value="@post.Id" />
+            <button class="button" type="submit">Upvote</button>
+        </form>
+        <form asp-controller="Vote" asp-action="Down" method="post" style="display:inline">
+            <input type="hidden" name="postId" value="@post.Id" />
+            <button class="button" type="submit">Downvote</button>
+        </form>
     </div>
 }
 
-<h2>Reply</h2>
+<div class="form-actions">
+    @if (hasPrev)
+    {
+        <a class="button" href="@Url.Action("View", new { id = Model.Id, page = currPage - 1 })">Previous</a>
+    }
+    @if (hasNext)
+    {
+        <a class="button" href="@Url.Action("View", new { id = Model.Id, page = currPage + 1 })">Next</a>
+    }
+    <span class="meta"> Page @currPage </span>
+    <span class="meta"> Showing @pagePosts.Count of @total posts </span>
+}</div>
+
+<h2 id="reply">Reply</h2>
 <form asp-action="Reply" method="post">
     <input type="hidden" name="threadId" value="@Model.Id" />
     <label for="content">Content</label>

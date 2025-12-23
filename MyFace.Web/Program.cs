@@ -11,8 +11,18 @@ builder.Services.AddControllersWithViews();
 // Database configuration
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") 
     ?? "Host=localhost;Database=myface;Username=postgres;Password=postgres";
-builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseNpgsql(connectionString));
+
+if (builder.Environment.IsDevelopment())
+{
+    // Use in-memory database for Development so the app runs without external services
+    builder.Services.AddDbContext<ApplicationDbContext>(options =>
+        options.UseInMemoryDatabase("myface"));
+}
+else
+{
+    builder.Services.AddDbContext<ApplicationDbContext>(options =>
+        options.UseNpgsql(connectionString));
+}
 
 // Register services
 builder.Services.AddScoped<UserService>();
@@ -42,8 +52,16 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
         options.ExpireTimeSpan = TimeSpan.FromDays(30);
         options.SlidingExpiration = true;
         options.Cookie.HttpOnly = true;
-        options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
-        options.Cookie.SameSite = SameSiteMode.Strict;
+        if (builder.Environment.IsDevelopment())
+        {
+            options.Cookie.SecurePolicy = CookieSecurePolicy.None;
+            options.Cookie.SameSite = SameSiteMode.Lax;
+        }
+        else
+        {
+            options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
+            options.Cookie.SameSite = SameSiteMode.Strict;
+        }
     });
 
 builder.Services.AddAuthorization();
@@ -57,10 +75,20 @@ builder.Services.AddSession(options =>
 });
 
 // Security headers
-builder.Services.AddAntiforgery(options =>
+if (builder.Environment.IsDevelopment())
 {
-    options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
-});
+    builder.Services.AddAntiforgery(options =>
+    {
+        options.Cookie.SecurePolicy = CookieSecurePolicy.None;
+    });
+}
+else
+{
+    builder.Services.AddAntiforgery(options =>
+    {
+        options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
+    });
+}
 
 var app = builder.Build();
 
@@ -96,5 +124,20 @@ app.UseAuthorization();
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");
+
+// Ensure database exists for Development to avoid migration requirements
+if (app.Environment.IsDevelopment())
+{
+    using var scope = app.Services.CreateScope();
+    var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+    try
+    {
+        db.Database.EnsureCreated();
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"Database initialization failed: {ex.Message}");
+    }
+}
 
 app.Run();

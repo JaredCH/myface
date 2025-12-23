@@ -7,10 +7,17 @@
 
 @foreach (var thread in Model)
 {
-    <div class="card">
-        <h2><a href="@Url.Action("View", new { id = thread.Id })">@thread.Title</a></h2>
+    var firstPost = thread.Posts
+        .OrderBy(p => p.CreatedAt)
+        .FirstOrDefault();
+    <div class="card thread-card">
+        <h2 class="thread-title"><a href="@Url.Action("View", new { id = thread.Id })">@thread.Title</a></h2>
         <p class="meta">Started @thread.CreatedAt.ToString("u") by @(thread.IsAnonymous ? "Anonymous" : thread.User?.Username ?? "Anonymous")</p>
-        <p>@thread.Posts.Count post(s)</p>
+        <div class="preview clamp-5">@(firstPost?.Content ?? "")</div>
+        <div class="card-footer">
+            <a class="button" href="@Url.Action("View", new { id = thread.Id })">View Thread</a>
+            <span class="meta">@thread.Posts.Count post(s)</span>
+        </div>
     </div>
 }
 
@@ -23,4 +30,5 @@
     {
         <a class="button" href="@Url.Action("Index", new { page = (int)ViewBag.CurrentPage + 1 })">Next</a>
     }
+    <span class="meta"> Page @((int)ViewBag.CurrentPage) </span>
 </div>

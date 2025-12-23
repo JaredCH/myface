@@ -2,15 +2,98 @@
 @{
     var user = (MyFace.Core.Entities.User)ViewBag.User;
     ViewData["Title"] = user.Username;
+    var currentPage = (int)ViewBag.CurrentPage;
+    var hasMore = (bool)ViewBag.HasMorePages;
+    var isSelf = User?.Identity?.IsAuthenticated == true && string.Equals(User.Identity!.Name, user.Username, StringComparison.OrdinalIgnoreCase);
 }
 <h1>@user.Username</h1>
 <p class="meta">Joined @user.CreatedAt.ToString("u")</p>
-<p><a href="@Url.Action("User","Rss", new { username = user.Username })">RSS</a></p>
+
+@if (!string.IsNullOrWhiteSpace(user.PgpPublicKey))
+{
+    <h2>PGP Public Key</h2>
+    <pre class="card" style="white-space: pre-wrap;">@user.PgpPublicKey</pre>
+}
+
+@if (user.PGPVerifications?.Any() == true)
+{
+    <h3>PGP Verifications</h3>
+    <div class="card">
+        @foreach (var v in user.PGPVerifications)
+        {
+            <p class="meta">Fingerprint: @v.Fingerprint | Created @v.CreatedAt.ToString("u") | Status: @(v.Verified ? "Verified" : "Pending")</p>
+        }
+    </div>
+}
+
+<p><a href="@Url.Action("UserFeed","Rss", new { username = user.Username })">User RSS</a></p>
+
+@if (isSelf)
+{
+    <div class="card">
+        <h3>Attach / Update PGP Key</h3>
+        <form asp-controller="Account" asp-action="AttachPgp" method="post">
+            <label for="PgpPublicKey">PGP Public Key (ASCII-armored)</label>
+            <textarea id="PgpPublicKey" name="PgpPublicKey" rows="6" class="input">@user.PgpPublicKey</textarea>
+            <div class="form-actions">
+                <button type="submit" class="button">Save Key</button>
+            </div>
+        </form>
+    </div>
+
+    <div class="card">
+        <h3>Request PGP Challenge</h3>
+        <form asp-controller="Account" asp-action="RequestPgpChallenge" method="post">
+            <label for="Fingerprint">PGP Fingerprint (hex)</label>
+            <input id="Fingerprint" name="Fingerprint" class="input" />
+            <div class="form-actions">
+                <button type="submit" class="button">Generate Challenge</button>
+            </div>
+        </form>
+        @if (TempData["Challenge"] != null)
+        {
+            <p class="meta">Challenge: <code>@TempData["Challenge"]</code></p>
+            <p class="meta">Sign this exact text with your PGP key and submit the signature below.</p>
+        }
+    </div>
+
+    <div class="card">
+        <h3>Verify PGP Challenge</h3>
+        <form asp-controller="Account" asp-action="VerifyPgpChallenge" method="post">
+            <label for="Response">ASCII-armored signature</label>
+            <textarea id="Response" name="Response" rows="6" class="input"></textarea>
+            <div class="form-actions">
+                <button type="submit" class="button">Verify</button>
+            </div>
+        </form>
+        @if (TempData["Message"] != null)
+        {
+            <p class="meta">@TempData["Message"]</p>
+        }
+        @if (TempData["Error"] != null)
+        {
+            <p class="meta">@TempData["Error"]</p>
+        }
+    </div>
+}
 
 @foreach (var post in Model)
 {
     <div class="card">
         <p>@post.Content</p>
         <p class="meta">@post.CreatedAt.ToString("u") in <a href="@Url.Action("View","Thread", new { id = post.ThreadId })">@post.Thread.Title</a></p>
+        <p><a class="button" href="@Url.Action("View","Thread", new { id = post.ThreadId })#reply">Reply in thread</a></p>
     </div>
 }
+
+<div class="form-actions">
+    @if (currentPage > 1)
+    {
+        <a class="button" href="@Url.Action("Index", new { username = user.Username, page = currentPage - 1 })">Previous</a>
+    }
+    @if (hasMore)
+    {
+        <a class="button" href="@Url.Action("Index", new { username = user.Username, page = currentPage + 1 })">Next</a>
+    }
+    <span class="meta"> Page @currentPage </span>
+</div>

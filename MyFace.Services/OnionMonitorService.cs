@@ -13,6 +13,8 @@ public class OnionStatusService
     {
         _context = context;
         _httpClient = httpClientFactory.CreateClient("TorClient");
+        // Optional: timeout to avoid hanging checks
+        _httpClient.Timeout = TimeSpan.FromSeconds(15);
     }
 
     public async Task<OnionStatus> AddAsync(string onionUrl)
@@ -56,13 +58,13 @@ public class OnionStatusService
         {
             var response = await _httpClient.GetAsync(item.OnionUrl);
             sw.Stop();
-            item.Status = response.IsSuccessStatusCode ? "Online" : $"HTTP {(int)response.StatusCode}";
+            item.Status = response.IsSuccessStatusCode ? "Reachable" : $"Unreachable (HTTP {(int)response.StatusCode})";
             item.ResponseTime = sw.Elapsed.TotalMilliseconds;
         }
         catch (Exception ex)
         {
             sw.Stop();
-            item.Status = "Offline";
+            item.Status = "Unreachable";
             item.ResponseTime = null;
         }
 

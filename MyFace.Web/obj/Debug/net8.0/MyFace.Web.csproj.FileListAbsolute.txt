@@ -125,3 +125,8 @@ C:\myface\MyFace.Web\obj\Debug\net8.0\MyFace.Web.pdb
 C:\myface\MyFace.Web\obj\Debug\net8.0\MyFace.Web.genruntimeconfig.cache
 C:\myface\MyFace.Web\obj\Debug\net8.0\ref\MyFace.Web.dll
 C:\myface\MyFace.Web\obj\Debug\net8.0\MyFace.Web.sourcelink.json
+c:\myface\MyFace.Web\bin\Debug\net8.0\Microsoft.EntityFrameworkCore.InMemory.dll
+c:\myface\MyFace.Web\bin\Debug\net8.0\Isopoh.Cryptography.Argon2.dll
+c:\myface\MyFace.Web\bin\Debug\net8.0\Isopoh.Cryptography.Blake2b.dll
+c:\myface\MyFace.Web\bin\Debug\net8.0\Isopoh.Cryptography.SecureArray.dll
+c:\myface\MyFace.Web\bin\Debug\net8.0\BouncyCastle.Crypto.dll

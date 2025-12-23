@@ -9,73 +9,73 @@ build_property.EnforceExtendedAnalyzerRules =
 build_property._SupportedPlatformList = Linux,macOS,Windows
 build_property.RootNamespace = MyFace.Web
 build_property.RootNamespace = MyFace.Web
-build_property.ProjectDir = C:\myface\MyFace.Web\
+build_property.ProjectDir = c:\myface\MyFace.Web\
 build_property.EnableComHosting = 
 build_property.EnableGeneratedComInterfaceComImportInterop = 
 build_property.RazorLangVersion = 8.0
 build_property.SupportLocalizedComponentNames = 
 build_property.GenerateRazorMetadataSourceChecksumAttributes = 
-build_property.MSBuildProjectDirectory = C:\myface\MyFace.Web
+build_property.MSBuildProjectDirectory = c:\myface\MyFace.Web
 build_property._RazorSourceGeneratorDebug = 
 build_property.EffectiveAnalysisLevelStyle = 8.0
 build_property.EnableCodeStyleSeverity = 
 
-[C:/myface/MyFace.Web/Views/Account/Login.cshtml]
+[c:/myface/MyFace.Web/Views/Account/Login.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQWNjb3VudFxMb2dpbi5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/myface/MyFace.Web/Views/Account/Register.cshtml]
+[c:/myface/MyFace.Web/Views/Account/Register.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQWNjb3VudFxSZWdpc3Rlci5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/myface/MyFace.Web/Views/Home/Index.cshtml]
+[c:/myface/MyFace.Web/Views/Home/Index.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcSG9tZVxJbmRleC5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/myface/MyFace.Web/Views/Home/Privacy.cshtml]
+[c:/myface/MyFace.Web/Views/Home/Privacy.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcSG9tZVxQcml2YWN5LmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/myface/MyFace.Web/Views/Monitor/Add.cshtml]
+[c:/myface/MyFace.Web/Views/Monitor/Add.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcTW9uaXRvclxBZGQuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/myface/MyFace.Web/Views/Monitor/Index.cshtml]
+[c:/myface/MyFace.Web/Views/Monitor/Index.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcTW9uaXRvclxJbmRleC5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/myface/MyFace.Web/Views/Shared/Error.cshtml]
+[c:/myface/MyFace.Web/Views/Shared/Error.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU2hhcmVkXEVycm9yLmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/myface/MyFace.Web/Views/Shared/_ValidationScriptsPartial.cshtml]
+[c:/myface/MyFace.Web/Views/Shared/_ValidationScriptsPartial.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU2hhcmVkXF9WYWxpZGF0aW9uU2NyaXB0c1BhcnRpYWwuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/myface/MyFace.Web/Views/Thread/Create.cshtml]
+[c:/myface/MyFace.Web/Views/Thread/Create.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcVGhyZWFkXENyZWF0ZS5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/myface/MyFace.Web/Views/Thread/Index.cshtml]
+[c:/myface/MyFace.Web/Views/Thread/Index.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcVGhyZWFkXEluZGV4LmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/myface/MyFace.Web/Views/Thread/View.cshtml]
+[c:/myface/MyFace.Web/Views/Thread/View.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcVGhyZWFkXFZpZXcuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/myface/MyFace.Web/Views/User/Index.cshtml]
+[c:/myface/MyFace.Web/Views/User/Index.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcVXNlclxJbmRleC5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/myface/MyFace.Web/Views/_ViewImports.cshtml]
+[c:/myface/MyFace.Web/Views/_ViewImports.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcX1ZpZXdJbXBvcnRzLmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/myface/MyFace.Web/Views/_ViewStart.cshtml]
+[c:/myface/MyFace.Web/Views/_ViewStart.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcX1ZpZXdTdGFydC5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/myface/MyFace.Web/Views/Shared/_Layout.cshtml]
+[c:/myface/MyFace.Web/Views/Shared/_Layout.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU2hhcmVkXF9MYXlvdXQuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = b-7sfioqk6wc
