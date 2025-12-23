@@ -71,9 +71,9 @@ public class ApplicationDbContext : DbContext
             entity.Property(e => e.Value).IsRequired();
             
             // Ensure one vote per user per post (when userId is not null)
-            entity.HasIndex(e => new { e.UserId, e.PostId }).HasFilter("user_id IS NOT NULL").IsUnique();
+            entity.HasIndex(e => new { e.UserId, e.PostId }).HasFilter("\"UserId\" IS NOT NULL").IsUnique();
             // Ensure one vote per session per post (when sessionId is not null)
-            entity.HasIndex(e => new { e.SessionId, e.PostId }).HasFilter("session_id IS NOT NULL").IsUnique();
+            entity.HasIndex(e => new { e.SessionId, e.PostId }).HasFilter("\"SessionId\" IS NOT NULL").IsUnique();
             
             entity.HasOne(e => e.Post)
                 .WithMany(p => p.Votes)
