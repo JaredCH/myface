@@ -108,7 +108,7 @@ public class RssService
 
     public async Task<string> GenerateMonitorFeedAsync(string baseUrl)
     {
-        var monitors = await _context.OnionMonitors
+        var monitors = await _context.OnionStatuses
             .OrderByDescending(m => m.LastChecked)
             .Take(100)
             .ToListAsync();
@@ -128,17 +128,17 @@ public class RssService
             foreach (var monitor in monitors)
             {
                 await writer.WriteStartElementAsync(null, "item", null);
-                var title = $"{monitor.FriendlyName ?? monitor.OnionUrl} - {(monitor.IsOnline ? "Online" : "Offline")}";
+                var title = $"{monitor.OnionUrl} - {monitor.Status}";
                 await writer.WriteElementStringAsync(null, "title", null, title);
                 await writer.WriteElementStringAsync(null, "link", null, monitor.OnionUrl);
                 await writer.WriteElementStringAsync(null, "guid", null, $"{baseUrl}/Monitor#{monitor.Id}");
                 
-                var pubDate = monitor.LastChecked ?? monitor.CreatedAt;
+                var pubDate = monitor.LastChecked ?? DateTime.UtcNow;
                 await writer.WriteElementStringAsync(null, "pubDate", null, pubDate.ToString("R"));
                 
-                var description = $"Status: {(monitor.IsOnline ? "Online" : "Offline")}\n" +
+                var description = $"Status: {monitor.Status}\n" +
                                 $"Last Checked: {monitor.LastChecked?.ToString("u")}\n" +
-                                $"Last Online: {monitor.LastOnline?.ToString("u")}";
+                                $"Response Time: {monitor.ResponseTime?.ToString("F0")} ms";
                 await writer.WriteElementStringAsync(null, "description", null, description);
                 
                 await writer.WriteEndElementAsync(); // item

@@ -13,4 +13,5 @@ public class User
     // Navigation properties
     public ICollection<Post> Posts { get; set; } = new List<Post>();
     public ICollection<Vote> Votes { get; set; } = new List<Vote>();
+    public ICollection<PGPVerification> PGPVerifications { get; set; } = new List<PGPVerification>();
 }

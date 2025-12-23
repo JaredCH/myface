@@ -15,3 +15,4 @@ C:\myface\MyFace.Services\obj\Debug\net8.0\MyFace.Services.dll
 C:\myface\MyFace.Services\obj\Debug\net8.0\refint\MyFace.Services.dll
 C:\myface\MyFace.Services\obj\Debug\net8.0\MyFace.Services.pdb
 C:\myface\MyFace.Services\obj\Debug\net8.0\ref\MyFace.Services.dll
+C:\myface\MyFace.Services\obj\Debug\net8.0\MyFace.Services.sourcelink.json

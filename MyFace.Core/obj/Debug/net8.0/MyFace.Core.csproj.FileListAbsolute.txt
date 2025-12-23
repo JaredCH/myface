@@ -9,3 +9,4 @@ C:\myface\MyFace.Core\obj\Debug\net8.0\MyFace.Core.dll
 C:\myface\MyFace.Core\obj\Debug\net8.0\refint\MyFace.Core.dll
 C:\myface\MyFace.Core\obj\Debug\net8.0\MyFace.Core.pdb
 C:\myface\MyFace.Core\obj\Debug\net8.0\ref\MyFace.Core.dll
+C:\myface\MyFace.Core\obj\Debug\net8.0\MyFace.Core.sourcelink.json

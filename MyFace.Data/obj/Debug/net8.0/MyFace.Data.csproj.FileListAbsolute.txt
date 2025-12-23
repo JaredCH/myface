@@ -15,3 +15,4 @@ C:\myface\MyFace.Data\obj\Debug\net8.0\refint\MyFace.Data.dll
 C:\myface\MyFace.Data\obj\Debug\net8.0\MyFace.Data.pdb
 C:\myface\MyFace.Data\obj\Debug\net8.0\MyFace.Data.genruntimeconfig.cache
 C:\myface\MyFace.Data\obj\Debug\net8.0\ref\MyFace.Data.dll
+C:\myface\MyFace.Data\obj\Debug\net8.0\MyFace.Data.sourcelink.json

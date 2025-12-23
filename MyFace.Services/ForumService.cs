@@ -118,14 +118,23 @@ public class ForumService
     }
 
     // Vote operations
-    public async Task<bool> VoteAsync(int postId, int userId, bool isUpvote)
+    public async Task<bool> VoteAsync(int postId, int? userId, string? sessionId, int value)
     {
-        var existingVote = await _context.Votes
-            .FirstOrDefaultAsync(v => v.PostId == postId && v.UserId == userId);
+        Vote? existingVote = null;
+        if (userId != null)
+        {
+            existingVote = await _context.Votes
+                .FirstOrDefaultAsync(v => v.PostId == postId && v.UserId == userId);
+        }
+        else if (!string.IsNullOrEmpty(sessionId))
+        {
+            existingVote = await _context.Votes
+                .FirstOrDefaultAsync(v => v.PostId == postId && v.SessionId == sessionId);
+        }
 
         if (existingVote != null)
         {
-            if (existingVote.IsUpvote == isUpvote)
+            if (existingVote.Value == value)
             {
                 // Remove vote if clicking the same button
                 _context.Votes.Remove(existingVote);
@@ -133,7 +142,7 @@ public class ForumService
             else
             {
                 // Change vote
-                existingVote.IsUpvote = isUpvote;
+                existingVote.Value = value;
             }
         }
         else
@@ -143,7 +152,8 @@ public class ForumService
             {
                 PostId = postId,
                 UserId = userId,
-                IsUpvote = isUpvote,
+                SessionId = userId == null ? sessionId : null,
+                Value = value,
                 CreatedAt = DateTime.UtcNow
             };
             _context.Votes.Add(vote);
@@ -159,6 +169,6 @@ public class ForumService
             .Where(v => v.PostId == postId)
             .ToListAsync();
 
-        return votes.Count(v => v.IsUpvote) - votes.Count(v => !v.IsUpvote);
+        return votes.Sum(v => v.Value);
     }
 }

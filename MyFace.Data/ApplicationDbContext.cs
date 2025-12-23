@@ -14,7 +14,8 @@ public class ApplicationDbContext : DbContext
     public DbSet<MyFace.Core.Entities.Thread> Threads { get; set; }
     public DbSet<Post> Posts { get; set; }
     public DbSet<Vote> Votes { get; set; }
-    public DbSet<OnionMonitor> OnionMonitors { get; set; }
+    public DbSet<OnionStatus> OnionStatuses { get; set; }
+    public DbSet<PGPVerification> PGPVerifications { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -36,6 +37,7 @@ public class ApplicationDbContext : DbContext
             entity.HasKey(e => e.Id);
             entity.Property(e => e.Title).HasMaxLength(200).IsRequired();
             entity.Property(e => e.CreatedAt).HasDefaultValueSql("CURRENT_TIMESTAMP");
+            entity.Property(e => e.UpdatedAt).HasDefaultValueSql("CURRENT_TIMESTAMP");
             
             entity.HasOne(e => e.User)
                 .WithMany()
@@ -66,9 +68,12 @@ public class ApplicationDbContext : DbContext
         {
             entity.HasKey(e => e.Id);
             entity.Property(e => e.CreatedAt).HasDefaultValueSql("CURRENT_TIMESTAMP");
+            entity.Property(e => e.Value).IsRequired();
             
-            // Ensure one vote per user per post
-            entity.HasIndex(e => new { e.UserId, e.PostId }).IsUnique();
+            // Ensure one vote per user per post (when userId is not null)
+            entity.HasIndex(e => new { e.UserId, e.PostId }).HasFilter("user_id IS NOT NULL").IsUnique();
+            // Ensure one vote per session per post (when sessionId is not null)
+            entity.HasIndex(e => new { e.SessionId, e.PostId }).HasFilter("session_id IS NOT NULL").IsUnique();
             
             entity.HasOne(e => e.Post)
                 .WithMany(p => p.Votes)
@@ -81,14 +86,30 @@ public class ApplicationDbContext : DbContext
                 .OnDelete(DeleteBehavior.Cascade);
         });
 
-        // OnionMonitor configuration
-        modelBuilder.Entity<OnionMonitor>(entity =>
+        // PGPVerification configuration
+        modelBuilder.Entity<PGPVerification>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Fingerprint).HasMaxLength(64).IsRequired();
+            entity.Property(e => e.ChallengeText).HasMaxLength(500).IsRequired();
+            entity.Property(e => e.Verified).HasDefaultValue(false);
+            entity.Property(e => e.CreatedAt).HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+            entity.HasOne(e => e.User)
+                .WithMany(u => u.PGPVerifications)
+                .HasForeignKey(e => e.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        // OnionStatus configuration
+        modelBuilder.Entity<OnionStatus>(entity =>
         {
             entity.HasKey(e => e.Id);
             entity.HasIndex(e => e.OnionUrl).IsUnique();
             entity.Property(e => e.OnionUrl).HasMaxLength(100).IsRequired();
-            entity.Property(e => e.FriendlyName).HasMaxLength(100);
-            entity.Property(e => e.CreatedAt).HasDefaultValueSql("CURRENT_TIMESTAMP");
+            entity.Property(e => e.Status).HasMaxLength(50).IsRequired();
+            entity.Property(e => e.ResponseTime);
+            entity.Property(e => e.LastChecked).HasDefaultValueSql("CURRENT_TIMESTAMP");
         });
     }
 }

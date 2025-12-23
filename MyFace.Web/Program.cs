@@ -17,7 +17,7 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 // Register services
 builder.Services.AddScoped<UserService>();
 builder.Services.AddScoped<ForumService>();
-builder.Services.AddScoped<OnionMonitorService>();
+builder.Services.AddScoped<OnionStatusService>();
 builder.Services.AddScoped<RssService>();
 
 // HttpClient for Tor/Onion monitoring

@@ -1,4 +1,4 @@
-@model List<MyFace.Core.Entities.OnionMonitor>
+@model List<MyFace.Core.Entities.OnionStatus>
 @{
     ViewData["Title"] = "Onion Monitor";
 }
@@ -8,11 +8,10 @@
 <table>
     <thead>
         <tr>
-            <th>Name</th>
             <th>URL</th>
             <th>Status</th>
             <th>Last Checked</th>
-            <th>Last Online</th>
+            <th>Response Time (ms)</th>
             <th>Actions</th>
         </tr>
     </thead>
@@ -20,11 +19,10 @@
     @foreach (var monitor in Model)
     {
         <tr>
-            <td>@(monitor.FriendlyName ?? "-")</td>
             <td><a href="@monitor.OnionUrl">@monitor.OnionUrl</a></td>
-            <td>@(monitor.IsOnline ? "Online" : "Offline")</td>
+            <td>@monitor.Status</td>
             <td>@monitor.LastChecked?.ToString("u")</td>
-            <td>@monitor.LastOnline?.ToString("u")</td>
+            <td>@monitor.ResponseTime?.ToString("F0")</td>
             <td>
                 <form asp-action="Check" method="post" style="display:inline">
                     <input type="hidden" name="id" value="@monitor.Id" />

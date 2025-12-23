@@ -124,3 +124,4 @@ C:\myface\MyFace.Web\obj\Debug\net8.0\refint\MyFace.Web.dll
 C:\myface\MyFace.Web\obj\Debug\net8.0\MyFace.Web.pdb
 C:\myface\MyFace.Web\obj\Debug\net8.0\MyFace.Web.genruntimeconfig.cache
 C:\myface\MyFace.Web\obj\Debug\net8.0\ref\MyFace.Web.dll
+C:\myface\MyFace.Web\obj\Debug\net8.0\MyFace.Web.sourcelink.json

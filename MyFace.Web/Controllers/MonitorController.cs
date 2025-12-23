@@ -6,16 +6,16 @@ namespace MyFace.Web.Controllers;
 
 public class MonitorController : Controller
 {
-    private readonly OnionMonitorService _monitorService;
+    private readonly OnionStatusService _statusService;
 
-    public MonitorController(OnionMonitorService monitorService)
+    public MonitorController(OnionStatusService statusService)
     {
-        _monitorService = monitorService;
+        _statusService = statusService;
     }
 
     public async Task<IActionResult> Index()
     {
-        var monitors = await _monitorService.GetAllMonitorsAsync();
+        var monitors = await _statusService.GetAllAsync();
         return View(monitors);
     }
 
@@ -34,7 +34,7 @@ public class MonitorController : Controller
             return View(model);
         }
 
-        await _monitorService.AddMonitorAsync(model.OnionUrl, model.FriendlyName, model.Notes);
+        await _statusService.AddAsync(model.OnionUrl);
         return RedirectToAction("Index");
     }
 
@@ -42,7 +42,7 @@ public class MonitorController : Controller
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Check(int id)
     {
-        await _monitorService.CheckMonitorAsync(id);
+        await _statusService.CheckAsync(id);
         return RedirectToAction("Index");
     }
 
@@ -50,7 +50,7 @@ public class MonitorController : Controller
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> CheckAll()
     {
-        await _monitorService.CheckAllMonitorsAsync();
+        await _statusService.CheckAllAsync();
         return RedirectToAction("Index");
     }
 
@@ -58,7 +58,7 @@ public class MonitorController : Controller
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Remove(int id)
     {
-        await _monitorService.RemoveMonitorAsync(id);
+        await _statusService.RemoveAsync(id);
         return RedirectToAction("Index");
     }
 }

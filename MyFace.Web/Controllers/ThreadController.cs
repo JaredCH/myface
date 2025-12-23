@@ -96,12 +96,14 @@ public class ThreadController : Controller
     public async Task<IActionResult> Vote(int postId, bool isUpvote)
     {
         var userId = GetCurrentUserId();
+        var sessionId = HttpContext.Session.Id;
         if (userId == null)
         {
-            return RedirectToAction("Login", "Account");
+            // allow anonymous session-based voting
         }
 
-        await _forumService.VoteAsync(postId, userId.Value, isUpvote);
+        var value = isUpvote ? 1 : -1;
+        await _forumService.VoteAsync(postId, userId, sessionId, value);
 
         // Redirect back to the thread containing this post
         var post = await _forumService.GetPostByIdAsync(postId);
