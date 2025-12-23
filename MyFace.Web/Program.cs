@@ -19,13 +19,17 @@ builder.Services.AddScoped<UserService>();
 builder.Services.AddScoped<ForumService>();
 builder.Services.AddScoped<OnionStatusService>();
 builder.Services.AddScoped<RssService>();
+builder.Services.AddScoped<ReputationService>();
+builder.Services.AddHostedService<MyFace.Web.Services.OnionMonitorWorker>();
 
 // HttpClient for Tor/Onion monitoring
 builder.Services.AddHttpClient("TorClient")
     .ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler
     {
         UseProxy = true,
-        Proxy = new System.Net.WebProxy("socks5://127.0.0.1:9050")
+        // NOTE: .NET HttpClientHandler does not support SOCKS5 directly.
+        // Use an HTTP proxy like Privoxy that forwards to Tor's SOCKS.
+        Proxy = new System.Net.WebProxy("http://127.0.0.1:8118")
     });
 
 // Authentication
