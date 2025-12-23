@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="referrer" content="no-referrer" />
+    <title>@ViewData["Title"] - MyFace</title>
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="alternate" type="application/rss+xml" title="Latest Threads" href="@Url.Action("Threads", "Rss")" />
+</head>
+<body>
+    <header>
+        <nav class="nav-bar">
+            <div class="container">
+                <a href="@Url.Action("Index", "Thread")" class="logo">MyFace</a>
+                <ul class="nav-menu">
+                    <li><a href="@Url.Action("Index", "Thread")">Threads</a></li>
+                    <li><a href="@Url.Action("Index", "Monitor")">Monitor</a></li>
+                    @if (User.Identity?.IsAuthenticated == true)
+                    {
+                        <li><a href="@Url.Action("Index", "User", new { username = User.Identity.Name })">@User.Identity.Name</a></li>
+                        <li><a href="@Url.Action("Logout", "Account")">Logout</a></li>
+                    }
+                    else
+                    {
+                        <li><a href="@Url.Action("Login", "Account")">Login</a></li>
+                        <li><a href="@Url.Action("Register", "Account")">Register</a></li>
+                    }
+                </ul>
+            </div>
+        </nav>
+    </header>
+    <div class="container">
+        <main>
+            @RenderBody()
+        </main>
+    </div>
+    <footer>
+        <div class="container">
+            <p>MyFace - Privacy-focused forum | <a href="@Url.Action("Threads", "Rss")">RSS</a> | No JavaScript | No tracking</p>
+        </div>
+    </footer>
+</body>
+</html>

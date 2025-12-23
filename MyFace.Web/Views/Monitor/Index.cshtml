@@ -1,0 +1,41 @@
+@model List<MyFace.Core.Entities.OnionMonitor>
+@{
+    ViewData["Title"] = "Onion Monitor";
+}
+<h1>Onion Monitor</h1>
+<p><a href="@Url.Action("Add")" class="button">Add Monitor</a> | <a href="@Url.Action("Monitor","Rss")">RSS</a></p>
+
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>URL</th>
+            <th>Status</th>
+            <th>Last Checked</th>
+            <th>Last Online</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+    @foreach (var monitor in Model)
+    {
+        <tr>
+            <td>@(monitor.FriendlyName ?? "-")</td>
+            <td><a href="@monitor.OnionUrl">@monitor.OnionUrl</a></td>
+            <td>@(monitor.IsOnline ? "Online" : "Offline")</td>
+            <td>@monitor.LastChecked?.ToString("u")</td>
+            <td>@monitor.LastOnline?.ToString("u")</td>
+            <td>
+                <form asp-action="Check" method="post" style="display:inline">
+                    <input type="hidden" name="id" value="@monitor.Id" />
+                    <button class="button" type="submit">Check</button>
+                </form>
+                <form asp-action="Remove" method="post" style="display:inline">
+                    <input type="hidden" name="id" value="@monitor.Id" />
+                    <button class="button" type="submit">Remove</button>
+                </form>
+            </td>
+        </tr>
+    }
+    </tbody>
+</table>

@@ -1,0 +1,41 @@
+@model MyFace.Core.Entities.Thread
+@{
+    ViewData["Title"] = Model.Title;
+    var postScores = (Dictionary<int, int>)ViewBag.PostScores;
+    var currentUserId = (int?)ViewBag.CurrentUserId;
+}
+<h1>@Model.Title</h1>
+<p class="meta">Started @Model.CreatedAt.ToString("u") by @(Model.IsAnonymous ? "Anonymous" : Model.User?.Username ?? "Anonymous")</p>
+
+@foreach (var post in Model.Posts.OrderBy(p => p.CreatedAt))
+{
+    <div class="card" id="post-@post.Id">
+        <p>@post.Content</p>
+        <p class="meta">@post.CreatedAt.ToString("u") by @(post.IsAnonymous ? "Anonymous" : post.User?.Username ?? "Anonymous")</p>
+        <p class="score">Score: @postScores[post.Id]</p>
+        @if (currentUserId != null)
+        {
+            <form asp-action="Vote" method="post" style="display:inline">
+                <input type="hidden" name="postId" value="@post.Id" />
+                <input type="hidden" name="isUpvote" value="true" />
+                <button class="button" type="submit">Upvote</button>
+            </form>
+            <form asp-action="Vote" method="post" style="display:inline">
+                <input type="hidden" name="postId" value="@post.Id" />
+                <input type="hidden" name="isUpvote" value="false" />
+                <button class="button" type="submit">Downvote</button>
+            </form>
+        }
+    </div>
+}
+
+<h2>Reply</h2>
+<form asp-action="Reply" method="post">
+    <input type="hidden" name="threadId" value="@Model.Id" />
+    <label for="content">Content</label>
+    <textarea id="content" name="content" rows="6"></textarea>
+    <label><input type="checkbox" name="postAsAnonymous" /> Post as Anonymous</label>
+    <div class="form-actions">
+        <button class="button" type="submit">Reply</button>
+    </div>
+</form>

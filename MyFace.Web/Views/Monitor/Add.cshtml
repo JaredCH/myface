@@ -1,0 +1,20 @@
+@model MyFace.Web.Models.AddMonitorViewModel
+@{
+    ViewData["Title"] = "Add Monitor";
+}
+<h1>Add Monitor</h1>
+<form asp-action="Add" method="post">
+    <label asp-for="OnionUrl"></label>
+    <input asp-for="OnionUrl" class="input" />
+    <span asp-validation-for="OnionUrl"></span>
+
+    <label asp-for="FriendlyName"></label>
+    <input asp-for="FriendlyName" class="input" />
+
+    <label asp-for="Notes"></label>
+    <input asp-for="Notes" class="input" />
+
+    <div class="form-actions">
+        <button type="submit" class="button">Add</button>
+    </div>
+</form>

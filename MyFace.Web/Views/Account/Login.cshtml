@@ -1,0 +1,16 @@
+@model MyFace.Web.Models.LoginViewModel
+@{
+    ViewData["Title"] = "Login";
+}
+<h1>Login</h1>
+<form asp-action="Login" method="post">
+    <label asp-for="Username"></label>
+    <input asp-for="Username" class="input" />
+
+    <label asp-for="Password"></label>
+    <input asp-for="Password" class="input" />
+
+    <div class="form-actions">
+        <button type="submit" class="button">Login</button>
+    </div>
+</form>

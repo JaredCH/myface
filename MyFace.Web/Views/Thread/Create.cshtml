@@ -1,0 +1,22 @@
+@model MyFace.Web.Models.CreateThreadViewModel
+@{
+    ViewData["Title"] = "Create Thread";
+}
+<h1>Create Thread</h1>
+<form asp-action="Create" method="post">
+    <label asp-for="Title"></label>
+    <input asp-for="Title" class="input" />
+    <span asp-validation-for="Title"></span>
+
+    <label asp-for="Content"></label>
+    <textarea asp-for="Content" rows="8"></textarea>
+    <span asp-validation-for="Content"></span>
+
+    <label>
+        <input type="checkbox" asp-for="PostAsAnonymous" /> Post as Anonymous
+    </label>
+
+    <div class="form-actions">
+        <button type="submit" class="button">Post Thread</button>
+    </div>
+</form>

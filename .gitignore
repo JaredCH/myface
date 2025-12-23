@@ -1,0 +1,25 @@
+# .NET build
+bin/
+obj/
+
+# VS Code
+.vscode/
+
+# User-specific files
+*.user
+*.suo
+
+# Logs
+logs/
+*.log
+
+# Tooling
+/.idea/
+/.vs/
+
+# Secrets
+appsettings.Development.json
+appsettings.Local.json
+
+# Node (if accidentally added)
+node_modules/

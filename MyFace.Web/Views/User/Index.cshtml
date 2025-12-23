@@ -1,0 +1,16 @@
+@model List<MyFace.Core.Entities.Post>
+@{
+    var user = (MyFace.Core.Entities.User)ViewBag.User;
+    ViewData["Title"] = user.Username;
+}
+<h1>@user.Username</h1>
+<p class="meta">Joined @user.CreatedAt.ToString("u")</p>
+<p><a href="@Url.Action("User","Rss", new { username = user.Username })">RSS</a></p>
+
+@foreach (var post in Model)
+{
+    <div class="card">
+        <p>@post.Content</p>
+        <p class="meta">@post.CreatedAt.ToString("u") in <a href="@Url.Action("View","Thread", new { id = post.ThreadId })">@post.Thread.Title</a></p>
+    </div>
+}

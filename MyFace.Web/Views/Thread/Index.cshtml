@@ -1,0 +1,26 @@
+@model List<MyFace.Core.Entities.Thread>
+@{
+    ViewData["Title"] = "Threads";
+}
+<h1>Threads</h1>
+<p><a href="@Url.Action("Create")" class="button">New Thread</a> | <a href="@Url.Action("Threads","Rss")">RSS</a></p>
+
+@foreach (var thread in Model)
+{
+    <div class="card">
+        <h2><a href="@Url.Action("View", new { id = thread.Id })">@thread.Title</a></h2>
+        <p class="meta">Started @thread.CreatedAt.ToString("u") by @(thread.IsAnonymous ? "Anonymous" : thread.User?.Username ?? "Anonymous")</p>
+        <p>@thread.Posts.Count post(s)</p>
+    </div>
+}
+
+<div class="form-actions">
+    @if ((int)ViewBag.CurrentPage > 1)
+    {
+        <a class="button" href="@Url.Action("Index", new { page = (int)ViewBag.CurrentPage - 1 })">Previous</a>
+    }
+    @if ((bool)ViewBag.HasMorePages)
+    {
+        <a class="button" href="@Url.Action("Index", new { page = (int)ViewBag.CurrentPage + 1 })">Next</a>
+    }
+</div>
