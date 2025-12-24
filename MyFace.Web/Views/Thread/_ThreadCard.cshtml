@@ -1,0 +1,44 @@
+@model MyFace.Core.Entities.Thread
+@inject MyFace.Web.Services.BBCodeFormatter Formatter
+@using System.Security.Claims
+@{
+    var userRole = User.FindFirstValue(ClaimTypes.Role);
+    var isAdminOrMod = userRole == "Admin" || userRole == "Moderator";
+    var firstPost = Model.Posts.OrderBy(p => p.CreatedAt).FirstOrDefault();
+}
+<div class="card thread-card">
+    <h2 class="thread-title"><a href="@Url.Action("View", new { id = Model.Id })">@Model.Title</a></h2>
+    <p class="meta">Started @Model.CreatedAt.ToString("u") by 
+        @if (Model.IsAnonymous)
+        {
+            <span>Anonymous</span>
+        }
+        else
+        {
+            <a href="/user/@(Model.User?.Username ?? "Anonymous")">@(Model.User?.Username ?? "Anonymous")</a>
+        }
+    </p>
+    <div class="preview clamp-5">@Formatter.Format(firstPost?.Content ?? "")</div>
+    <div class="card-footer">
+        <a class="button" href="@Url.Action("View", new { id = Model.Id })">View Thread</a>
+        <span class="meta">@Model.Posts.Count post(s)</span>
+        @if (Model.IsLocked)
+        {
+            <span class="status-badge" style="margin-left: 0.5rem;">🔒 Locked</span>
+        }
+        @if (isAdminOrMod)
+        {
+            <form method="post" style="display: inline; margin-left: 1rem;">
+                @if (Model.IsLocked)
+                {
+                    <button formaction="@Url.Action("UnlockThread", new { id = Model.Id })" type="submit" class="button" style="padding: 0.2rem 0.4rem; font-size: 0.8rem;">🔓 Unlock</button>
+                }
+                else
+                {
+                    <button formaction="@Url.Action("LockThread", new { id = Model.Id })" type="submit" class="button" style="padding: 0.2rem 0.4rem; font-size: 0.8rem;">🔒 Lock</button>
+                }
+                <button formaction="@Url.Action("DeleteThread", new { id = Model.Id })" type="submit" class="button" style="padding: 0.2rem 0.4rem; font-size: 0.8rem; background: #c0392b;">🗑️ Delete</button>
+            </form>
+        }
+    </div>
+</div>

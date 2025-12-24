@@ -44,7 +44,11 @@ builder.Services.AddHttpClient("TorClient")
         UseProxy = true,
         // NOTE: .NET HttpClientHandler does not support SOCKS5 directly.
         // Use an HTTP proxy like Privoxy that forwards to Tor's SOCKS.
-        Proxy = new System.Net.WebProxy("http://127.0.0.1:8118")
+        Proxy = new System.Net.WebProxy("http://127.0.0.1:8118"),
+        AllowAutoRedirect = true,
+        MaxAutomaticRedirections = 5,
+        // Ignore SSL errors for self-signed .onion certificates
+        ServerCertificateCustomValidationCallback = (message, cert, chain, errors) => true
     });
 
 // Authentication

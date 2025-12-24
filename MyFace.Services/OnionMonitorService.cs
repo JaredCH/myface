@@ -13,8 +13,8 @@ public class OnionStatusService
     {
         _context = context;
         _httpClient = httpClientFactory.CreateClient("TorClient");
-        // Optional: timeout to avoid hanging checks
-        _httpClient.Timeout = TimeSpan.FromSeconds(15);
+        // Longer timeout for slow onion sites
+        _httpClient.Timeout = TimeSpan.FromSeconds(30);
     }
 
     public async Task<OnionStatus> AddAsync(string name, string description, string onionUrl)

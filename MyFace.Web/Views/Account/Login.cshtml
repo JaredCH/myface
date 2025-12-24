@@ -10,6 +10,14 @@
     <label asp-for="Password"></label>
     <input asp-for="Password" class="input" />
 
+    <div style="background: #e0f2fe; padding: 1rem; border-left: 4px solid #2563eb; margin: 1rem 0; color: #1e293b;">
+        <strong>@Html.Raw(ViewBag.CaptchaContext)</strong>
+    </div>
+    <div class="form-group">
+        <label for="captchaAnswer">@ViewBag.CaptchaQuestion</label>
+        <input name="captchaAnswer" id="captchaAnswer" class="input" required autocomplete="off" />
+    </div>
+
     <div class="form-actions">
         <button type="submit" class="button">Login</button>
     </div>

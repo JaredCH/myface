@@ -4,6 +4,7 @@ public class Thread
 {
     public int Id { get; set; }
     public string Title { get; set; } = string.Empty;
+    public string Category { get; set; } = "Hot"; // Hot, New, News, Announcements
     public DateTime CreatedAt { get; set; }
     public DateTime? UpdatedAt { get; set; }
     public int? UserId { get; set; }

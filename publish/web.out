@@ -10,453 +10,109 @@ info: Microsoft.Hosting.Lifetime[0]
 info: Microsoft.Hosting.Lifetime[0]
       Content root path: /home/server/myface
 info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (12ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      Executed DbCommand (17ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
       SELECT o."Id", o."AverageLatency", o."Description", o."LastChecked", o."Name", o."OnionUrl", o."ReachableAttempts", o."ResponseTime", o."Status", o."TotalAttempts"
       FROM "OnionStatuses" AS o
 info: System.Net.Http.HttpClient.TorClient.LogicalHandler[100]
-      Start processing HTTP request GET http://jaz45aabn5vkemy4jkg4mi4syheisqn2wn2n4fsuitpccdackjwxplad.onion/
+      Start processing HTTP request GET https://pitchprash4aqilfr7sbmuwve3pnkpylqwxjbj2q5o4szcfeea6d27yd.onion/
 info: System.Net.Http.HttpClient.TorClient.ClientHandler[100]
-      Sending HTTP request GET http://jaz45aabn5vkemy4jkg4mi4syheisqn2wn2n4fsuitpccdackjwxplad.onion/
+      Sending HTTP request GET https://pitchprash4aqilfr7sbmuwve3pnkpylqwxjbj2q5o4szcfeea6d27yd.onion/
+info: System.Net.Http.HttpClient.TorClient.ClientHandler[101]
+      Received HTTP response headers after 2247.9667ms - 200
+info: System.Net.Http.HttpClient.TorClient.LogicalHandler[101]
+      End processing HTTP request after 2277.0259ms - 200
+info: System.Net.Http.HttpClient.TorClient.LogicalHandler[100]
+      Start processing HTTP request GET https://pitchprash4aqilfr7sbmuwve3pnkpylqwxjbj2q5o4szcfeea6d27yd.onion/
+info: System.Net.Http.HttpClient.TorClient.ClientHandler[100]
+      Sending HTTP request GET https://pitchprash4aqilfr7sbmuwve3pnkpylqwxjbj2q5o4szcfeea6d27yd.onion/
+info: System.Net.Http.HttpClient.TorClient.ClientHandler[101]
+      Received HTTP response headers after 596.816ms - 200
+info: System.Net.Http.HttpClient.TorClient.LogicalHandler[101]
+      End processing HTTP request after 598.0576ms - 200
+info: System.Net.Http.HttpClient.TorClient.LogicalHandler[100]
+      Start processing HTTP request GET https://pitchprash4aqilfr7sbmuwve3pnkpylqwxjbj2q5o4szcfeea6d27yd.onion/
+info: System.Net.Http.HttpClient.TorClient.ClientHandler[100]
+      Sending HTTP request GET https://pitchprash4aqilfr7sbmuwve3pnkpylqwxjbj2q5o4szcfeea6d27yd.onion/
+info: System.Net.Http.HttpClient.TorClient.ClientHandler[101]
+      Received HTTP response headers after 437.1494ms - 200
+info: System.Net.Http.HttpClient.TorClient.LogicalHandler[101]
+      End processing HTTP request after 437.3805ms - 200
+info: System.Net.Http.HttpClient.TorClient.LogicalHandler[100]
+      Start processing HTTP request GET https://pitchprash4aqilfr7sbmuwve3pnkpylqwxjbj2q5o4szcfeea6d27yd.onion/
+info: System.Net.Http.HttpClient.TorClient.ClientHandler[100]
+      Sending HTTP request GET https://pitchprash4aqilfr7sbmuwve3pnkpylqwxjbj2q5o4szcfeea6d27yd.onion/
+info: System.Net.Http.HttpClient.TorClient.ClientHandler[101]
+      Received HTTP response headers after 449.4453ms - 200
+info: System.Net.Http.HttpClient.TorClient.LogicalHandler[101]
+      End processing HTTP request after 449.6314ms - 200
+info: System.Net.Http.HttpClient.TorClient.LogicalHandler[100]
+      Start processing HTTP request GET https://pitchprash4aqilfr7sbmuwve3pnkpylqwxjbj2q5o4szcfeea6d27yd.onion/
+info: System.Net.Http.HttpClient.TorClient.ClientHandler[100]
+      Sending HTTP request GET https://pitchprash4aqilfr7sbmuwve3pnkpylqwxjbj2q5o4szcfeea6d27yd.onion/
+info: System.Net.Http.HttpClient.TorClient.ClientHandler[101]
+      Received HTTP response headers after 437.8762ms - 200
+info: System.Net.Http.HttpClient.TorClient.LogicalHandler[101]
+      End processing HTTP request after 438.1257ms - 200
 info: Microsoft.AspNetCore.Hosting.Diagnostics[1]
       Request starting HTTP/1.1 GET http://localhost:5000/ - - -
 info: Microsoft.AspNetCore.Routing.EndpointMiddleware[0]
       Executing endpoint 'MyFace.Web.Controllers.HomeController.Index (MyFace.Web)'
 info: Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker[102]
       Route matched with {action = "Index", controller = "Home"}. Executing controller action with signature Microsoft.AspNetCore.Mvc.IActionResult Index() on controller MyFace.Web.Controllers.HomeController (MyFace.Web).
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (11ms) [Parameters=[@p5='?' (DbType = Int32), @p0='?' (DbType = Double), @p1='?' (DbType = DateTime), @p2='?' (DbType = Int32), @p3='?' (DbType = Double), @p4='?'], CommandType='Text', CommandTimeout='30']
+      UPDATE "OnionStatuses" SET "AverageLatency" = @p0, "LastChecked" = @p1, "ReachableAttempts" = @p2, "ResponseTime" = @p3, "Status" = @p4
+      WHERE "Id" = @p5;
+info: System.Net.Http.HttpClient.TorClient.LogicalHandler[100]
+      Start processing HTTP request GET http://jaz45aabn5vkemy4jkg4mi4syheisqn2wn2n4fsuitpccdackjwxplad.onion/
+info: System.Net.Http.HttpClient.TorClient.ClientHandler[100]
+      Sending HTTP request GET http://jaz45aabn5vkemy4jkg4mi4syheisqn2wn2n4fsuitpccdackjwxplad.onion/
 info: Microsoft.AspNetCore.Mvc.RedirectToActionResult[1]
       Executing RedirectResult, redirecting to /Thread.
 info: Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker[105]
-      Executed action MyFace.Web.Controllers.HomeController.Index (MyFace.Web) in 18.0843ms
+      Executed action MyFace.Web.Controllers.HomeController.Index (MyFace.Web) in 31.8251ms
 info: Microsoft.AspNetCore.Routing.EndpointMiddleware[1]
       Executed endpoint 'MyFace.Web.Controllers.HomeController.Index (MyFace.Web)'
 info: Microsoft.AspNetCore.Session.DistributedSession[3]
-      Session started; Key:012a562f-dd08-86e7-eb4c-36dce47da961, Id:a3575736-5872-0380-b48d-ce222c87104e
+      Session started; Key:03ce6d76-55ff-69b0-bfd2-8a86182b9deb, Id:6e8f6e58-090e-ebaa-d9f5-928407825bcd
 info: Microsoft.AspNetCore.Hosting.Diagnostics[2]
-      Request finished HTTP/1.1 GET http://localhost:5000/ - 302 0 - 115.1546ms
+      Request finished HTTP/1.1 GET http://localhost:5000/ - 302 0 - 211.2962ms
 info: System.Net.Http.HttpClient.TorClient.ClientHandler[101]
-      Received HTTP response headers after 4776.7621ms - 200
+      Received HTTP response headers after 4656.9902ms - 200
 info: System.Net.Http.HttpClient.TorClient.LogicalHandler[101]
-      End processing HTTP request after 4785.4988ms - 200
+      End processing HTTP request after 4657.6729ms - 200
 info: System.Net.Http.HttpClient.TorClient.LogicalHandler[100]
       Start processing HTTP request GET http://jaz45aabn5vkemy4jkg4mi4syheisqn2wn2n4fsuitpccdackjwxplad.onion/
 info: System.Net.Http.HttpClient.TorClient.ClientHandler[100]
       Sending HTTP request GET http://jaz45aabn5vkemy4jkg4mi4syheisqn2wn2n4fsuitpccdackjwxplad.onion/
 info: System.Net.Http.HttpClient.TorClient.ClientHandler[101]
-      Received HTTP response headers after 4895.2931ms - 200
+      Received HTTP response headers after 3271.1392ms - 200
 info: System.Net.Http.HttpClient.TorClient.LogicalHandler[101]
-      End processing HTTP request after 4895.878ms - 200
+      End processing HTTP request after 3271.7018ms - 200
 info: System.Net.Http.HttpClient.TorClient.LogicalHandler[100]
       Start processing HTTP request GET http://jaz45aabn5vkemy4jkg4mi4syheisqn2wn2n4fsuitpccdackjwxplad.onion/
 info: System.Net.Http.HttpClient.TorClient.ClientHandler[100]
       Sending HTTP request GET http://jaz45aabn5vkemy4jkg4mi4syheisqn2wn2n4fsuitpccdackjwxplad.onion/
 info: System.Net.Http.HttpClient.TorClient.ClientHandler[101]
-      Received HTTP response headers after 3140.8229ms - 200
+      Received HTTP response headers after 4052.0636ms - 200
 info: System.Net.Http.HttpClient.TorClient.LogicalHandler[101]
-      End processing HTTP request after 3141.8536ms - 200
+      End processing HTTP request after 4052.3536ms - 200
 info: System.Net.Http.HttpClient.TorClient.LogicalHandler[100]
       Start processing HTTP request GET http://jaz45aabn5vkemy4jkg4mi4syheisqn2wn2n4fsuitpccdackjwxplad.onion/
 info: System.Net.Http.HttpClient.TorClient.ClientHandler[100]
       Sending HTTP request GET http://jaz45aabn5vkemy4jkg4mi4syheisqn2wn2n4fsuitpccdackjwxplad.onion/
 info: System.Net.Http.HttpClient.TorClient.ClientHandler[101]
-      Received HTTP response headers after 3657.6184ms - 200
+      Received HTTP response headers after 3567.2703ms - 200
 info: System.Net.Http.HttpClient.TorClient.LogicalHandler[101]
-      End processing HTTP request after 3658.0551ms - 200
+      End processing HTTP request after 3567.427ms - 200
 info: System.Net.Http.HttpClient.TorClient.LogicalHandler[100]
       Start processing HTTP request GET http://jaz45aabn5vkemy4jkg4mi4syheisqn2wn2n4fsuitpccdackjwxplad.onion/
 info: System.Net.Http.HttpClient.TorClient.ClientHandler[100]
       Sending HTTP request GET http://jaz45aabn5vkemy4jkg4mi4syheisqn2wn2n4fsuitpccdackjwxplad.onion/
 info: System.Net.Http.HttpClient.TorClient.ClientHandler[101]
-      Received HTTP response headers after 3227.7856ms - 200
+      Received HTTP response headers after 3394.9289ms - 200
 info: System.Net.Http.HttpClient.TorClient.LogicalHandler[101]
-      End processing HTTP request after 3227.9304ms - 200
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (7ms) [Parameters=[@p3='?' (DbType = Int32), @p0='?' (DbType = Double), @p1='?' (DbType = DateTime), @p2='?' (DbType = Double)], CommandType='Text', CommandTimeout='30']
-      UPDATE "OnionStatuses" SET "AverageLatency" = @p0, "LastChecked" = @p1, "ResponseTime" = @p2
-      WHERE "Id" = @p3;
-info: System.Net.Http.HttpClient.TorClient.LogicalHandler[100]
-      Start processing HTTP request GET http://dumpliwoard5qsrrsroni7bdiishealhky4snigbzfmzcquwo3kml4id.onion/
-info: System.Net.Http.HttpClient.TorClient.ClientHandler[100]
-      Sending HTTP request GET http://dumpliwoard5qsrrsroni7bdiishealhky4snigbzfmzcquwo3kml4id.onion/
-info: System.Net.Http.HttpClient.TorClient.ClientHandler[104]
-      HTTP request failed after 2222.4913ms
-      System.Net.Http.HttpRequestException: The SSL connection could not be established, see inner exception.
-       ---> System.Security.Authentication.AuthenticationException: The remote certificate is invalid because of errors in the certificate chain: UntrustedRoot
-         at System.Net.Security.SslStream.SendAuthResetSignal(ReadOnlySpan`1 alert, ExceptionDispatchInfo exception)
-         at System.Net.Security.SslStream.CompleteHandshake(SslAuthenticationOptions sslAuthenticationOptions)
-         at System.Net.Security.SslStream.ForceAuthenticationAsync[TIOAdapter](Boolean receiveFirst, Byte[] reAuthenticationData, CancellationToken cancellationToken)
-         at System.Net.Http.ConnectHelper.EstablishSslConnectionAsync(SslClientAuthenticationOptions sslOptions, HttpRequestMessage request, Boolean async, Stream stream, CancellationToken cancellationToken)
-         --- End of inner exception stack trace ---
-         at System.Net.Http.ConnectHelper.EstablishSslConnectionAsync(SslClientAuthenticationOptions sslOptions, HttpRequestMessage request, Boolean async, Stream stream, CancellationToken cancellationToken)
-         at System.Net.Http.HttpConnectionPool.ConnectAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
-         at System.Net.Http.HttpConnectionPool.CreateHttp11ConnectionAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
-         at System.Net.Http.HttpConnectionPool.AddHttp11ConnectionAsync(QueueItem queueItem)
-         at System.Threading.Tasks.TaskCompletionSourceWithCancellation`1.WaitWithCancellationAsync(CancellationToken cancellationToken)
-         at System.Net.Http.HttpConnectionPool.SendWithVersionDetectionAndRetryAsync(HttpRequestMessage request, Boolean async, Boolean doRequestAuth, CancellationToken cancellationToken)
-         at System.Net.Http.RedirectHandler.SendAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
-         at Microsoft.Extensions.Http.Logging.LoggingHttpMessageHandler.<SendCoreAsync>g__Core|4_0(HttpRequestMessage request, Boolean useAsync, CancellationToken cancellationToken)
-info: System.Net.Http.HttpClient.TorClient.LogicalHandler[104]
-      HTTP request failed after 2239.1593ms
-      System.Net.Http.HttpRequestException: The SSL connection could not be established, see inner exception.
-       ---> System.Security.Authentication.AuthenticationException: The remote certificate is invalid because of errors in the certificate chain: UntrustedRoot
-         at System.Net.Security.SslStream.SendAuthResetSignal(ReadOnlySpan`1 alert, ExceptionDispatchInfo exception)
-         at System.Net.Security.SslStream.CompleteHandshake(SslAuthenticationOptions sslAuthenticationOptions)
-         at System.Net.Security.SslStream.ForceAuthenticationAsync[TIOAdapter](Boolean receiveFirst, Byte[] reAuthenticationData, CancellationToken cancellationToken)
-         at System.Net.Http.ConnectHelper.EstablishSslConnectionAsync(SslClientAuthenticationOptions sslOptions, HttpRequestMessage request, Boolean async, Stream stream, CancellationToken cancellationToken)
-         --- End of inner exception stack trace ---
-         at System.Net.Http.ConnectHelper.EstablishSslConnectionAsync(SslClientAuthenticationOptions sslOptions, HttpRequestMessage request, Boolean async, Stream stream, CancellationToken cancellationToken)
-         at System.Net.Http.HttpConnectionPool.ConnectAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
-         at System.Net.Http.HttpConnectionPool.CreateHttp11ConnectionAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
-         at System.Net.Http.HttpConnectionPool.AddHttp11ConnectionAsync(QueueItem queueItem)
-         at System.Threading.Tasks.TaskCompletionSourceWithCancellation`1.WaitWithCancellationAsync(CancellationToken cancellationToken)
-         at System.Net.Http.HttpConnectionPool.SendWithVersionDetectionAndRetryAsync(HttpRequestMessage request, Boolean async, Boolean doRequestAuth, CancellationToken cancellationToken)
-         at System.Net.Http.RedirectHandler.SendAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
-         at Microsoft.Extensions.Http.Logging.LoggingHttpMessageHandler.<SendCoreAsync>g__Core|4_0(HttpRequestMessage request, Boolean useAsync, CancellationToken cancellationToken)
-         at Microsoft.Extensions.Http.Logging.LoggingScopeHttpMessageHandler.<SendCoreAsync>g__Core|4_0(HttpRequestMessage request, Boolean useAsync, CancellationToken cancellationToken)
-info: System.Net.Http.HttpClient.TorClient.LogicalHandler[100]
-      Start processing HTTP request GET http://dumpliwoard5qsrrsroni7bdiishealhky4snigbzfmzcquwo3kml4id.onion/
-info: System.Net.Http.HttpClient.TorClient.ClientHandler[100]
-      Sending HTTP request GET http://dumpliwoard5qsrrsroni7bdiishealhky4snigbzfmzcquwo3kml4id.onion/
-info: System.Net.Http.HttpClient.TorClient.ClientHandler[104]
-      HTTP request failed after 2638.196ms
-      System.Net.Http.HttpRequestException: The SSL connection could not be established, see inner exception.
-       ---> System.Security.Authentication.AuthenticationException: The remote certificate is invalid because of errors in the certificate chain: UntrustedRoot
-         at System.Net.Security.SslStream.SendAuthResetSignal(ReadOnlySpan`1 alert, ExceptionDispatchInfo exception)
-         at System.Net.Security.SslStream.CompleteHandshake(SslAuthenticationOptions sslAuthenticationOptions)
-         at System.Net.Security.SslStream.ForceAuthenticationAsync[TIOAdapter](Boolean receiveFirst, Byte[] reAuthenticationData, CancellationToken cancellationToken)
-         at System.Net.Http.ConnectHelper.EstablishSslConnectionAsync(SslClientAuthenticationOptions sslOptions, HttpRequestMessage request, Boolean async, Stream stream, CancellationToken cancellationToken)
-         --- End of inner exception stack trace ---
-         at System.Net.Http.ConnectHelper.EstablishSslConnectionAsync(SslClientAuthenticationOptions sslOptions, HttpRequestMessage request, Boolean async, Stream stream, CancellationToken cancellationToken)
-         at System.Net.Http.HttpConnectionPool.ConnectAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
-         at System.Net.Http.HttpConnectionPool.CreateHttp11ConnectionAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
-         at System.Net.Http.HttpConnectionPool.AddHttp11ConnectionAsync(QueueItem queueItem)
-         at System.Threading.Tasks.TaskCompletionSourceWithCancellation`1.WaitWithCancellationAsync(CancellationToken cancellationToken)
-         at System.Net.Http.HttpConnectionPool.SendWithVersionDetectionAndRetryAsync(HttpRequestMessage request, Boolean async, Boolean doRequestAuth, CancellationToken cancellationToken)
-         at System.Net.Http.RedirectHandler.SendAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
-         at Microsoft.Extensions.Http.Logging.LoggingHttpMessageHandler.<SendCoreAsync>g__Core|4_0(HttpRequestMessage request, Boolean useAsync, CancellationToken cancellationToken)
-info: System.Net.Http.HttpClient.TorClient.LogicalHandler[104]
-      HTTP request failed after 2639.0633ms
-      System.Net.Http.HttpRequestException: The SSL connection could not be established, see inner exception.
-       ---> System.Security.Authentication.AuthenticationException: The remote certificate is invalid because of errors in the certificate chain: UntrustedRoot
-         at System.Net.Security.SslStream.SendAuthResetSignal(ReadOnlySpan`1 alert, ExceptionDispatchInfo exception)
-         at System.Net.Security.SslStream.CompleteHandshake(SslAuthenticationOptions sslAuthenticationOptions)
-         at System.Net.Security.SslStream.ForceAuthenticationAsync[TIOAdapter](Boolean receiveFirst, Byte[] reAuthenticationData, CancellationToken cancellationToken)
-         at System.Net.Http.ConnectHelper.EstablishSslConnectionAsync(SslClientAuthenticationOptions sslOptions, HttpRequestMessage request, Boolean async, Stream stream, CancellationToken cancellationToken)
-         --- End of inner exception stack trace ---
-         at System.Net.Http.ConnectHelper.EstablishSslConnectionAsync(SslClientAuthenticationOptions sslOptions, HttpRequestMessage request, Boolean async, Stream stream, CancellationToken cancellationToken)
-         at System.Net.Http.HttpConnectionPool.ConnectAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
-         at System.Net.Http.HttpConnectionPool.CreateHttp11ConnectionAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
-         at System.Net.Http.HttpConnectionPool.AddHttp11ConnectionAsync(QueueItem queueItem)
-         at System.Threading.Tasks.TaskCompletionSourceWithCancellation`1.WaitWithCancellationAsync(CancellationToken cancellationToken)
-         at System.Net.Http.HttpConnectionPool.SendWithVersionDetectionAndRetryAsync(HttpRequestMessage request, Boolean async, Boolean doRequestAuth, CancellationToken cancellationToken)
-         at System.Net.Http.RedirectHandler.SendAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
-         at Microsoft.Extensions.Http.Logging.LoggingHttpMessageHandler.<SendCoreAsync>g__Core|4_0(HttpRequestMessage request, Boolean useAsync, CancellationToken cancellationToken)
-         at Microsoft.Extensions.Http.Logging.LoggingScopeHttpMessageHandler.<SendCoreAsync>g__Core|4_0(HttpRequestMessage request, Boolean useAsync, CancellationToken cancellationToken)
-info: System.Net.Http.HttpClient.TorClient.LogicalHandler[100]
-      Start processing HTTP request GET http://dumpliwoard5qsrrsroni7bdiishealhky4snigbzfmzcquwo3kml4id.onion/
-info: System.Net.Http.HttpClient.TorClient.ClientHandler[100]
-      Sending HTTP request GET http://dumpliwoard5qsrrsroni7bdiishealhky4snigbzfmzcquwo3kml4id.onion/
-info: System.Net.Http.HttpClient.TorClient.ClientHandler[104]
-      HTTP request failed after 2138.7921ms
-      System.Net.Http.HttpRequestException: The SSL connection could not be established, see inner exception.
-       ---> System.Security.Authentication.AuthenticationException: The remote certificate is invalid because of errors in the certificate chain: UntrustedRoot
-         at System.Net.Security.SslStream.SendAuthResetSignal(ReadOnlySpan`1 alert, ExceptionDispatchInfo exception)
-         at System.Net.Security.SslStream.CompleteHandshake(SslAuthenticationOptions sslAuthenticationOptions)
-         at System.Net.Security.SslStream.ForceAuthenticationAsync[TIOAdapter](Boolean receiveFirst, Byte[] reAuthenticationData, CancellationToken cancellationToken)
-         at System.Net.Http.ConnectHelper.EstablishSslConnectionAsync(SslClientAuthenticationOptions sslOptions, HttpRequestMessage request, Boolean async, Stream stream, CancellationToken cancellationToken)
-         --- End of inner exception stack trace ---
-         at System.Net.Http.ConnectHelper.EstablishSslConnectionAsync(SslClientAuthenticationOptions sslOptions, HttpRequestMessage request, Boolean async, Stream stream, CancellationToken cancellationToken)
-         at System.Net.Http.HttpConnectionPool.ConnectAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
-         at System.Net.Http.HttpConnectionPool.CreateHttp11ConnectionAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
-         at System.Net.Http.HttpConnectionPool.AddHttp11ConnectionAsync(QueueItem queueItem)
-         at System.Threading.Tasks.TaskCompletionSourceWithCancellation`1.WaitWithCancellationAsync(CancellationToken cancellationToken)
-         at System.Net.Http.HttpConnectionPool.SendWithVersionDetectionAndRetryAsync(HttpRequestMessage request, Boolean async, Boolean doRequestAuth, CancellationToken cancellationToken)
-         at System.Net.Http.RedirectHandler.SendAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
-         at Microsoft.Extensions.Http.Logging.LoggingHttpMessageHandler.<SendCoreAsync>g__Core|4_0(HttpRequestMessage request, Boolean useAsync, CancellationToken cancellationToken)
-info: System.Net.Http.HttpClient.TorClient.LogicalHandler[104]
-      HTTP request failed after 2139.3981ms
-      System.Net.Http.HttpRequestException: The SSL connection could not be established, see inner exception.
-       ---> System.Security.Authentication.AuthenticationException: The remote certificate is invalid because of errors in the certificate chain: UntrustedRoot
-         at System.Net.Security.SslStream.SendAuthResetSignal(ReadOnlySpan`1 alert, ExceptionDispatchInfo exception)
-         at System.Net.Security.SslStream.CompleteHandshake(SslAuthenticationOptions sslAuthenticationOptions)
-         at System.Net.Security.SslStream.ForceAuthenticationAsync[TIOAdapter](Boolean receiveFirst, Byte[] reAuthenticationData, CancellationToken cancellationToken)
-         at System.Net.Http.ConnectHelper.EstablishSslConnectionAsync(SslClientAuthenticationOptions sslOptions, HttpRequestMessage request, Boolean async, Stream stream, CancellationToken cancellationToken)
-         --- End of inner exception stack trace ---
-         at System.Net.Http.ConnectHelper.EstablishSslConnectionAsync(SslClientAuthenticationOptions sslOptions, HttpRequestMessage request, Boolean async, Stream stream, CancellationToken cancellationToken)
-         at System.Net.Http.HttpConnectionPool.ConnectAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
-         at System.Net.Http.HttpConnectionPool.CreateHttp11ConnectionAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
-         at System.Net.Http.HttpConnectionPool.AddHttp11ConnectionAsync(QueueItem queueItem)
-         at System.Threading.Tasks.TaskCompletionSourceWithCancellation`1.WaitWithCancellationAsync(CancellationToken cancellationToken)
-         at System.Net.Http.HttpConnectionPool.SendWithVersionDetectionAndRetryAsync(HttpRequestMessage request, Boolean async, Boolean doRequestAuth, CancellationToken cancellationToken)
-         at System.Net.Http.RedirectHandler.SendAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
-         at Microsoft.Extensions.Http.Logging.LoggingHttpMessageHandler.<SendCoreAsync>g__Core|4_0(HttpRequestMessage request, Boolean useAsync, CancellationToken cancellationToken)
-         at Microsoft.Extensions.Http.Logging.LoggingScopeHttpMessageHandler.<SendCoreAsync>g__Core|4_0(HttpRequestMessage request, Boolean useAsync, CancellationToken cancellationToken)
-info: System.Net.Http.HttpClient.TorClient.LogicalHandler[100]
-      Start processing HTTP request GET http://dumpliwoard5qsrrsroni7bdiishealhky4snigbzfmzcquwo3kml4id.onion/
-info: System.Net.Http.HttpClient.TorClient.ClientHandler[100]
-      Sending HTTP request GET http://dumpliwoard5qsrrsroni7bdiishealhky4snigbzfmzcquwo3kml4id.onion/
-info: System.Net.Http.HttpClient.TorClient.ClientHandler[104]
-      HTTP request failed after 2082.8807ms
-      System.Net.Http.HttpRequestException: The SSL connection could not be established, see inner exception.
-       ---> System.Security.Authentication.AuthenticationException: The remote certificate is invalid because of errors in the certificate chain: UntrustedRoot
-         at System.Net.Security.SslStream.SendAuthResetSignal(ReadOnlySpan`1 alert, ExceptionDispatchInfo exception)
-         at System.Net.Security.SslStream.CompleteHandshake(SslAuthenticationOptions sslAuthenticationOptions)
-         at System.Net.Security.SslStream.ForceAuthenticationAsync[TIOAdapter](Boolean receiveFirst, Byte[] reAuthenticationData, CancellationToken cancellationToken)
-         at System.Net.Http.ConnectHelper.EstablishSslConnectionAsync(SslClientAuthenticationOptions sslOptions, HttpRequestMessage request, Boolean async, Stream stream, CancellationToken cancellationToken)
-         --- End of inner exception stack trace ---
-         at System.Net.Http.ConnectHelper.EstablishSslConnectionAsync(SslClientAuthenticationOptions sslOptions, HttpRequestMessage request, Boolean async, Stream stream, CancellationToken cancellationToken)
-         at System.Net.Http.HttpConnectionPool.ConnectAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
-         at System.Net.Http.HttpConnectionPool.CreateHttp11ConnectionAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
-         at System.Net.Http.HttpConnectionPool.AddHttp11ConnectionAsync(QueueItem queueItem)
-         at System.Threading.Tasks.TaskCompletionSourceWithCancellation`1.WaitWithCancellationAsync(CancellationToken cancellationToken)
-         at System.Net.Http.HttpConnectionPool.SendWithVersionDetectionAndRetryAsync(HttpRequestMessage request, Boolean async, Boolean doRequestAuth, CancellationToken cancellationToken)
-         at System.Net.Http.RedirectHandler.SendAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
-         at Microsoft.Extensions.Http.Logging.LoggingHttpMessageHandler.<SendCoreAsync>g__Core|4_0(HttpRequestMessage request, Boolean useAsync, CancellationToken cancellationToken)
-info: System.Net.Http.HttpClient.TorClient.LogicalHandler[104]
-      HTTP request failed after 2083.3671ms
-      System.Net.Http.HttpRequestException: The SSL connection could not be established, see inner exception.
-       ---> System.Security.Authentication.AuthenticationException: The remote certificate is invalid because of errors in the certificate chain: UntrustedRoot
-         at System.Net.Security.SslStream.SendAuthResetSignal(ReadOnlySpan`1 alert, ExceptionDispatchInfo exception)
-         at System.Net.Security.SslStream.CompleteHandshake(SslAuthenticationOptions sslAuthenticationOptions)
-         at System.Net.Security.SslStream.ForceAuthenticationAsync[TIOAdapter](Boolean receiveFirst, Byte[] reAuthenticationData, CancellationToken cancellationToken)
-         at System.Net.Http.ConnectHelper.EstablishSslConnectionAsync(SslClientAuthenticationOptions sslOptions, HttpRequestMessage request, Boolean async, Stream stream, CancellationToken cancellationToken)
-         --- End of inner exception stack trace ---
-         at System.Net.Http.ConnectHelper.EstablishSslConnectionAsync(SslClientAuthenticationOptions sslOptions, HttpRequestMessage request, Boolean async, Stream stream, CancellationToken cancellationToken)
-         at System.Net.Http.HttpConnectionPool.ConnectAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
-         at System.Net.Http.HttpConnectionPool.CreateHttp11ConnectionAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
-         at System.Net.Http.HttpConnectionPool.AddHttp11ConnectionAsync(QueueItem queueItem)
-         at System.Threading.Tasks.TaskCompletionSourceWithCancellation`1.WaitWithCancellationAsync(CancellationToken cancellationToken)
-         at System.Net.Http.HttpConnectionPool.SendWithVersionDetectionAndRetryAsync(HttpRequestMessage request, Boolean async, Boolean doRequestAuth, CancellationToken cancellationToken)
-         at System.Net.Http.RedirectHandler.SendAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
-         at Microsoft.Extensions.Http.Logging.LoggingHttpMessageHandler.<SendCoreAsync>g__Core|4_0(HttpRequestMessage request, Boolean useAsync, CancellationToken cancellationToken)
-         at Microsoft.Extensions.Http.Logging.LoggingScopeHttpMessageHandler.<SendCoreAsync>g__Core|4_0(HttpRequestMessage request, Boolean useAsync, CancellationToken cancellationToken)
-info: System.Net.Http.HttpClient.TorClient.LogicalHandler[100]
-      Start processing HTTP request GET http://dumpliwoard5qsrrsroni7bdiishealhky4snigbzfmzcquwo3kml4id.onion/
-info: System.Net.Http.HttpClient.TorClient.ClientHandler[100]
-      Sending HTTP request GET http://dumpliwoard5qsrrsroni7bdiishealhky4snigbzfmzcquwo3kml4id.onion/
-info: System.Net.Http.HttpClient.TorClient.ClientHandler[104]
-      HTTP request failed after 1893.2142ms
-      System.Net.Http.HttpRequestException: The SSL connection could not be established, see inner exception.
-       ---> System.Security.Authentication.AuthenticationException: The remote certificate is invalid because of errors in the certificate chain: UntrustedRoot
-         at System.Net.Security.SslStream.SendAuthResetSignal(ReadOnlySpan`1 alert, ExceptionDispatchInfo exception)
-         at System.Net.Security.SslStream.CompleteHandshake(SslAuthenticationOptions sslAuthenticationOptions)
-         at System.Net.Security.SslStream.ForceAuthenticationAsync[TIOAdapter](Boolean receiveFirst, Byte[] reAuthenticationData, CancellationToken cancellationToken)
-         at System.Net.Http.ConnectHelper.EstablishSslConnectionAsync(SslClientAuthenticationOptions sslOptions, HttpRequestMessage request, Boolean async, Stream stream, CancellationToken cancellationToken)
-         --- End of inner exception stack trace ---
-         at System.Net.Http.ConnectHelper.EstablishSslConnectionAsync(SslClientAuthenticationOptions sslOptions, HttpRequestMessage request, Boolean async, Stream stream, CancellationToken cancellationToken)
-         at System.Net.Http.HttpConnectionPool.ConnectAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
-         at System.Net.Http.HttpConnectionPool.CreateHttp11ConnectionAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
-         at System.Net.Http.HttpConnectionPool.AddHttp11ConnectionAsync(QueueItem queueItem)
-         at System.Threading.Tasks.TaskCompletionSourceWithCancellation`1.WaitWithCancellationAsync(CancellationToken cancellationToken)
-         at System.Net.Http.HttpConnectionPool.SendWithVersionDetectionAndRetryAsync(HttpRequestMessage request, Boolean async, Boolean doRequestAuth, CancellationToken cancellationToken)
-         at System.Net.Http.RedirectHandler.SendAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
-         at Microsoft.Extensions.Http.Logging.LoggingHttpMessageHandler.<SendCoreAsync>g__Core|4_0(HttpRequestMessage request, Boolean useAsync, CancellationToken cancellationToken)
-info: System.Net.Http.HttpClient.TorClient.LogicalHandler[104]
-      HTTP request failed after 1893.6123ms
-      System.Net.Http.HttpRequestException: The SSL connection could not be established, see inner exception.
-       ---> System.Security.Authentication.AuthenticationException: The remote certificate is invalid because of errors in the certificate chain: UntrustedRoot
-         at System.Net.Security.SslStream.SendAuthResetSignal(ReadOnlySpan`1 alert, ExceptionDispatchInfo exception)
-         at System.Net.Security.SslStream.CompleteHandshake(SslAuthenticationOptions sslAuthenticationOptions)
-         at System.Net.Security.SslStream.ForceAuthenticationAsync[TIOAdapter](Boolean receiveFirst, Byte[] reAuthenticationData, CancellationToken cancellationToken)
-         at System.Net.Http.ConnectHelper.EstablishSslConnectionAsync(SslClientAuthenticationOptions sslOptions, HttpRequestMessage request, Boolean async, Stream stream, CancellationToken cancellationToken)
-         --- End of inner exception stack trace ---
-         at System.Net.Http.ConnectHelper.EstablishSslConnectionAsync(SslClientAuthenticationOptions sslOptions, HttpRequestMessage request, Boolean async, Stream stream, CancellationToken cancellationToken)
-         at System.Net.Http.HttpConnectionPool.ConnectAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
-         at System.Net.Http.HttpConnectionPool.CreateHttp11ConnectionAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
-         at System.Net.Http.HttpConnectionPool.AddHttp11ConnectionAsync(QueueItem queueItem)
-         at System.Threading.Tasks.TaskCompletionSourceWithCancellation`1.WaitWithCancellationAsync(CancellationToken cancellationToken)
-         at System.Net.Http.HttpConnectionPool.SendWithVersionDetectionAndRetryAsync(HttpRequestMessage request, Boolean async, Boolean doRequestAuth, CancellationToken cancellationToken)
-         at System.Net.Http.RedirectHandler.SendAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
-         at Microsoft.Extensions.Http.Logging.LoggingHttpMessageHandler.<SendCoreAsync>g__Core|4_0(HttpRequestMessage request, Boolean useAsync, CancellationToken cancellationToken)
-         at Microsoft.Extensions.Http.Logging.LoggingScopeHttpMessageHandler.<SendCoreAsync>g__Core|4_0(HttpRequestMessage request, Boolean useAsync, CancellationToken cancellationToken)
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (2ms) [Parameters=[@p1='?' (DbType = Int32), @p0='?' (DbType = DateTime)], CommandType='Text', CommandTimeout='30']
-      UPDATE "OnionStatuses" SET "LastChecked" = @p0
-      WHERE "Id" = @p1;
-info: System.Net.Http.HttpClient.TorClient.LogicalHandler[100]
-      Start processing HTTP request GET http://dauntdatakit2xi4usevwp3pajyppsgsrbzkfqyrp6ufsdwrnm6g5tqd.onion/
-info: System.Net.Http.HttpClient.TorClient.ClientHandler[100]
-      Sending HTTP request GET http://dauntdatakit2xi4usevwp3pajyppsgsrbzkfqyrp6ufsdwrnm6g5tqd.onion/
-info: System.Net.Http.HttpClient.TorClient.ClientHandler[101]
-      Received HTTP response headers after 4456.5754ms - 503
-info: System.Net.Http.HttpClient.TorClient.LogicalHandler[101]
-      End processing HTTP request after 4456.9117ms - 503
-info: System.Net.Http.HttpClient.TorClient.LogicalHandler[100]
-      Start processing HTTP request GET http://dauntdatakit2xi4usevwp3pajyppsgsrbzkfqyrp6ufsdwrnm6g5tqd.onion/
-info: System.Net.Http.HttpClient.TorClient.ClientHandler[100]
-      Sending HTTP request GET http://dauntdatakit2xi4usevwp3pajyppsgsrbzkfqyrp6ufsdwrnm6g5tqd.onion/
-info: System.Net.Http.HttpClient.TorClient.ClientHandler[101]
-      Received HTTP response headers after 4715.9209ms - 503
-info: System.Net.Http.HttpClient.TorClient.LogicalHandler[101]
-      End processing HTTP request after 4717.0596ms - 503
-info: System.Net.Http.HttpClient.TorClient.LogicalHandler[100]
-      Start processing HTTP request GET http://dauntdatakit2xi4usevwp3pajyppsgsrbzkfqyrp6ufsdwrnm6g5tqd.onion/
-info: System.Net.Http.HttpClient.TorClient.ClientHandler[100]
-      Sending HTTP request GET http://dauntdatakit2xi4usevwp3pajyppsgsrbzkfqyrp6ufsdwrnm6g5tqd.onion/
-info: System.Net.Http.HttpClient.TorClient.ClientHandler[101]
-      Received HTTP response headers after 5530.8791ms - 503
-info: System.Net.Http.HttpClient.TorClient.LogicalHandler[101]
-      End processing HTTP request after 5531.1769ms - 503
-info: System.Net.Http.HttpClient.TorClient.LogicalHandler[100]
-      Start processing HTTP request GET http://dauntdatakit2xi4usevwp3pajyppsgsrbzkfqyrp6ufsdwrnm6g5tqd.onion/
-info: System.Net.Http.HttpClient.TorClient.ClientHandler[100]
-      Sending HTTP request GET http://dauntdatakit2xi4usevwp3pajyppsgsrbzkfqyrp6ufsdwrnm6g5tqd.onion/
-info: System.Net.Http.HttpClient.TorClient.ClientHandler[101]
-      Received HTTP response headers after 4903.1021ms - 503
-info: System.Net.Http.HttpClient.TorClient.LogicalHandler[101]
-      End processing HTTP request after 4905.2945ms - 503
-info: System.Net.Http.HttpClient.TorClient.LogicalHandler[100]
-      Start processing HTTP request GET http://dauntdatakit2xi4usevwp3pajyppsgsrbzkfqyrp6ufsdwrnm6g5tqd.onion/
-info: System.Net.Http.HttpClient.TorClient.ClientHandler[100]
-      Sending HTTP request GET http://dauntdatakit2xi4usevwp3pajyppsgsrbzkfqyrp6ufsdwrnm6g5tqd.onion/
-info: System.Net.Http.HttpClient.TorClient.ClientHandler[101]
-      Received HTTP response headers after 4518.0332ms - 503
-info: System.Net.Http.HttpClient.TorClient.LogicalHandler[101]
-      End processing HTTP request after 4518.4909ms - 503
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (3ms) [Parameters=[@p1='?' (DbType = Int32), @p0='?' (DbType = DateTime)], CommandType='Text', CommandTimeout='30']
-      UPDATE "OnionStatuses" SET "LastChecked" = @p0
-      WHERE "Id" = @p1;
-info: System.Net.Http.HttpClient.TorClient.LogicalHandler[100]
-      Start processing HTTP request GET https://digdig2nugjpszzmqe5ep2bk7lqfpdlyrkojsx2j6kzalnrqtwedr3id.onion/
-info: System.Net.Http.HttpClient.TorClient.ClientHandler[100]
-      Sending HTTP request GET https://digdig2nugjpszzmqe5ep2bk7lqfpdlyrkojsx2j6kzalnrqtwedr3id.onion/
-info: System.Net.Http.HttpClient.TorClient.ClientHandler[104]
-      HTTP request failed after 2002.5348ms
-      System.Net.Http.HttpRequestException: The SSL connection could not be established, see inner exception.
-       ---> System.Security.Authentication.AuthenticationException: The remote certificate is invalid because of errors in the certificate chain: UntrustedRoot
-         at System.Net.Security.SslStream.SendAuthResetSignal(ReadOnlySpan`1 alert, ExceptionDispatchInfo exception)
-         at System.Net.Security.SslStream.CompleteHandshake(SslAuthenticationOptions sslAuthenticationOptions)
-         at System.Net.Security.SslStream.ForceAuthenticationAsync[TIOAdapter](Boolean receiveFirst, Byte[] reAuthenticationData, CancellationToken cancellationToken)
-         at System.Net.Http.ConnectHelper.EstablishSslConnectionAsync(SslClientAuthenticationOptions sslOptions, HttpRequestMessage request, Boolean async, Stream stream, CancellationToken cancellationToken)
-         --- End of inner exception stack trace ---
-         at System.Net.Http.ConnectHelper.EstablishSslConnectionAsync(SslClientAuthenticationOptions sslOptions, HttpRequestMessage request, Boolean async, Stream stream, CancellationToken cancellationToken)
-         at System.Net.Http.HttpConnectionPool.ConnectAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
-         at System.Net.Http.HttpConnectionPool.CreateHttp11ConnectionAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
-         at System.Net.Http.HttpConnectionPool.AddHttp11ConnectionAsync(QueueItem queueItem)
-         at System.Threading.Tasks.TaskCompletionSourceWithCancellation`1.WaitWithCancellationAsync(CancellationToken cancellationToken)
-         at System.Net.Http.HttpConnectionPool.SendWithVersionDetectionAndRetryAsync(HttpRequestMessage request, Boolean async, Boolean doRequestAuth, CancellationToken cancellationToken)
-         at System.Net.Http.RedirectHandler.SendAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
-         at Microsoft.Extensions.Http.Logging.LoggingHttpMessageHandler.<SendCoreAsync>g__Core|4_0(HttpRequestMessage request, Boolean useAsync, CancellationToken cancellationToken)
-info: System.Net.Http.HttpClient.TorClient.LogicalHandler[104]
-      HTTP request failed after 2003.1093ms
-      System.Net.Http.HttpRequestException: The SSL connection could not be established, see inner exception.
-       ---> System.Security.Authentication.AuthenticationException: The remote certificate is invalid because of errors in the certificate chain: UntrustedRoot
-         at System.Net.Security.SslStream.SendAuthResetSignal(ReadOnlySpan`1 alert, ExceptionDispatchInfo exception)
-         at System.Net.Security.SslStream.CompleteHandshake(SslAuthenticationOptions sslAuthenticationOptions)
-         at System.Net.Security.SslStream.ForceAuthenticationAsync[TIOAdapter](Boolean receiveFirst, Byte[] reAuthenticationData, CancellationToken cancellationToken)
-         at System.Net.Http.ConnectHelper.EstablishSslConnectionAsync(SslClientAuthenticationOptions sslOptions, HttpRequestMessage request, Boolean async, Stream stream, CancellationToken cancellationToken)
-         --- End of inner exception stack trace ---
-         at System.Net.Http.ConnectHelper.EstablishSslConnectionAsync(SslClientAuthenticationOptions sslOptions, HttpRequestMessage request, Boolean async, Stream stream, CancellationToken cancellationToken)
-         at System.Net.Http.HttpConnectionPool.ConnectAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
-         at System.Net.Http.HttpConnectionPool.CreateHttp11ConnectionAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
-         at System.Net.Http.HttpConnectionPool.AddHttp11ConnectionAsync(QueueItem queueItem)
-         at System.Threading.Tasks.TaskCompletionSourceWithCancellation`1.WaitWithCancellationAsync(CancellationToken cancellationToken)
-         at System.Net.Http.HttpConnectionPool.SendWithVersionDetectionAndRetryAsync(HttpRequestMessage request, Boolean async, Boolean doRequestAuth, CancellationToken cancellationToken)
-         at System.Net.Http.RedirectHandler.SendAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
-         at Microsoft.Extensions.Http.Logging.LoggingHttpMessageHandler.<SendCoreAsync>g__Core|4_0(HttpRequestMessage request, Boolean useAsync, CancellationToken cancellationToken)
-         at Microsoft.Extensions.Http.Logging.LoggingScopeHttpMessageHandler.<SendCoreAsync>g__Core|4_0(HttpRequestMessage request, Boolean useAsync, CancellationToken cancellationToken)
-info: System.Net.Http.HttpClient.TorClient.LogicalHandler[100]
-      Start processing HTTP request GET https://digdig2nugjpszzmqe5ep2bk7lqfpdlyrkojsx2j6kzalnrqtwedr3id.onion/
-info: System.Net.Http.HttpClient.TorClient.ClientHandler[100]
-      Sending HTTP request GET https://digdig2nugjpszzmqe5ep2bk7lqfpdlyrkojsx2j6kzalnrqtwedr3id.onion/
-info: System.Net.Http.HttpClient.TorClient.ClientHandler[104]
-      HTTP request failed after 1994.4849ms
-      System.Net.Http.HttpRequestException: The SSL connection could not be established, see inner exception.
-       ---> System.Security.Authentication.AuthenticationException: The remote certificate is invalid because of errors in the certificate chain: UntrustedRoot
-         at System.Net.Security.SslStream.SendAuthResetSignal(ReadOnlySpan`1 alert, ExceptionDispatchInfo exception)
-         at System.Net.Security.SslStream.CompleteHandshake(SslAuthenticationOptions sslAuthenticationOptions)
-         at System.Net.Security.SslStream.ForceAuthenticationAsync[TIOAdapter](Boolean receiveFirst, Byte[] reAuthenticationData, CancellationToken cancellationToken)
-         at System.Net.Http.ConnectHelper.EstablishSslConnectionAsync(SslClientAuthenticationOptions sslOptions, HttpRequestMessage request, Boolean async, Stream stream, CancellationToken cancellationToken)
-         --- End of inner exception stack trace ---
-         at System.Net.Http.ConnectHelper.EstablishSslConnectionAsync(SslClientAuthenticationOptions sslOptions, HttpRequestMessage request, Boolean async, Stream stream, CancellationToken cancellationToken)
-         at System.Net.Http.HttpConnectionPool.ConnectAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
-         at System.Net.Http.HttpConnectionPool.CreateHttp11ConnectionAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
-         at System.Net.Http.HttpConnectionPool.AddHttp11ConnectionAsync(QueueItem queueItem)
-         at System.Threading.Tasks.TaskCompletionSourceWithCancellation`1.WaitWithCancellationAsync(CancellationToken cancellationToken)
-         at System.Net.Http.HttpConnectionPool.SendWithVersionDetectionAndRetryAsync(HttpRequestMessage request, Boolean async, Boolean doRequestAuth, CancellationToken cancellationToken)
-         at System.Net.Http.RedirectHandler.SendAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
-         at Microsoft.Extensions.Http.Logging.LoggingHttpMessageHandler.<SendCoreAsync>g__Core|4_0(HttpRequestMessage request, Boolean useAsync, CancellationToken cancellationToken)
-info: System.Net.Http.HttpClient.TorClient.LogicalHandler[104]
-      HTTP request failed after 1995.0407ms
-      System.Net.Http.HttpRequestException: The SSL connection could not be established, see inner exception.
-       ---> System.Security.Authentication.AuthenticationException: The remote certificate is invalid because of errors in the certificate chain: UntrustedRoot
-         at System.Net.Security.SslStream.SendAuthResetSignal(ReadOnlySpan`1 alert, ExceptionDispatchInfo exception)
-         at System.Net.Security.SslStream.CompleteHandshake(SslAuthenticationOptions sslAuthenticationOptions)
-         at System.Net.Security.SslStream.ForceAuthenticationAsync[TIOAdapter](Boolean receiveFirst, Byte[] reAuthenticationData, CancellationToken cancellationToken)
-         at System.Net.Http.ConnectHelper.EstablishSslConnectionAsync(SslClientAuthenticationOptions sslOptions, HttpRequestMessage request, Boolean async, Stream stream, CancellationToken cancellationToken)
-         --- End of inner exception stack trace ---
-         at System.Net.Http.ConnectHelper.EstablishSslConnectionAsync(SslClientAuthenticationOptions sslOptions, HttpRequestMessage request, Boolean async, Stream stream, CancellationToken cancellationToken)
-         at System.Net.Http.HttpConnectionPool.ConnectAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
-         at System.Net.Http.HttpConnectionPool.CreateHttp11ConnectionAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
-         at System.Net.Http.HttpConnectionPool.AddHttp11ConnectionAsync(QueueItem queueItem)
-         at System.Threading.Tasks.TaskCompletionSourceWithCancellation`1.WaitWithCancellationAsync(CancellationToken cancellationToken)
-         at System.Net.Http.HttpConnectionPool.SendWithVersionDetectionAndRetryAsync(HttpRequestMessage request, Boolean async, Boolean doRequestAuth, CancellationToken cancellationToken)
-         at System.Net.Http.RedirectHandler.SendAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
-         at Microsoft.Extensions.Http.Logging.LoggingHttpMessageHandler.<SendCoreAsync>g__Core|4_0(HttpRequestMessage request, Boolean useAsync, CancellationToken cancellationToken)
-         at Microsoft.Extensions.Http.Logging.LoggingScopeHttpMessageHandler.<SendCoreAsync>g__Core|4_0(HttpRequestMessage request, Boolean useAsync, CancellationToken cancellationToken)
-info: System.Net.Http.HttpClient.TorClient.LogicalHandler[100]
-      Start processing HTTP request GET https://digdig2nugjpszzmqe5ep2bk7lqfpdlyrkojsx2j6kzalnrqtwedr3id.onion/
-info: System.Net.Http.HttpClient.TorClient.ClientHandler[100]
-      Sending HTTP request GET https://digdig2nugjpszzmqe5ep2bk7lqfpdlyrkojsx2j6kzalnrqtwedr3id.onion/
-info: System.Net.Http.HttpClient.TorClient.ClientHandler[104]
-      HTTP request failed after 1956.4129ms
-      System.Net.Http.HttpRequestException: The SSL connection could not be established, see inner exception.
-       ---> System.Security.Authentication.AuthenticationException: The remote certificate is invalid because of errors in the certificate chain: UntrustedRoot
-         at System.Net.Security.SslStream.SendAuthResetSignal(ReadOnlySpan`1 alert, ExceptionDispatchInfo exception)
-         at System.Net.Security.SslStream.CompleteHandshake(SslAuthenticationOptions sslAuthenticationOptions)
-         at System.Net.Security.SslStream.ForceAuthenticationAsync[TIOAdapter](Boolean receiveFirst, Byte[] reAuthenticationData, CancellationToken cancellationToken)
-         at System.Net.Http.ConnectHelper.EstablishSslConnectionAsync(SslClientAuthenticationOptions sslOptions, HttpRequestMessage request, Boolean async, Stream stream, CancellationToken cancellationToken)
-         --- End of inner exception stack trace ---
-         at System.Net.Http.ConnectHelper.EstablishSslConnectionAsync(SslClientAuthenticationOptions sslOptions, HttpRequestMessage request, Boolean async, Stream stream, CancellationToken cancellationToken)
-         at System.Net.Http.HttpConnectionPool.ConnectAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
-         at System.Net.Http.HttpConnectionPool.CreateHttp11ConnectionAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
-         at System.Net.Http.HttpConnectionPool.AddHttp11ConnectionAsync(QueueItem queueItem)
-         at System.Threading.Tasks.TaskCompletionSourceWithCancellation`1.WaitWithCancellationAsync(CancellationToken cancellationToken)
-         at System.Net.Http.HttpConnectionPool.SendWithVersionDetectionAndRetryAsync(HttpRequestMessage request, Boolean async, Boolean doRequestAuth, CancellationToken cancellationToken)
-         at System.Net.Http.RedirectHandler.SendAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
-         at Microsoft.Extensions.Http.Logging.LoggingHttpMessageHandler.<SendCoreAsync>g__Core|4_0(HttpRequestMessage request, Boolean useAsync, CancellationToken cancellationToken)
-info: System.Net.Http.HttpClient.TorClient.LogicalHandler[104]
-      HTTP request failed after 1957.0209ms
-      System.Net.Http.HttpRequestException: The SSL connection could not be established, see inner exception.
-       ---> System.Security.Authentication.AuthenticationException: The remote certificate is invalid because of errors in the certificate chain: UntrustedRoot
-         at System.Net.Security.SslStream.SendAuthResetSignal(ReadOnlySpan`1 alert, ExceptionDispatchInfo exception)
-         at System.Net.Security.SslStream.CompleteHandshake(SslAuthenticationOptions sslAuthenticationOptions)
-         at System.Net.Security.SslStream.ForceAuthenticationAsync[TIOAdapter](Boolean receiveFirst, Byte[] reAuthenticationData, CancellationToken cancellationToken)
-         at System.Net.Http.ConnectHelper.EstablishSslConnectionAsync(SslClientAuthenticationOptions sslOptions, HttpRequestMessage request, Boolean async, Stream stream, CancellationToken cancellationToken)
-         --- End of inner exception stack trace ---
-         at System.Net.Http.ConnectHelper.EstablishSslConnectionAsync(SslClientAuthenticationOptions sslOptions, HttpRequestMessage request, Boolean async, Stream stream, CancellationToken cancellationToken)
-         at System.Net.Http.HttpConnectionPool.ConnectAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
-         at System.Net.Http.HttpConnectionPool.CreateHttp11ConnectionAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
-         at System.Net.Http.HttpConnectionPool.AddHttp11ConnectionAsync(QueueItem queueItem)
-         at System.Threading.Tasks.TaskCompletionSourceWithCancellation`1.WaitWithCancellationAsync(CancellationToken cancellationToken)
-         at System.Net.Http.HttpConnectionPool.SendWithVersionDetectionAndRetryAsync(HttpRequestMessage request, Boolean async, Boolean doRequestAuth, CancellationToken cancellationToken)
-         at System.Net.Http.RedirectHandler.SendAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
-         at Microsoft.Extensions.Http.Logging.LoggingHttpMessageHandler.<SendCoreAsync>g__Core|4_0(HttpRequestMessage request, Boolean useAsync, CancellationToken cancellationToken)
-         at Microsoft.Extensions.Http.Logging.LoggingScopeHttpMessageHandler.<SendCoreAsync>g__Core|4_0(HttpRequestMessage request, Boolean useAsync, CancellationToken cancellationToken)
-info: System.Net.Http.HttpClient.TorClient.LogicalHandler[100]
-      Start processing HTTP request GET https://digdig2nugjpszzmqe5ep2bk7lqfpdlyrkojsx2j6kzalnrqtwedr3id.onion/
-info: System.Net.Http.HttpClient.TorClient.ClientHandler[100]
-      Sending HTTP request GET https://digdig2nugjpszzmqe5ep2bk7lqfpdlyrkojsx2j6kzalnrqtwedr3id.onion/
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                info: System.Net.Http.HttpClient.TorClient.ClientHandler[101]
-      Received HTTP response headers after 3478.0646ms - 200
-info: System.Net.Http.HttpClient.TorClient.LogicalHandler[101]
-      End processing HTTP request after 3478.5382ms - 200
-info: System.Net.Http.HttpClient.TorClient.LogicalHandler[100]
-      Start processing HTTP request GET http://jaz45aabn5vkemy4jkg4mi4syheisqn2wn2n4fsuitpccdackjwxplad.onion/
-info: System.Net.Http.HttpClient.TorClient.ClientHandler[100]
-      Sending HTTP request GET http://jaz45aabn5vkemy4jkg4mi4syheisqn2wn2n4fsuitpccdackjwxplad.onion/
-info: System.Net.Http.HttpClient.TorClient.ClientHandler[101]
-      Received HTTP response headers after 4532.8152ms - 200
-info: System.Net.Http.HttpClient.TorClient.LogicalHandler[101]
-      End processing HTTP request after 4533.3487ms - 200
-info: System.Net.Http.HttpClient.TorClient.LogicalHandler[100]
-      Start processing HTTP request GET http://jaz45aabn5vkemy4jkg4mi4syheisqn2wn2n4fsuitpccdackjwxplad.onion/
-info: System.Net.Http.HttpClient.TorClient.ClientHandler[100]
-      Sending HTTP request GET http://jaz45aabn5vkemy4jkg4mi4syheisqn2wn2n4fsuitpccdackjwxplad.onion/
-info: System.Net.Http.HttpClient.TorClient.ClientHandler[101]
-      Received HTTP response headers after 4884.6001ms - 200
-info: System.Net.Http.HttpClient.TorClient.LogicalHandler[101]
-      End processing HTTP request after 4884.7657ms - 200
+      End processing HTTP request after 3395.0096ms - 200
 info: Microsoft.EntityFrameworkCore.Database.Command[20101]
       Executed DbCommand (3ms) [Parameters=[@p3='?' (DbType = Int32), @p0='?' (DbType = Double), @p1='?' (DbType = DateTime), @p2='?' (DbType = Double)], CommandType='Text', CommandTimeout='30']
       UPDATE "OnionStatuses" SET "AverageLatency" = @p0, "LastChecked" = @p1, "ResponseTime" = @p2
@@ -465,198 +121,1104 @@ info: System.Net.Http.HttpClient.TorClient.LogicalHandler[100]
       Start processing HTTP request GET http://dumpliwoard5qsrrsroni7bdiishealhky4snigbzfmzcquwo3kml4id.onion/
 info: System.Net.Http.HttpClient.TorClient.ClientHandler[100]
       Sending HTTP request GET http://dumpliwoard5qsrrsroni7bdiishealhky4snigbzfmzcquwo3kml4id.onion/
-info: System.Net.Http.HttpClient.TorClient.ClientHandler[104]
-      HTTP request failed after 2255.9656ms
-      System.Net.Http.HttpRequestException: The SSL connection could not be established, see inner exception.
-       ---> System.Security.Authentication.AuthenticationException: The remote certificate is invalid because of errors in the certificate chain: UntrustedRoot
-         at System.Net.Security.SslStream.SendAuthResetSignal(ReadOnlySpan`1 alert, ExceptionDispatchInfo exception)
-         at System.Net.Security.SslStream.CompleteHandshake(SslAuthenticationOptions sslAuthenticationOptions)
-         at System.Net.Security.SslStream.ForceAuthenticationAsync[TIOAdapter](Boolean receiveFirst, Byte[] reAuthenticationData, CancellationToken cancellationToken)
-         at System.Net.Http.ConnectHelper.EstablishSslConnectionAsync(SslClientAuthenticationOptions sslOptions, HttpRequestMessage request, Boolean async, Stream stream, CancellationToken cancellationToken)
-         --- End of inner exception stack trace ---
-         at System.Net.Http.ConnectHelper.EstablishSslConnectionAsync(SslClientAuthenticationOptions sslOptions, HttpRequestMessage request, Boolean async, Stream stream, CancellationToken cancellationToken)
-         at System.Net.Http.HttpConnectionPool.ConnectAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
-         at System.Net.Http.HttpConnectionPool.CreateHttp11ConnectionAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
-         at System.Net.Http.HttpConnectionPool.AddHttp11ConnectionAsync(QueueItem queueItem)
-         at System.Threading.Tasks.TaskCompletionSourceWithCancellation`1.WaitWithCancellationAsync(CancellationToken cancellationToken)
-         at System.Net.Http.HttpConnectionPool.SendWithVersionDetectionAndRetryAsync(HttpRequestMessage request, Boolean async, Boolean doRequestAuth, CancellationToken cancellationToken)
-         at System.Net.Http.RedirectHandler.SendAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
-         at Microsoft.Extensions.Http.Logging.LoggingHttpMessageHandler.<SendCoreAsync>g__Core|4_0(HttpRequestMessage request, Boolean useAsync, CancellationToken cancellationToken)
-info: System.Net.Http.HttpClient.TorClient.LogicalHandler[104]
-      HTTP request failed after 2256.7217ms
-      System.Net.Http.HttpRequestException: The SSL connection could not be established, see inner exception.
-       ---> System.Security.Authentication.AuthenticationException: The remote certificate is invalid because of errors in the certificate chain: UntrustedRoot
-         at System.Net.Security.SslStream.SendAuthResetSignal(ReadOnlySpan`1 alert, ExceptionDispatchInfo exception)
-         at System.Net.Security.SslStream.CompleteHandshake(SslAuthenticationOptions sslAuthenticationOptions)
-         at System.Net.Security.SslStream.ForceAuthenticationAsync[TIOAdapter](Boolean receiveFirst, Byte[] reAuthenticationData, CancellationToken cancellationToken)
-         at System.Net.Http.ConnectHelper.EstablishSslConnectionAsync(SslClientAuthenticationOptions sslOptions, HttpRequestMessage request, Boolean async, Stream stream, CancellationToken cancellationToken)
-         --- End of inner exception stack trace ---
-         at System.Net.Http.ConnectHelper.EstablishSslConnectionAsync(SslClientAuthenticationOptions sslOptions, HttpRequestMessage request, Boolean async, Stream stream, CancellationToken cancellationToken)
-         at System.Net.Http.HttpConnectionPool.ConnectAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
-         at System.Net.Http.HttpConnectionPool.CreateHttp11ConnectionAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
-         at System.Net.Http.HttpConnectionPool.AddHttp11ConnectionAsync(QueueItem queueItem)
-         at System.Threading.Tasks.TaskCompletionSourceWithCancellation`1.WaitWithCancellationAsync(CancellationToken cancellationToken)
-         at System.Net.Http.HttpConnectionPool.SendWithVersionDetectionAndRetryAsync(HttpRequestMessage request, Boolean async, Boolean doRequestAuth, CancellationToken cancellationToken)
-         at System.Net.Http.RedirectHandler.SendAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
-         at Microsoft.Extensions.Http.Logging.LoggingHttpMessageHandler.<SendCoreAsync>g__Core|4_0(HttpRequestMessage request, Boolean useAsync, CancellationToken cancellationToken)
-         at Microsoft.Extensions.Http.Logging.LoggingScopeHttpMessageHandler.<SendCoreAsync>g__Core|4_0(HttpRequestMessage request, Boolean useAsync, CancellationToken cancellationToken)
+info: Microsoft.AspNetCore.Hosting.Diagnostics[1]
+      Request starting HTTP/1.1 GET http://futqubk62hcpjt3fnalbb5pii6bc7ifxqyxptrym4ikantsvphtjqaad.onion/Monitor - - -
+info: Microsoft.AspNetCore.Session.DistributedSession[2]
+      Accessing expired session, Key:e7b981c1-3da5-cac9-53ff-af443152e542
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[0]
+      Executing endpoint 'MyFace.Web.Controllers.MonitorController.Index (MyFace.Web)'
+info: Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker[102]
+      Route matched with {action = "Index", controller = "Monitor"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] Index() on controller MyFace.Web.Controllers.MonitorController (MyFace.Web).
+warn: Microsoft.EntityFrameworkCore.Query[20504]
+      Compiling a query which loads related collections for more than one collection navigation, either via 'Include' or through projection, but no 'QuerySplittingBehavior' has been configured. By default, Entity Framework will use 'QuerySplittingBehavior.SingleQuery', which can potentially result in slow query performance. See https://go.microsoft.com/fwlink/?linkid=2134277 for more information. To identify the query that's triggering this warning call 'ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning))'.
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (5ms) [Parameters=[@__id_0='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT t."Id", t."AboutMe", t."CreatedAt", t."FontColor", t."FontFamily", t."IsActive", t."LastSeenAt", t."PasswordHash", t."PgpPublicKey", t."Role", t."SuspendedUntil", t."Username", u0."Id", u0."AccountId", u0."ServiceName", u0."UserId", u1."Id", u1."Content", u1."CreatedAt", u1."Title", u1."UserId"
+      FROM (
+          SELECT u."Id", u."AboutMe", u."CreatedAt", u."FontColor", u."FontFamily", u."IsActive", u."LastSeenAt", u."PasswordHash", u."PgpPublicKey", u."Role", u."SuspendedUntil", u."Username"
+          FROM "Users" AS u
+          WHERE u."Id" = @__id_0
+          LIMIT 1
+      ) AS t
+      LEFT JOIN "UserContacts" AS u0 ON t."Id" = u0."UserId"
+      LEFT JOIN "UserNews" AS u1 ON t."Id" = u1."UserId"
+      ORDER BY t."Id", u0."Id"
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (2ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT o."Id", o."AverageLatency", o."Description", o."LastChecked", o."Name", o."OnionUrl", o."ReachableAttempts", o."ResponseTime", o."Status", o."TotalAttempts"
+      FROM "OnionStatuses" AS o
+      ORDER BY o."OnionUrl"
+info: Microsoft.AspNetCore.Mvc.ViewFeatures.ViewResultExecutor[1]
+      Executing ViewResult, running view Index.
+info: Microsoft.AspNetCore.Mvc.ViewFeatures.ViewResultExecutor[4]
+      Executed ViewResult - view Index executed in 44.3929ms.
+info: Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker[105]
+      Executed action MyFace.Web.Controllers.MonitorController.Index (MyFace.Web) in 246.5409ms
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[1]
+      Executed endpoint 'MyFace.Web.Controllers.MonitorController.Index (MyFace.Web)'
+info: Microsoft.AspNetCore.Session.DistributedSession[3]
+      Session started; Key:e7b981c1-3da5-cac9-53ff-af443152e542, Id:960e3016-eb75-1ab4-6d09-6bfcde7b6897
+info: Microsoft.AspNetCore.Hosting.Diagnostics[2]
+      Request finished HTTP/1.1 GET http://futqubk62hcpjt3fnalbb5pii6bc7ifxqyxptrym4ikantsvphtjqaad.onion/Monitor - 200 - text/html;+charset=utf-8 272.2829ms
+info: System.Net.Http.HttpClient.TorClient.ClientHandler[101]
+      Received HTTP response headers after 2593.4611ms - 200
+info: System.Net.Http.HttpClient.TorClient.LogicalHandler[101]
+      End processing HTTP request after 2593.6009ms - 200
 info: System.Net.Http.HttpClient.TorClient.LogicalHandler[100]
       Start processing HTTP request GET http://dumpliwoard5qsrrsroni7bdiishealhky4snigbzfmzcquwo3kml4id.onion/
 info: System.Net.Http.HttpClient.TorClient.ClientHandler[100]
       Sending HTTP request GET http://dumpliwoard5qsrrsroni7bdiishealhky4snigbzfmzcquwo3kml4id.onion/
-info: System.Net.Http.HttpClient.TorClient.ClientHandler[104]
-      HTTP request failed after 1976.7412ms
-      System.Net.Http.HttpRequestException: The SSL connection could not be established, see inner exception.
-       ---> System.Security.Authentication.AuthenticationException: The remote certificate is invalid because of errors in the certificate chain: UntrustedRoot
-         at System.Net.Security.SslStream.SendAuthResetSignal(ReadOnlySpan`1 alert, ExceptionDispatchInfo exception)
-         at System.Net.Security.SslStream.CompleteHandshake(SslAuthenticationOptions sslAuthenticationOptions)
-         at System.Net.Security.SslStream.ForceAuthenticationAsync[TIOAdapter](Boolean receiveFirst, Byte[] reAuthenticationData, CancellationToken cancellationToken)
-         at System.Net.Http.ConnectHelper.EstablishSslConnectionAsync(SslClientAuthenticationOptions sslOptions, HttpRequestMessage request, Boolean async, Stream stream, CancellationToken cancellationToken)
-         --- End of inner exception stack trace ---
-         at System.Net.Http.ConnectHelper.EstablishSslConnectionAsync(SslClientAuthenticationOptions sslOptions, HttpRequestMessage request, Boolean async, Stream stream, CancellationToken cancellationToken)
-         at System.Net.Http.HttpConnectionPool.ConnectAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
-         at System.Net.Http.HttpConnectionPool.CreateHttp11ConnectionAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
-         at System.Net.Http.HttpConnectionPool.AddHttp11ConnectionAsync(QueueItem queueItem)
-         at System.Threading.Tasks.TaskCompletionSourceWithCancellation`1.WaitWithCancellationAsync(CancellationToken cancellationToken)
-         at System.Net.Http.HttpConnectionPool.SendWithVersionDetectionAndRetryAsync(HttpRequestMessage request, Boolean async, Boolean doRequestAuth, CancellationToken cancellationToken)
-         at System.Net.Http.RedirectHandler.SendAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
-         at Microsoft.Extensions.Http.Logging.LoggingHttpMessageHandler.<SendCoreAsync>g__Core|4_0(HttpRequestMessage request, Boolean useAsync, CancellationToken cancellationToken)
-info: System.Net.Http.HttpClient.TorClient.LogicalHandler[104]
-      HTTP request failed after 1977.2855ms
-      System.Net.Http.HttpRequestException: The SSL connection could not be established, see inner exception.
-       ---> System.Security.Authentication.AuthenticationException: The remote certificate is invalid because of errors in the certificate chain: UntrustedRoot
-         at System.Net.Security.SslStream.SendAuthResetSignal(ReadOnlySpan`1 alert, ExceptionDispatchInfo exception)
-         at System.Net.Security.SslStream.CompleteHandshake(SslAuthenticationOptions sslAuthenticationOptions)
-         at System.Net.Security.SslStream.ForceAuthenticationAsync[TIOAdapter](Boolean receiveFirst, Byte[] reAuthenticationData, CancellationToken cancellationToken)
-         at System.Net.Http.ConnectHelper.EstablishSslConnectionAsync(SslClientAuthenticationOptions sslOptions, HttpRequestMessage request, Boolean async, Stream stream, CancellationToken cancellationToken)
-         --- End of inner exception stack trace ---
-         at System.Net.Http.ConnectHelper.EstablishSslConnectionAsync(SslClientAuthenticationOptions sslOptions, HttpRequestMessage request, Boolean async, Stream stream, CancellationToken cancellationToken)
-         at System.Net.Http.HttpConnectionPool.ConnectAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
-         at System.Net.Http.HttpConnectionPool.CreateHttp11ConnectionAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
-         at System.Net.Http.HttpConnectionPool.AddHttp11ConnectionAsync(QueueItem queueItem)
-         at System.Threading.Tasks.TaskCompletionSourceWithCancellation`1.WaitWithCancellationAsync(CancellationToken cancellationToken)
-         at System.Net.Http.HttpConnectionPool.SendWithVersionDetectionAndRetryAsync(HttpRequestMessage request, Boolean async, Boolean doRequestAuth, CancellationToken cancellationToken)
-         at System.Net.Http.RedirectHandler.SendAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
-         at Microsoft.Extensions.Http.Logging.LoggingHttpMessageHandler.<SendCoreAsync>g__Core|4_0(HttpRequestMessage request, Boolean useAsync, CancellationToken cancellationToken)
-         at Microsoft.Extensions.Http.Logging.LoggingScopeHttpMessageHandler.<SendCoreAsync>g__Core|4_0(HttpRequestMessage request, Boolean useAsync, CancellationToken cancellationToken)
+info: Microsoft.AspNetCore.Hosting.Diagnostics[1]
+      Request starting HTTP/1.1 GET http://futqubk62hcpjt3fnalbb5pii6bc7ifxqyxptrym4ikantsvphtjqaad.onion/css/site.css?v=GLt8tkilNVjOvS_J_gxlOijzzSrDZ3D5ZtKFKu8NkWQ - - -
+info: Microsoft.AspNetCore.StaticFiles.StaticFileMiddleware[6]
+      The file /css/site.css was not modified
+info: Microsoft.AspNetCore.Hosting.Diagnostics[2]
+      Request finished HTTP/1.1 GET http://futqubk62hcpjt3fnalbb5pii6bc7ifxqyxptrym4ikantsvphtjqaad.onion/css/site.css?v=GLt8tkilNVjOvS_J_gxlOijzzSrDZ3D5ZtKFKu8NkWQ - 304 - text/css 5.7386ms
+info: System.Net.Http.HttpClient.TorClient.ClientHandler[101]
+      Received HTTP response headers after 1309.0917ms - 200
+info: System.Net.Http.HttpClient.TorClient.LogicalHandler[101]
+      End processing HTTP request after 1309.628ms - 200
 info: System.Net.Http.HttpClient.TorClient.LogicalHandler[100]
       Start processing HTTP request GET http://dumpliwoard5qsrrsroni7bdiishealhky4snigbzfmzcquwo3kml4id.onion/
 info: System.Net.Http.HttpClient.TorClient.ClientHandler[100]
       Sending HTTP request GET http://dumpliwoard5qsrrsroni7bdiishealhky4snigbzfmzcquwo3kml4id.onion/
-info: System.Net.Http.HttpClient.TorClient.ClientHandler[104]
-      HTTP request failed after 2141.2737ms
-      System.Net.Http.HttpRequestException: The SSL connection could not be established, see inner exception.
-       ---> System.Security.Authentication.AuthenticationException: The remote certificate is invalid because of errors in the certificate chain: UntrustedRoot
-         at System.Net.Security.SslStream.SendAuthResetSignal(ReadOnlySpan`1 alert, ExceptionDispatchInfo exception)
-         at System.Net.Security.SslStream.CompleteHandshake(SslAuthenticationOptions sslAuthenticationOptions)
-         at System.Net.Security.SslStream.ForceAuthenticationAsync[TIOAdapter](Boolean receiveFirst, Byte[] reAuthenticationData, CancellationToken cancellationToken)
-         at System.Net.Http.ConnectHelper.EstablishSslConnectionAsync(SslClientAuthenticationOptions sslOptions, HttpRequestMessage request, Boolean async, Stream stream, CancellationToken cancellationToken)
-         --- End of inner exception stack trace ---
-         at System.Net.Http.ConnectHelper.EstablishSslConnectionAsync(SslClientAuthenticationOptions sslOptions, HttpRequestMessage request, Boolean async, Stream stream, CancellationToken cancellationToken)
-         at System.Net.Http.HttpConnectionPool.ConnectAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
-         at System.Net.Http.HttpConnectionPool.CreateHttp11ConnectionAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
-         at System.Net.Http.HttpConnectionPool.AddHttp11ConnectionAsync(QueueItem queueItem)
-         at System.Threading.Tasks.TaskCompletionSourceWithCancellation`1.WaitWithCancellationAsync(CancellationToken cancellationToken)
-         at System.Net.Http.HttpConnectionPool.SendWithVersionDetectionAndRetryAsync(HttpRequestMessage request, Boolean async, Boolean doRequestAuth, CancellationToken cancellationToken)
-         at System.Net.Http.RedirectHandler.SendAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
-         at Microsoft.Extensions.Http.Logging.LoggingHttpMessageHandler.<SendCoreAsync>g__Core|4_0(HttpRequestMessage request, Boolean useAsync, CancellationToken cancellationToken)
-info: System.Net.Http.HttpClient.TorClient.LogicalHandler[104]
-      HTTP request failed after 2141.703ms
-      System.Net.Http.HttpRequestException: The SSL connection could not be established, see inner exception.
-       ---> System.Security.Authentication.AuthenticationException: The remote certificate is invalid because of errors in the certificate chain: UntrustedRoot
-         at System.Net.Security.SslStream.SendAuthResetSignal(ReadOnlySpan`1 alert, ExceptionDispatchInfo exception)
-         at System.Net.Security.SslStream.CompleteHandshake(SslAuthenticationOptions sslAuthenticationOptions)
-         at System.Net.Security.SslStream.ForceAuthenticationAsync[TIOAdapter](Boolean receiveFirst, Byte[] reAuthenticationData, CancellationToken cancellationToken)
-         at System.Net.Http.ConnectHelper.EstablishSslConnectionAsync(SslClientAuthenticationOptions sslOptions, HttpRequestMessage request, Boolean async, Stream stream, CancellationToken cancellationToken)
-         --- End of inner exception stack trace ---
-         at System.Net.Http.ConnectHelper.EstablishSslConnectionAsync(SslClientAuthenticationOptions sslOptions, HttpRequestMessage request, Boolean async, Stream stream, CancellationToken cancellationToken)
-         at System.Net.Http.HttpConnectionPool.ConnectAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
-         at System.Net.Http.HttpConnectionPool.CreateHttp11ConnectionAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
-         at System.Net.Http.HttpConnectionPool.AddHttp11ConnectionAsync(QueueItem queueItem)
-         at System.Threading.Tasks.TaskCompletionSourceWithCancellation`1.WaitWithCancellationAsync(CancellationToken cancellationToken)
-         at System.Net.Http.HttpConnectionPool.SendWithVersionDetectionAndRetryAsync(HttpRequestMessage request, Boolean async, Boolean doRequestAuth, CancellationToken cancellationToken)
-         at System.Net.Http.RedirectHandler.SendAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
-         at Microsoft.Extensions.Http.Logging.LoggingHttpMessageHandler.<SendCoreAsync>g__Core|4_0(HttpRequestMessage request, Boolean useAsync, CancellationToken cancellationToken)
-         at Microsoft.Extensions.Http.Logging.LoggingScopeHttpMessageHandler.<SendCoreAsync>g__Core|4_0(HttpRequestMessage request, Boolean useAsync, CancellationToken cancellationToken)
+info: System.Net.Http.HttpClient.TorClient.ClientHandler[101]
+      Received HTTP response headers after 1166.7612ms - 200
+info: System.Net.Http.HttpClient.TorClient.LogicalHandler[101]
+      End processing HTTP request after 1168.5939ms - 200
 info: System.Net.Http.HttpClient.TorClient.LogicalHandler[100]
       Start processing HTTP request GET http://dumpliwoard5qsrrsroni7bdiishealhky4snigbzfmzcquwo3kml4id.onion/
 info: System.Net.Http.HttpClient.TorClient.ClientHandler[100]
       Sending HTTP request GET http://dumpliwoard5qsrrsroni7bdiishealhky4snigbzfmzcquwo3kml4id.onion/
-info: System.Net.Http.HttpClient.TorClient.ClientHandler[104]
-      HTTP request failed after 1802.6074ms
-      System.Net.Http.HttpRequestException: The SSL connection could not be established, see inner exception.
-       ---> System.Security.Authentication.AuthenticationException: The remote certificate is invalid because of errors in the certificate chain: UntrustedRoot
-         at System.Net.Security.SslStream.SendAuthResetSignal(ReadOnlySpan`1 alert, ExceptionDispatchInfo exception)
-         at System.Net.Security.SslStream.CompleteHandshake(SslAuthenticationOptions sslAuthenticationOptions)
-         at System.Net.Security.SslStream.ForceAuthenticationAsync[TIOAdapter](Boolean receiveFirst, Byte[] reAuthenticationData, CancellationToken cancellationToken)
-         at System.Net.Http.ConnectHelper.EstablishSslConnectionAsync(SslClientAuthenticationOptions sslOptions, HttpRequestMessage request, Boolean async, Stream stream, CancellationToken cancellationToken)
-         --- End of inner exception stack trace ---
-         at System.Net.Http.ConnectHelper.EstablishSslConnectionAsync(SslClientAuthenticationOptions sslOptions, HttpRequestMessage request, Boolean async, Stream stream, CancellationToken cancellationToken)
-         at System.Net.Http.HttpConnectionPool.ConnectAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
-         at System.Net.Http.HttpConnectionPool.CreateHttp11ConnectionAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
-         at System.Net.Http.HttpConnectionPool.AddHttp11ConnectionAsync(QueueItem queueItem)
-         at System.Threading.Tasks.TaskCompletionSourceWithCancellation`1.WaitWithCancellationAsync(CancellationToken cancellationToken)
-         at System.Net.Http.HttpConnectionPool.SendWithVersionDetectionAndRetryAsync(HttpRequestMessage request, Boolean async, Boolean doRequestAuth, CancellationToken cancellationToken)
-         at System.Net.Http.RedirectHandler.SendAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
-         at Microsoft.Extensions.Http.Logging.LoggingHttpMessageHandler.<SendCoreAsync>g__Core|4_0(HttpRequestMessage request, Boolean useAsync, CancellationToken cancellationToken)
-info: System.Net.Http.HttpClient.TorClient.LogicalHandler[104]
-      HTTP request failed after 1802.9858ms
-      System.Net.Http.HttpRequestException: The SSL connection could not be established, see inner exception.
-       ---> System.Security.Authentication.AuthenticationException: The remote certificate is invalid because of errors in the certificate chain: UntrustedRoot
-         at System.Net.Security.SslStream.SendAuthResetSignal(ReadOnlySpan`1 alert, ExceptionDispatchInfo exception)
-         at System.Net.Security.SslStream.CompleteHandshake(SslAuthenticationOptions sslAuthenticationOptions)
-         at System.Net.Security.SslStream.ForceAuthenticationAsync[TIOAdapter](Boolean receiveFirst, Byte[] reAuthenticationData, CancellationToken cancellationToken)
-         at System.Net.Http.ConnectHelper.EstablishSslConnectionAsync(SslClientAuthenticationOptions sslOptions, HttpRequestMessage request, Boolean async, Stream stream, CancellationToken cancellationToken)
-         --- End of inner exception stack trace ---
-         at System.Net.Http.ConnectHelper.EstablishSslConnectionAsync(SslClientAuthenticationOptions sslOptions, HttpRequestMessage request, Boolean async, Stream stream, CancellationToken cancellationToken)
-         at System.Net.Http.HttpConnectionPool.ConnectAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
-         at System.Net.Http.HttpConnectionPool.CreateHttp11ConnectionAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
-         at System.Net.Http.HttpConnectionPool.AddHttp11ConnectionAsync(QueueItem queueItem)
-         at System.Threading.Tasks.TaskCompletionSourceWithCancellation`1.WaitWithCancellationAsync(CancellationToken cancellationToken)
-         at System.Net.Http.HttpConnectionPool.SendWithVersionDetectionAndRetryAsync(HttpRequestMessage request, Boolean async, Boolean doRequestAuth, CancellationToken cancellationToken)
-         at System.Net.Http.RedirectHandler.SendAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
-         at Microsoft.Extensions.Http.Logging.LoggingHttpMessageHandler.<SendCoreAsync>g__Core|4_0(HttpRequestMessage request, Boolean useAsync, CancellationToken cancellationToken)
-         at Microsoft.Extensions.Http.Logging.LoggingScopeHttpMessageHandler.<SendCoreAsync>g__Core|4_0(HttpRequestMessage request, Boolean useAsync, CancellationToken cancellationToken)
+info: System.Net.Http.HttpClient.TorClient.ClientHandler[101]
+      Received HTTP response headers after 1359.4042ms - 200
+info: System.Net.Http.HttpClient.TorClient.LogicalHandler[101]
+      End processing HTTP request after 1359.8371ms - 200
 info: System.Net.Http.HttpClient.TorClient.LogicalHandler[100]
       Start processing HTTP request GET http://dumpliwoard5qsrrsroni7bdiishealhky4snigbzfmzcquwo3kml4id.onion/
 info: System.Net.Http.HttpClient.TorClient.ClientHandler[100]
       Sending HTTP request GET http://dumpliwoard5qsrrsroni7bdiishealhky4snigbzfmzcquwo3kml4id.onion/
-info: System.Net.Http.HttpClient.TorClient.ClientHandler[104]
-      HTTP request failed after 1785.6092ms
-      System.Net.Http.HttpRequestException: The SSL connection could not be established, see inner exception.
-       ---> System.Security.Authentication.AuthenticationException: The remote certificate is invalid because of errors in the certificate chain: UntrustedRoot
-         at System.Net.Security.SslStream.SendAuthResetSignal(ReadOnlySpan`1 alert, ExceptionDispatchInfo exception)
-         at System.Net.Security.SslStream.CompleteHandshake(SslAuthenticationOptions sslAuthenticationOptions)
-         at System.Net.Security.SslStream.ForceAuthenticationAsync[TIOAdapter](Boolean receiveFirst, Byte[] reAuthenticationData, CancellationToken cancellationToken)
-         at System.Net.Http.ConnectHelper.EstablishSslConnectionAsync(SslClientAuthenticationOptions sslOptions, HttpRequestMessage request, Boolean async, Stream stream, CancellationToken cancellationToken)
-         --- End of inner exception stack trace ---
-         at System.Net.Http.ConnectHelper.EstablishSslConnectionAsync(SslClientAuthenticationOptions sslOptions, HttpRequestMessage request, Boolean async, Stream stream, CancellationToken cancellationToken)
-         at System.Net.Http.HttpConnectionPool.ConnectAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
-         at System.Net.Http.HttpConnectionPool.CreateHttp11ConnectionAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
-         at System.Net.Http.HttpConnectionPool.AddHttp11ConnectionAsync(QueueItem queueItem)
-         at System.Threading.Tasks.TaskCompletionSourceWithCancellation`1.WaitWithCancellationAsync(CancellationToken cancellationToken)
-         at System.Net.Http.HttpConnectionPool.SendWithVersionDetectionAndRetryAsync(HttpRequestMessage request, Boolean async, Boolean doRequestAuth, CancellationToken cancellationToken)
-         at System.Net.Http.RedirectHandler.SendAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
-         at Microsoft.Extensions.Http.Logging.LoggingHttpMessageHandler.<SendCoreAsync>g__Core|4_0(HttpRequestMessage request, Boolean useAsync, CancellationToken cancellationToken)
-info: System.Net.Http.HttpClient.TorClient.LogicalHandler[104]
-      HTTP request failed after 1786.5879ms
-      System.Net.Http.HttpRequestException: The SSL connection could not be established, see inner exception.
-       ---> System.Security.Authentication.AuthenticationException: The remote certificate is invalid because of errors in the certificate chain: UntrustedRoot
-         at System.Net.Security.SslStream.SendAuthResetSignal(ReadOnlySpan`1 alert, ExceptionDispatchInfo exception)
-         at System.Net.Security.SslStream.CompleteHandshake(SslAuthenticationOptions sslAuthenticationOptions)
-         at System.Net.Security.SslStream.ForceAuthenticationAsync[TIOAdapter](Boolean receiveFirst, Byte[] reAuthenticationData, CancellationToken cancellationToken)
-         at System.Net.Http.ConnectHelper.EstablishSslConnectionAsync(SslClientAuthenticationOptions sslOptions, HttpRequestMessage request, Boolean async, Stream stream, CancellationToken cancellationToken)
-         --- End of inner exception stack trace ---
-         at System.Net.Http.ConnectHelper.EstablishSslConnectionAsync(SslClientAuthenticationOptions sslOptions, HttpRequestMessage request, Boolean async, Stream stream, CancellationToken cancellationToken)
-         at System.Net.Http.HttpConnectionPool.ConnectAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
-         at System.Net.Http.HttpConnectionPool.CreateHttp11ConnectionAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
-         at System.Net.Http.HttpConnectionPool.AddHttp11ConnectionAsync(QueueItem queueItem)
-         at System.Threading.Tasks.TaskCompletionSourceWithCancellation`1.WaitWithCancellationAsync(CancellationToken cancellationToken)
-         at System.Net.Http.HttpConnectionPool.SendWithVersionDetectionAndRetryAsync(HttpRequestMessage request, Boolean async, Boolean doRequestAuth, CancellationToken cancellationToken)
-         at System.Net.Http.RedirectHandler.SendAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
-         at Microsoft.Extensions.Http.Logging.LoggingHttpMessageHandler.<SendCoreAsync>g__Core|4_0(HttpRequestMessage request, Boolean useAsync, CancellationToken cancellationToken)
-         at Microsoft.Extensions.Http.Logging.LoggingScopeHttpMessageHandler.<SendCoreAsync>g__Core|4_0(HttpRequestMessage request, Boolean useAsync, CancellationToken cancellationToken)
+info: System.Net.Http.HttpClient.TorClient.ClientHandler[101]
+      Received HTTP response headers after 1212.5459ms - 200
+info: System.Net.Http.HttpClient.TorClient.LogicalHandler[101]
+      End processing HTTP request after 1213.023ms - 200
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[@p5='?' (DbType = Int32), @p0='?' (DbType = Double), @p1='?' (DbType = DateTime), @p2='?' (DbType = Int32), @p3='?' (DbType = Double), @p4='?'], CommandType='Text', CommandTimeout='30']
+      UPDATE "OnionStatuses" SET "AverageLatency" = @p0, "LastChecked" = @p1, "ReachableAttempts" = @p2, "ResponseTime" = @p3, "Status" = @p4
+      WHERE "Id" = @p5;
+info: System.Net.Http.HttpClient.TorClient.LogicalHandler[100]
+      Start processing HTTP request GET http://dauntdatakit2xi4usevwp3pajyppsgsrbzkfqyrp6ufsdwrnm6g5tqd.onion/
+info: System.Net.Http.HttpClient.TorClient.ClientHandler[100]
+      Sending HTTP request GET http://dauntdatakit2xi4usevwp3pajyppsgsrbzkfqyrp6ufsdwrnm6g5tqd.onion/
+info: System.Net.Http.HttpClient.TorClient.ClientHandler[101]
+      Received HTTP response headers after 5141.2529ms - 503
+info: System.Net.Http.HttpClient.TorClient.LogicalHandler[101]
+      End processing HTTP request after 5141.4957ms - 503
+info: System.Net.Http.HttpClient.TorClient.LogicalHandler[100]
+      Start processing HTTP request GET http://dauntdatakit2xi4usevwp3pajyppsgsrbzkfqyrp6ufsdwrnm6g5tqd.onion/
+info: System.Net.Http.HttpClient.TorClient.ClientHandler[100]
+      Sending HTTP request GET http://dauntdatakit2xi4usevwp3pajyppsgsrbzkfqyrp6ufsdwrnm6g5tqd.onion/
+info: System.Net.Http.HttpClient.TorClient.ClientHandler[101]
+      Received HTTP response headers after 5897.5942ms - 503
+info: System.Net.Http.HttpClient.TorClient.LogicalHandler[101]
+      End processing HTTP request after 5897.7846ms - 503
+info: System.Net.Http.HttpClient.TorClient.LogicalHandler[100]
+      Start processing HTTP request GET http://dauntdatakit2xi4usevwp3pajyppsgsrbzkfqyrp6ufsdwrnm6g5tqd.onion/
+info: System.Net.Http.HttpClient.TorClient.ClientHandler[100]
+      Sending HTTP request GET http://dauntdatakit2xi4usevwp3pajyppsgsrbzkfqyrp6ufsdwrnm6g5tqd.onion/
+info: Microsoft.AspNetCore.Hosting.Diagnostics[1]
+      Request starting HTTP/1.1 GET http://futqubk62hcpjt3fnalbb5pii6bc7ifxqyxptrym4ikantsvphtjqaad.onion/Monitor - - -
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[0]
+      Executing endpoint 'MyFace.Web.Controllers.MonitorController.Index (MyFace.Web)'
+info: Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker[102]
+      Route matched with {action = "Index", controller = "Monitor"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] Index() on controller MyFace.Web.Controllers.MonitorController (MyFace.Web).
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (2ms) [Parameters=[@__id_0='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT t."Id", t."AboutMe", t."CreatedAt", t."FontColor", t."FontFamily", t."IsActive", t."LastSeenAt", t."PasswordHash", t."PgpPublicKey", t."Role", t."SuspendedUntil", t."Username", u0."Id", u0."AccountId", u0."ServiceName", u0."UserId", u1."Id", u1."Content", u1."CreatedAt", u1."Title", u1."UserId"
+      FROM (
+          SELECT u."Id", u."AboutMe", u."CreatedAt", u."FontColor", u."FontFamily", u."IsActive", u."LastSeenAt", u."PasswordHash", u."PgpPublicKey", u."Role", u."SuspendedUntil", u."Username"
+          FROM "Users" AS u
+          WHERE u."Id" = @__id_0
+          LIMIT 1
+      ) AS t
+      LEFT JOIN "UserContacts" AS u0 ON t."Id" = u0."UserId"
+      LEFT JOIN "UserNews" AS u1 ON t."Id" = u1."UserId"
+      ORDER BY t."Id", u0."Id"
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT o."Id", o."AverageLatency", o."Description", o."LastChecked", o."Name", o."OnionUrl", o."ReachableAttempts", o."ResponseTime", o."Status", o."TotalAttempts"
+      FROM "OnionStatuses" AS o
+      ORDER BY o."OnionUrl"
+info: Microsoft.AspNetCore.Mvc.ViewFeatures.ViewResultExecutor[1]
+      Executing ViewResult, running view Index.
+info: Microsoft.AspNetCore.Mvc.ViewFeatures.ViewResultExecutor[4]
+      Executed ViewResult - view Index executed in 18.2383ms.
+info: Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker[105]
+      Executed action MyFace.Web.Controllers.MonitorController.Index (MyFace.Web) in 62.4794ms
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[1]
+      Executed endpoint 'MyFace.Web.Controllers.MonitorController.Index (MyFace.Web)'
+info: Microsoft.AspNetCore.Hosting.Diagnostics[2]
+      Request finished HTTP/1.1 GET http://futqubk62hcpjt3fnalbb5pii6bc7ifxqyxptrym4ikantsvphtjqaad.onion/Monitor - 200 - text/html;+charset=utf-8 69.6103ms
+info: System.Net.Http.HttpClient.TorClient.ClientHandler[101]
+      Received HTTP response headers after 6620.2858ms - 503
+info: System.Net.Http.HttpClient.TorClient.LogicalHandler[101]
+      End processing HTTP request after 6620.4877ms - 503
+info: System.Net.Http.HttpClient.TorClient.LogicalHandler[100]
+      Start processing HTTP request GET http://dauntdatakit2xi4usevwp3pajyppsgsrbzkfqyrp6ufsdwrnm6g5tqd.onion/
+info: System.Net.Http.HttpClient.TorClient.ClientHandler[100]
+      Sending HTTP request GET http://dauntdatakit2xi4usevwp3pajyppsgsrbzkfqyrp6ufsdwrnm6g5tqd.onion/
+info: Microsoft.AspNetCore.Hosting.Diagnostics[1]
+      Request starting HTTP/1.1 GET http://futqubk62hcpjt3fnalbb5pii6bc7ifxqyxptrym4ikantsvphtjqaad.onion/css/site.css?v=GLt8tkilNVjOvS_J_gxlOijzzSrDZ3D5ZtKFKu8NkWQ - - -
+info: Microsoft.AspNetCore.StaticFiles.StaticFileMiddleware[6]
+      The file /css/site.css was not modified
+info: Microsoft.AspNetCore.Hosting.Diagnostics[2]
+      Request finished HTTP/1.1 GET http://futqubk62hcpjt3fnalbb5pii6bc7ifxqyxptrym4ikantsvphtjqaad.onion/css/site.css?v=GLt8tkilNVjOvS_J_gxlOijzzSrDZ3D5ZtKFKu8NkWQ - 304 - text/css 1.5349ms
+info: System.Net.Http.HttpClient.TorClient.ClientHandler[101]
+      Received HTTP response headers after 5441.0141ms - 503
+info: System.Net.Http.HttpClient.TorClient.LogicalHandler[101]
+      End processing HTTP request after 5441.5143ms - 503
+info: System.Net.Http.HttpClient.TorClient.LogicalHandler[100]
+      Start processing HTTP request GET http://dauntdatakit2xi4usevwp3pajyppsgsrbzkfqyrp6ufsdwrnm6g5tqd.onion/
+info: System.Net.Http.HttpClient.TorClient.ClientHandler[100]
+      Sending HTTP request GET http://dauntdatakit2xi4usevwp3pajyppsgsrbzkfqyrp6ufsdwrnm6g5tqd.onion/
+info: Microsoft.AspNetCore.Hosting.Diagnostics[1]
+      Request starting HTTP/1.1 GET http://futqubk62hcpjt3fnalbb5pii6bc7ifxqyxptrym4ikantsvphtjqaad.onion/Monitor - - -
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[0]
+      Executing endpoint 'MyFace.Web.Controllers.MonitorController.Index (MyFace.Web)'
+info: Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker[102]
+      Route matched with {action = "Index", controller = "Monitor"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] Index() on controller MyFace.Web.Controllers.MonitorController (MyFace.Web).
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[@__id_0='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT t."Id", t."AboutMe", t."CreatedAt", t."FontColor", t."FontFamily", t."IsActive", t."LastSeenAt", t."PasswordHash", t."PgpPublicKey", t."Role", t."SuspendedUntil", t."Username", u0."Id", u0."AccountId", u0."ServiceName", u0."UserId", u1."Id", u1."Content", u1."CreatedAt", u1."Title", u1."UserId"
+      FROM (
+          SELECT u."Id", u."AboutMe", u."CreatedAt", u."FontColor", u."FontFamily", u."IsActive", u."LastSeenAt", u."PasswordHash", u."PgpPublicKey", u."Role", u."SuspendedUntil", u."Username"
+          FROM "Users" AS u
+          WHERE u."Id" = @__id_0
+          LIMIT 1
+      ) AS t
+      LEFT JOIN "UserContacts" AS u0 ON t."Id" = u0."UserId"
+      LEFT JOIN "UserNews" AS u1 ON t."Id" = u1."UserId"
+      ORDER BY t."Id", u0."Id"
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (3ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT o."Id", o."AverageLatency", o."Description", o."LastChecked", o."Name", o."OnionUrl", o."ReachableAttempts", o."ResponseTime", o."Status", o."TotalAttempts"
+      FROM "OnionStatuses" AS o
+      ORDER BY o."OnionUrl"
+info: Microsoft.AspNetCore.Mvc.ViewFeatures.ViewResultExecutor[1]
+      Executing ViewResult, running view Index.
+info: Microsoft.AspNetCore.Mvc.ViewFeatures.ViewResultExecutor[4]
+      Executed ViewResult - view Index executed in 3.7713ms.
+info: Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker[105]
+      Executed action MyFace.Web.Controllers.MonitorController.Index (MyFace.Web) in 15.8341ms
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[1]
+      Executed endpoint 'MyFace.Web.Controllers.MonitorController.Index (MyFace.Web)'
+info: Microsoft.AspNetCore.Hosting.Diagnostics[2]
+      Request finished HTTP/1.1 GET http://futqubk62hcpjt3fnalbb5pii6bc7ifxqyxptrym4ikantsvphtjqaad.onion/Monitor - 200 - text/html;+charset=utf-8 21.3427ms
+info: System.Net.Http.HttpClient.TorClient.ClientHandler[101]
+      Received HTTP response headers after 5722.5223ms - 503
+info: System.Net.Http.HttpClient.TorClient.LogicalHandler[101]
+      End processing HTTP request after 5722.6635ms - 503
 info: Microsoft.EntityFrameworkCore.Database.Command[20101]
       Executed DbCommand (2ms) [Parameters=[@p1='?' (DbType = Int32), @p0='?' (DbType = DateTime)], CommandType='Text', CommandTimeout='30']
       UPDATE "OnionStatuses" SET "LastChecked" = @p0
       WHERE "Id" = @p1;
+info: System.Net.Http.HttpClient.TorClient.LogicalHandler[100]
+      Start processing HTTP request GET https://digdig2nugjpszzmqe5ep2bk7lqfpdlyrkojsx2j6kzalnrqtwedr3id.onion/
+info: System.Net.Http.HttpClient.TorClient.ClientHandler[100]
+      Sending HTTP request GET https://digdig2nugjpszzmqe5ep2bk7lqfpdlyrkojsx2j6kzalnrqtwedr3id.onion/
+info: System.Net.Http.HttpClient.TorClient.ClientHandler[101]
+      Received HTTP response headers after 1101.481ms - 200
+info: System.Net.Http.HttpClient.TorClient.LogicalHandler[101]
+      End processing HTTP request after 1101.5757ms - 200
+info: System.Net.Http.HttpClient.TorClient.LogicalHandler[100]
+      Start processing HTTP request GET https://digdig2nugjpszzmqe5ep2bk7lqfpdlyrkojsx2j6kzalnrqtwedr3id.onion/
+info: System.Net.Http.HttpClient.TorClient.ClientHandler[100]
+      Sending HTTP request GET https://digdig2nugjpszzmqe5ep2bk7lqfpdlyrkojsx2j6kzalnrqtwedr3id.onion/
+info: System.Net.Http.HttpClient.TorClient.ClientHandler[101]
+      Received HTTP response headers after 579.8021ms - 200
+info: System.Net.Http.HttpClient.TorClient.LogicalHandler[101]
+      End processing HTTP request after 580.1669ms - 200
+info: System.Net.Http.HttpClient.TorClient.LogicalHandler[100]
+      Start processing HTTP request GET https://digdig2nugjpszzmqe5ep2bk7lqfpdlyrkojsx2j6kzalnrqtwedr3id.onion/
+info: System.Net.Http.HttpClient.TorClient.ClientHandler[100]
+      Sending HTTP request GET https://digdig2nugjpszzmqe5ep2bk7lqfpdlyrkojsx2j6kzalnrqtwedr3id.onion/
+info: System.Net.Http.HttpClient.TorClient.ClientHandler[101]
+      Received HTTP response headers after 357.9783ms - 200
+info: System.Net.Http.HttpClient.TorClient.LogicalHandler[101]
+      End processing HTTP request after 358.2013ms - 200
+info: System.Net.Http.HttpClient.TorClient.LogicalHandler[100]
+      Start processing HTTP request GET https://digdig2nugjpszzmqe5ep2bk7lqfpdlyrkojsx2j6kzalnrqtwedr3id.onion/
+info: System.Net.Http.HttpClient.TorClient.ClientHandler[100]
+      Sending HTTP request GET https://digdig2nugjpszzmqe5ep2bk7lqfpdlyrkojsx2j6kzalnrqtwedr3id.onion/
+info: System.Net.Http.HttpClient.TorClient.ClientHandler[101]
+      Received HTTP response headers after 375.0031ms - 200
+info: System.Net.Http.HttpClient.TorClient.LogicalHandler[101]
+      End processing HTTP request after 375.5187ms - 200
+info: System.Net.Http.HttpClient.TorClient.LogicalHandler[100]
+      Start processing HTTP request GET https://digdig2nugjpszzmqe5ep2bk7lqfpdlyrkojsx2j6kzalnrqtwedr3id.onion/
+info: System.Net.Http.HttpClient.TorClient.ClientHandler[100]
+      Sending HTTP request GET https://digdig2nugjpszzmqe5ep2bk7lqfpdlyrkojsx2j6kzalnrqtwedr3id.onion/
+info: System.Net.Http.HttpClient.TorClient.ClientHandler[101]
+      Received HTTP response headers after 368.0178ms - 200
+info: System.Net.Http.HttpClient.TorClient.LogicalHandler[101]
+      End processing HTTP request after 368.5389ms - 200
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (4ms) [Parameters=[@p5='?' (DbType = Int32), @p0='?' (DbType = Double), @p1='?' (DbType = DateTime), @p2='?' (DbType = Int32), @p3='?' (DbType = Double), @p4='?'], CommandType='Text', CommandTimeout='30']
+      UPDATE "OnionStatuses" SET "AverageLatency" = @p0, "LastChecked" = @p1, "ReachableAttempts" = @p2, "ResponseTime" = @p3, "Status" = @p4
+      WHERE "Id" = @p5;
+info: Microsoft.AspNetCore.Hosting.Diagnostics[1]
+      Request starting HTTP/1.1 GET http://futqubk62hcpjt3fnalbb5pii6bc7ifxqyxptrym4ikantsvphtjqaad.onion/Monitor - - -
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[0]
+      Executing endpoint 'MyFace.Web.Controllers.MonitorController.Index (MyFace.Web)'
+info: Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker[102]
+      Route matched with {action = "Index", controller = "Monitor"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] Index() on controller MyFace.Web.Controllers.MonitorController (MyFace.Web).
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[@__id_0='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT t."Id", t."AboutMe", t."CreatedAt", t."FontColor", t."FontFamily", t."IsActive", t."LastSeenAt", t."PasswordHash", t."PgpPublicKey", t."Role", t."SuspendedUntil", t."Username", u0."Id", u0."AccountId", u0."ServiceName", u0."UserId", u1."Id", u1."Content", u1."CreatedAt", u1."Title", u1."UserId"
+      FROM (
+          SELECT u."Id", u."AboutMe", u."CreatedAt", u."FontColor", u."FontFamily", u."IsActive", u."LastSeenAt", u."PasswordHash", u."PgpPublicKey", u."Role", u."SuspendedUntil", u."Username"
+          FROM "Users" AS u
+          WHERE u."Id" = @__id_0
+          LIMIT 1
+      ) AS t
+      LEFT JOIN "UserContacts" AS u0 ON t."Id" = u0."UserId"
+      LEFT JOIN "UserNews" AS u1 ON t."Id" = u1."UserId"
+      ORDER BY t."Id", u0."Id"
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT o."Id", o."AverageLatency", o."Description", o."LastChecked", o."Name", o."OnionUrl", o."ReachableAttempts", o."ResponseTime", o."Status", o."TotalAttempts"
+      FROM "OnionStatuses" AS o
+      ORDER BY o."OnionUrl"
+info: Microsoft.AspNetCore.Mvc.ViewFeatures.ViewResultExecutor[1]
+      Executing ViewResult, running view Index.
+info: Microsoft.AspNetCore.Mvc.ViewFeatures.ViewResultExecutor[4]
+      Executed ViewResult - view Index executed in 1.2235ms.
+info: Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker[105]
+      Executed action MyFace.Web.Controllers.MonitorController.Index (MyFace.Web) in 7.0632ms
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[1]
+      Executed endpoint 'MyFace.Web.Controllers.MonitorController.Index (MyFace.Web)'
+info: Microsoft.AspNetCore.Hosting.Diagnostics[2]
+      Request finished HTTP/1.1 GET http://futqubk62hcpjt3fnalbb5pii6bc7ifxqyxptrym4ikantsvphtjqaad.onion/Monitor - 200 - text/html;+charset=utf-8 9.4696ms
+info: Microsoft.AspNetCore.Hosting.Diagnostics[1]
+      Request starting HTTP/1.1 GET http://futqubk62hcpjt3fnalbb5pii6bc7ifxqyxptrym4ikantsvphtjqaad.onion/Monitor - - -
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[0]
+      Executing endpoint 'MyFace.Web.Controllers.MonitorController.Index (MyFace.Web)'
+info: Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker[102]
+      Route matched with {action = "Index", controller = "Monitor"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] Index() on controller MyFace.Web.Controllers.MonitorController (MyFace.Web).
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[@__id_0='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT t."Id", t."AboutMe", t."CreatedAt", t."FontColor", t."FontFamily", t."IsActive", t."LastSeenAt", t."PasswordHash", t."PgpPublicKey", t."Role", t."SuspendedUntil", t."Username", u0."Id", u0."AccountId", u0."ServiceName", u0."UserId", u1."Id", u1."Content", u1."CreatedAt", u1."Title", u1."UserId"
+      FROM (
+          SELECT u."Id", u."AboutMe", u."CreatedAt", u."FontColor", u."FontFamily", u."IsActive", u."LastSeenAt", u."PasswordHash", u."PgpPublicKey", u."Role", u."SuspendedUntil", u."Username"
+          FROM "Users" AS u
+          WHERE u."Id" = @__id_0
+          LIMIT 1
+      ) AS t
+      LEFT JOIN "UserContacts" AS u0 ON t."Id" = u0."UserId"
+      LEFT JOIN "UserNews" AS u1 ON t."Id" = u1."UserId"
+      ORDER BY t."Id", u0."Id"
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT o."Id", o."AverageLatency", o."Description", o."LastChecked", o."Name", o."OnionUrl", o."ReachableAttempts", o."ResponseTime", o."Status", o."TotalAttempts"
+      FROM "OnionStatuses" AS o
+      ORDER BY o."OnionUrl"
+info: Microsoft.AspNetCore.Mvc.ViewFeatures.ViewResultExecutor[1]
+      Executing ViewResult, running view Index.
+info: Microsoft.AspNetCore.Mvc.ViewFeatures.ViewResultExecutor[4]
+      Executed ViewResult - view Index executed in 0.8627ms.
+info: Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker[105]
+      Executed action MyFace.Web.Controllers.MonitorController.Index (MyFace.Web) in 4.6789ms
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[1]
+      Executed endpoint 'MyFace.Web.Controllers.MonitorController.Index (MyFace.Web)'
+info: Microsoft.AspNetCore.Hosting.Diagnostics[2]
+      Request finished HTTP/1.1 GET http://futqubk62hcpjt3fnalbb5pii6bc7ifxqyxptrym4ikantsvphtjqaad.onion/Monitor - 200 - text/html;+charset=utf-8 6.5414ms
+info: Microsoft.AspNetCore.Hosting.Diagnostics[1]
+      Request starting HTTP/1.1 GET http://futqubk62hcpjt3fnalbb5pii6bc7ifxqyxptrym4ikantsvphtjqaad.onion/css/site.css?v=GLt8tkilNVjOvS_J_gxlOijzzSrDZ3D5ZtKFKu8NkWQ - - -
+info: Microsoft.AspNetCore.StaticFiles.StaticFileMiddleware[6]
+      The file /css/site.css was not modified
+info: Microsoft.AspNetCore.Hosting.Diagnostics[2]
+      Request finished HTTP/1.1 GET http://futqubk62hcpjt3fnalbb5pii6bc7ifxqyxptrym4ikantsvphtjqaad.onion/css/site.css?v=GLt8tkilNVjOvS_J_gxlOijzzSrDZ3D5ZtKFKu8NkWQ - 304 - text/css 0.2654ms
+info: Microsoft.AspNetCore.Hosting.Diagnostics[1]
+      Request starting HTTP/1.1 GET http://futqubk62hcpjt3fnalbb5pii6bc7ifxqyxptrym4ikantsvphtjqaad.onion/Monitor - - -
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[0]
+      Executing endpoint 'MyFace.Web.Controllers.MonitorController.Index (MyFace.Web)'
+info: Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker[102]
+      Route matched with {action = "Index", controller = "Monitor"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] Index() on controller MyFace.Web.Controllers.MonitorController (MyFace.Web).
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (2ms) [Parameters=[@__id_0='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT t."Id", t."AboutMe", t."CreatedAt", t."FontColor", t."FontFamily", t."IsActive", t."LastSeenAt", t."PasswordHash", t."PgpPublicKey", t."Role", t."SuspendedUntil", t."Username", u0."Id", u0."AccountId", u0."ServiceName", u0."UserId", u1."Id", u1."Content", u1."CreatedAt", u1."Title", u1."UserId"
+      FROM (
+          SELECT u."Id", u."AboutMe", u."CreatedAt", u."FontColor", u."FontFamily", u."IsActive", u."LastSeenAt", u."PasswordHash", u."PgpPublicKey", u."Role", u."SuspendedUntil", u."Username"
+          FROM "Users" AS u
+          WHERE u."Id" = @__id_0
+          LIMIT 1
+      ) AS t
+      LEFT JOIN "UserContacts" AS u0 ON t."Id" = u0."UserId"
+      LEFT JOIN "UserNews" AS u1 ON t."Id" = u1."UserId"
+      ORDER BY t."Id", u0."Id"
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT o."Id", o."AverageLatency", o."Description", o."LastChecked", o."Name", o."OnionUrl", o."ReachableAttempts", o."ResponseTime", o."Status", o."TotalAttempts"
+      FROM "OnionStatuses" AS o
+      ORDER BY o."OnionUrl"
+info: Microsoft.AspNetCore.Mvc.ViewFeatures.ViewResultExecutor[1]
+      Executing ViewResult, running view Index.
+info: Microsoft.AspNetCore.Mvc.ViewFeatures.ViewResultExecutor[4]
+      Executed ViewResult - view Index executed in 1.9194ms.
+info: Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker[105]
+      Executed action MyFace.Web.Controllers.MonitorController.Index (MyFace.Web) in 7.6463ms
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[1]
+      Executed endpoint 'MyFace.Web.Controllers.MonitorController.Index (MyFace.Web)'
+info: Microsoft.AspNetCore.Hosting.Diagnostics[2]
+      Request finished HTTP/1.1 GET http://futqubk62hcpjt3fnalbb5pii6bc7ifxqyxptrym4ikantsvphtjqaad.onion/Monitor - 200 - text/html;+charset=utf-8 9.0662ms
+info: Microsoft.AspNetCore.Hosting.Diagnostics[1]
+      Request starting HTTP/1.1 GET http://futqubk62hcpjt3fnalbb5pii6bc7ifxqyxptrym4ikantsvphtjqaad.onion/Monitor - - -
+info: Microsoft.AspNetCore.Hosting.Diagnostics[2]
+      Request finished HTTP/1.1 GET http://futqubk62hcpjt3fnalbb5pii6bc7ifxqyxptrym4ikantsvphtjqaad.onion/Monitor - 302 0 - 1.8118ms
+info: Microsoft.AspNetCore.Hosting.Diagnostics[1]
+      Request starting HTTP/1.1 GET http://futqubk62hcpjt3fnalbb5pii6bc7ifxqyxptrym4ikantsvphtjqaad.onion/Captcha/Index?returnUrl=%2FMonitor - - -
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[0]
+      Executing endpoint 'MyFace.Web.Controllers.CaptchaController.Index (MyFace.Web)'
+info: Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker[102]
+      Route matched with {action = "Index", controller = "Captcha"}. Executing controller action with signature Microsoft.AspNetCore.Mvc.IActionResult Index(System.String) on controller MyFace.Web.Controllers.CaptchaController (MyFace.Web).
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (2ms) [Parameters=[@__id_0='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT t."Id", t."AboutMe", t."CreatedAt", t."FontColor", t."FontFamily", t."IsActive", t."LastSeenAt", t."PasswordHash", t."PgpPublicKey", t."Role", t."SuspendedUntil", t."Username", u0."Id", u0."AccountId", u0."ServiceName", u0."UserId", u1."Id", u1."Content", u1."CreatedAt", u1."Title", u1."UserId"
+      FROM (
+          SELECT u."Id", u."AboutMe", u."CreatedAt", u."FontColor", u."FontFamily", u."IsActive", u."LastSeenAt", u."PasswordHash", u."PgpPublicKey", u."Role", u."SuspendedUntil", u."Username"
+          FROM "Users" AS u
+          WHERE u."Id" = @__id_0
+          LIMIT 1
+      ) AS t
+      LEFT JOIN "UserContacts" AS u0 ON t."Id" = u0."UserId"
+      LEFT JOIN "UserNews" AS u1 ON t."Id" = u1."UserId"
+      ORDER BY t."Id", u0."Id"
+info: Microsoft.AspNetCore.Mvc.ViewFeatures.ViewResultExecutor[1]
+      Executing ViewResult, running view Index.
+info: Microsoft.AspNetCore.Mvc.ViewFeatures.ViewResultExecutor[4]
+      Executed ViewResult - view Index executed in 26.1545ms.
+info: Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker[105]
+      Executed action MyFace.Web.Controllers.CaptchaController.Index (MyFace.Web) in 62.5535ms
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[1]
+      Executed endpoint 'MyFace.Web.Controllers.CaptchaController.Index (MyFace.Web)'
+info: Microsoft.AspNetCore.Hosting.Diagnostics[2]
+      Request finished HTTP/1.1 GET http://futqubk62hcpjt3fnalbb5pii6bc7ifxqyxptrym4ikantsvphtjqaad.onion/Captcha/Index?returnUrl=%2FMonitor - 200 - text/html;+charset=utf-8 69.6412ms
+info: Microsoft.AspNetCore.Hosting.Diagnostics[1]
+      Request starting HTTP/1.1 POST http://futqubk62hcpjt3fnalbb5pii6bc7ifxqyxptrym4ikantsvphtjqaad.onion/Captcha/Verify - application/x-www-form-urlencoded 256
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[0]
+      Executing endpoint 'MyFace.Web.Controllers.CaptchaController.Verify (MyFace.Web)'
+info: Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker[102]
+      Route matched with {action = "Verify", controller = "Captcha"}. Executing controller action with signature Microsoft.AspNetCore.Mvc.IActionResult Verify(System.String, System.String) on controller MyFace.Web.Controllers.CaptchaController (MyFace.Web).
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[@__id_0='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT t."Id", t."AboutMe", t."CreatedAt", t."FontColor", t."FontFamily", t."IsActive", t."LastSeenAt", t."PasswordHash", t."PgpPublicKey", t."Role", t."SuspendedUntil", t."Username", u0."Id", u0."AccountId", u0."ServiceName", u0."UserId", u1."Id", u1."Content", u1."CreatedAt", u1."Title", u1."UserId"
+      FROM (
+          SELECT u."Id", u."AboutMe", u."CreatedAt", u."FontColor", u."FontFamily", u."IsActive", u."LastSeenAt", u."PasswordHash", u."PgpPublicKey", u."Role", u."SuspendedUntil", u."Username"
+          FROM "Users" AS u
+          WHERE u."Id" = @__id_0
+          LIMIT 1
+      ) AS t
+      LEFT JOIN "UserContacts" AS u0 ON t."Id" = u0."UserId"
+      LEFT JOIN "UserNews" AS u1 ON t."Id" = u1."UserId"
+      ORDER BY t."Id", u0."Id"
+info: Microsoft.AspNetCore.Mvc.ViewFeatures.ViewResultExecutor[1]
+      Executing ViewResult, running view Index.
+info: Microsoft.AspNetCore.Mvc.ViewFeatures.ViewResultExecutor[4]
+      Executed ViewResult - view Index executed in 3.1818ms.
+info: Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker[105]
+      Executed action MyFace.Web.Controllers.CaptchaController.Verify (MyFace.Web) in 13.5912ms
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[1]
+      Executed endpoint 'MyFace.Web.Controllers.CaptchaController.Verify (MyFace.Web)'
+info: Microsoft.AspNetCore.Hosting.Diagnostics[2]
+      Request finished HTTP/1.1 POST http://futqubk62hcpjt3fnalbb5pii6bc7ifxqyxptrym4ikantsvphtjqaad.onion/Captcha/Verify - 200 - text/html;+charset=utf-8 19.8769ms
+info: Microsoft.AspNetCore.Hosting.Diagnostics[1]
+      Request starting HTTP/1.1 GET http://futqubk62hcpjt3fnalbb5pii6bc7ifxqyxptrym4ikantsvphtjqaad.onion/css/site.css?v=GLt8tkilNVjOvS_J_gxlOijzzSrDZ3D5ZtKFKu8NkWQ - - -
+info: Microsoft.AspNetCore.StaticFiles.StaticFileMiddleware[6]
+      The file /css/site.css was not modified
+info: Microsoft.AspNetCore.Hosting.Diagnostics[2]
+      Request finished HTTP/1.1 GET http://futqubk62hcpjt3fnalbb5pii6bc7ifxqyxptrym4ikantsvphtjqaad.onion/css/site.css?v=GLt8tkilNVjOvS_J_gxlOijzzSrDZ3D5ZtKFKu8NkWQ - 304 - text/css 0.3072ms
+info: Microsoft.AspNetCore.Hosting.Diagnostics[1]
+      Request starting HTTP/1.1 POST http://futqubk62hcpjt3fnalbb5pii6bc7ifxqyxptrym4ikantsvphtjqaad.onion/Captcha/Verify - application/x-www-form-urlencoded 256
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[0]
+      Executing endpoint 'MyFace.Web.Controllers.CaptchaController.Verify (MyFace.Web)'
+info: Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker[102]
+      Route matched with {action = "Verify", controller = "Captcha"}. Executing controller action with signature Microsoft.AspNetCore.Mvc.IActionResult Verify(System.String, System.String) on controller MyFace.Web.Controllers.CaptchaController (MyFace.Web).
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[@__id_0='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT t."Id", t."AboutMe", t."CreatedAt", t."FontColor", t."FontFamily", t."IsActive", t."LastSeenAt", t."PasswordHash", t."PgpPublicKey", t."Role", t."SuspendedUntil", t."Username", u0."Id", u0."AccountId", u0."ServiceName", u0."UserId", u1."Id", u1."Content", u1."CreatedAt", u1."Title", u1."UserId"
+      FROM (
+          SELECT u."Id", u."AboutMe", u."CreatedAt", u."FontColor", u."FontFamily", u."IsActive", u."LastSeenAt", u."PasswordHash", u."PgpPublicKey", u."Role", u."SuspendedUntil", u."Username"
+          FROM "Users" AS u
+          WHERE u."Id" = @__id_0
+          LIMIT 1
+      ) AS t
+      LEFT JOIN "UserContacts" AS u0 ON t."Id" = u0."UserId"
+      LEFT JOIN "UserNews" AS u1 ON t."Id" = u1."UserId"
+      ORDER BY t."Id", u0."Id"
+info: Microsoft.AspNetCore.Mvc.ViewFeatures.ViewResultExecutor[1]
+      Executing ViewResult, running view Index.
+info: Microsoft.AspNetCore.Mvc.ViewFeatures.ViewResultExecutor[4]
+      Executed ViewResult - view Index executed in 1.0397ms.
+info: Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker[105]
+      Executed action MyFace.Web.Controllers.CaptchaController.Verify (MyFace.Web) in 6.3171ms
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[1]
+      Executed endpoint 'MyFace.Web.Controllers.CaptchaController.Verify (MyFace.Web)'
+info: Microsoft.AspNetCore.Hosting.Diagnostics[2]
+      Request finished HTTP/1.1 POST http://futqubk62hcpjt3fnalbb5pii6bc7ifxqyxptrym4ikantsvphtjqaad.onion/Captcha/Verify - 200 - text/html;+charset=utf-8 8.3747ms
+info: Microsoft.AspNetCore.Hosting.Diagnostics[1]
+      Request starting HTTP/1.1 POST http://futqubk62hcpjt3fnalbb5pii6bc7ifxqyxptrym4ikantsvphtjqaad.onion/Captcha/Verify - application/x-www-form-urlencoded 266
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[0]
+      Executing endpoint 'MyFace.Web.Controllers.CaptchaController.Verify (MyFace.Web)'
+info: Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker[102]
+      Route matched with {action = "Verify", controller = "Captcha"}. Executing controller action with signature Microsoft.AspNetCore.Mvc.IActionResult Verify(System.String, System.String) on controller MyFace.Web.Controllers.CaptchaController (MyFace.Web).
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[@__id_0='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT t."Id", t."AboutMe", t."CreatedAt", t."FontColor", t."FontFamily", t."IsActive", t."LastSeenAt", t."PasswordHash", t."PgpPublicKey", t."Role", t."SuspendedUntil", t."Username", u0."Id", u0."AccountId", u0."ServiceName", u0."UserId", u1."Id", u1."Content", u1."CreatedAt", u1."Title", u1."UserId"
+      FROM (
+          SELECT u."Id", u."AboutMe", u."CreatedAt", u."FontColor", u."FontFamily", u."IsActive", u."LastSeenAt", u."PasswordHash", u."PgpPublicKey", u."Role", u."SuspendedUntil", u."Username"
+          FROM "Users" AS u
+          WHERE u."Id" = @__id_0
+          LIMIT 1
+      ) AS t
+      LEFT JOIN "UserContacts" AS u0 ON t."Id" = u0."UserId"
+      LEFT JOIN "UserNews" AS u1 ON t."Id" = u1."UserId"
+      ORDER BY t."Id", u0."Id"
+info: Microsoft.AspNetCore.Mvc.Infrastructure.RedirectResultExecutor[1]
+      Executing RedirectResult, redirecting to /Monitor.
+info: Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker[105]
+      Executed action MyFace.Web.Controllers.CaptchaController.Verify (MyFace.Web) in 4.7138ms
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[1]
+      Executed endpoint 'MyFace.Web.Controllers.CaptchaController.Verify (MyFace.Web)'
+info: Microsoft.AspNetCore.Hosting.Diagnostics[2]
+      Request finished HTTP/1.1 POST http://futqubk62hcpjt3fnalbb5pii6bc7ifxqyxptrym4ikantsvphtjqaad.onion/Captcha/Verify - 302 0 - 7.2122ms
+info: Microsoft.AspNetCore.Hosting.Diagnostics[1]
+      Request starting HTTP/1.1 GET http://futqubk62hcpjt3fnalbb5pii6bc7ifxqyxptrym4ikantsvphtjqaad.onion/Monitor - - -
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[0]
+      Executing endpoint 'MyFace.Web.Controllers.MonitorController.Index (MyFace.Web)'
+info: Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker[102]
+      Route matched with {action = "Index", controller = "Monitor"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] Index() on controller MyFace.Web.Controllers.MonitorController (MyFace.Web).
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[@__id_0='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT t."Id", t."AboutMe", t."CreatedAt", t."FontColor", t."FontFamily", t."IsActive", t."LastSeenAt", t."PasswordHash", t."PgpPublicKey", t."Role", t."SuspendedUntil", t."Username", u0."Id", u0."AccountId", u0."ServiceName", u0."UserId", u1."Id", u1."Content", u1."CreatedAt", u1."Title", u1."UserId"
+      FROM (
+          SELECT u."Id", u."AboutMe", u."CreatedAt", u."FontColor", u."FontFamily", u."IsActive", u."LastSeenAt", u."PasswordHash", u."PgpPublicKey", u."Role", u."SuspendedUntil", u."Username"
+          FROM "Users" AS u
+          WHERE u."Id" = @__id_0
+          LIMIT 1
+      ) AS t
+      LEFT JOIN "UserContacts" AS u0 ON t."Id" = u0."UserId"
+      LEFT JOIN "UserNews" AS u1 ON t."Id" = u1."UserId"
+      ORDER BY t."Id", u0."Id"
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT o."Id", o."AverageLatency", o."Description", o."LastChecked", o."Name", o."OnionUrl", o."ReachableAttempts", o."ResponseTime", o."Status", o."TotalAttempts"
+      FROM "OnionStatuses" AS o
+      ORDER BY o."OnionUrl"
+info: Microsoft.AspNetCore.Mvc.ViewFeatures.ViewResultExecutor[1]
+      Executing ViewResult, running view Index.
+info: Microsoft.AspNetCore.Mvc.ViewFeatures.ViewResultExecutor[4]
+      Executed ViewResult - view Index executed in 0.7184ms.
+info: Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker[105]
+      Executed action MyFace.Web.Controllers.MonitorController.Index (MyFace.Web) in 6.5469ms
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[1]
+      Executed endpoint 'MyFace.Web.Controllers.MonitorController.Index (MyFace.Web)'
+info: Microsoft.AspNetCore.Hosting.Diagnostics[2]
+      Request finished HTTP/1.1 GET http://futqubk62hcpjt3fnalbb5pii6bc7ifxqyxptrym4ikantsvphtjqaad.onion/Monitor - 200 - text/html;+charset=utf-8 8.6549ms
+info: Microsoft.AspNetCore.Hosting.Diagnostics[1]
+      Request starting HTTP/1.1 GET http://futqubk62hcpjt3fnalbb5pii6bc7ifxqyxptrym4ikantsvphtjqaad.onion/Thread - - -
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[0]
+      Executing endpoint 'MyFace.Web.Controllers.ThreadController.Index (MyFace.Web)'
+info: Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker[102]
+      Route matched with {action = "Index", controller = "Thread"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] Index(Int32) on controller MyFace.Web.Controllers.ThreadController (MyFace.Web).
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (2ms) [Parameters=[@__id_0='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT t."Id", t."AboutMe", t."CreatedAt", t."FontColor", t."FontFamily", t."IsActive", t."LastSeenAt", t."PasswordHash", t."PgpPublicKey", t."Role", t."SuspendedUntil", t."Username", u0."Id", u0."AccountId", u0."ServiceName", u0."UserId", u1."Id", u1."Content", u1."CreatedAt", u1."Title", u1."UserId"
+      FROM (
+          SELECT u."Id", u."AboutMe", u."CreatedAt", u."FontColor", u."FontFamily", u."IsActive", u."LastSeenAt", u."PasswordHash", u."PgpPublicKey", u."Role", u."SuspendedUntil", u."Username"
+          FROM "Users" AS u
+          WHERE u."Id" = @__id_0
+          LIMIT 1
+      ) AS t
+      LEFT JOIN "UserContacts" AS u0 ON t."Id" = u0."UserId"
+      LEFT JOIN "UserNews" AS u1 ON t."Id" = u1."UserId"
+      ORDER BY t."Id", u0."Id"
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (3ms) [Parameters=[@__p_1='?' (DbType = Int32), @__p_0='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT t0."Id", t0."Category", t0."CreatedAt", t0."IsAnonymous", t0."IsLocked", t0."IsPinned", t0."Title", t0."UpdatedAt", t0."UserId", u."Id", u."AboutMe", u."CreatedAt", u."FontColor", u."FontFamily", u."IsActive", u."LastSeenAt", u."PasswordHash", u."PgpPublicKey", u."Role", u."SuspendedUntil", u."Username", p."Id", p."Content", p."CreatedAt", p."EditedAt", p."IsAnonymous", p."IsDeleted", p."IsSticky", p."ThreadId", p."UserId"
+      FROM (
+          SELECT t."Id", t."Category", t."CreatedAt", t."IsAnonymous", t."IsLocked", t."IsPinned", t."Title", t."UpdatedAt", t."UserId"
+          FROM "Threads" AS t
+          ORDER BY t."IsPinned" DESC, t."CreatedAt" DESC
+          LIMIT @__p_1 OFFSET @__p_0
+      ) AS t0
+      LEFT JOIN "Users" AS u ON t0."UserId" = u."Id"
+      LEFT JOIN "Posts" AS p ON t0."Id" = p."ThreadId"
+      ORDER BY t0."IsPinned" DESC, t0."CreatedAt" DESC, t0."Id", u."Id"
+info: Microsoft.AspNetCore.Mvc.ViewFeatures.ViewResultExecutor[1]
+      Executing ViewResult, running view Index.
+info: Microsoft.AspNetCore.Mvc.ViewFeatures.ViewResultExecutor[4]
+      Executed ViewResult - view Index executed in 19.5963ms.
+info: Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker[105]
+      Executed action MyFace.Web.Controllers.ThreadController.Index (MyFace.Web) in 103.5471ms
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[1]
+      Executed endpoint 'MyFace.Web.Controllers.ThreadController.Index (MyFace.Web)'
+info: Microsoft.AspNetCore.Hosting.Diagnostics[2]
+      Request finished HTTP/1.1 GET http://futqubk62hcpjt3fnalbb5pii6bc7ifxqyxptrym4ikantsvphtjqaad.onion/Thread - 200 - text/html;+charset=utf-8 110.7205ms
+info: Microsoft.AspNetCore.Hosting.Diagnostics[1]
+      Request starting HTTP/1.1 GET http://futqubk62hcpjt3fnalbb5pii6bc7ifxqyxptrym4ikantsvphtjqaad.onion/css/site.css?v=GLt8tkilNVjOvS_J_gxlOijzzSrDZ3D5ZtKFKu8NkWQ - - -
+info: Microsoft.AspNetCore.StaticFiles.StaticFileMiddleware[6]
+      The file /css/site.css was not modified
+info: Microsoft.AspNetCore.Hosting.Diagnostics[2]
+      Request finished HTTP/1.1 GET http://futqubk62hcpjt3fnalbb5pii6bc7ifxqyxptrym4ikantsvphtjqaad.onion/css/site.css?v=GLt8tkilNVjOvS_J_gxlOijzzSrDZ3D5ZtKFKu8NkWQ - 304 - text/css 0.4599ms
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT o."Id", o."AverageLatency", o."Description", o."LastChecked", o."Name", o."OnionUrl", o."ReachableAttempts", o."ResponseTime", o."Status", o."TotalAttempts"
+      FROM "OnionStatuses" AS o
+info: System.Net.Http.HttpClient.TorClient.LogicalHandler[100]
+      Start processing HTTP request GET https://pitchprash4aqilfr7sbmuwve3pnkpylqwxjbj2q5o4szcfeea6d27yd.onion/
+info: System.Net.Http.HttpClient.TorClient.ClientHandler[100]
+      Sending HTTP request GET https://pitchprash4aqilfr7sbmuwve3pnkpylqwxjbj2q5o4szcfeea6d27yd.onion/
+info: System.Net.Http.HttpClient.TorClient.ClientHandler[101]
+      Received HTTP response headers after 1340.9566ms - 200
+info: System.Net.Http.HttpClient.TorClient.LogicalHandler[101]
+      End processing HTTP request after 1341.126ms - 200
+info: System.Net.Http.HttpClient.TorClient.LogicalHandler[100]
+      Start processing HTTP request GET https://pitchprash4aqilfr7sbmuwve3pnkpylqwxjbj2q5o4szcfeea6d27yd.onion/
+info: System.Net.Http.HttpClient.TorClient.ClientHandler[100]
+      Sending HTTP request GET https://pitchprash4aqilfr7sbmuwve3pnkpylqwxjbj2q5o4szcfeea6d27yd.onion/
+info: System.Net.Http.HttpClient.TorClient.ClientHandler[101]
+      Received HTTP response headers after 487.6169ms - 200
+info: System.Net.Http.HttpClient.TorClient.LogicalHandler[101]
+      End processing HTTP request after 487.7354ms - 200
+info: System.Net.Http.HttpClient.TorClient.LogicalHandler[100]
+      Start processing HTTP request GET https://pitchprash4aqilfr7sbmuwve3pnkpylqwxjbj2q5o4szcfeea6d27yd.onion/
+info: System.Net.Http.HttpClient.TorClient.ClientHandler[100]
+      Sending HTTP request GET https://pitchprash4aqilfr7sbmuwve3pnkpylqwxjbj2q5o4szcfeea6d27yd.onion/
+info: System.Net.Http.HttpClient.TorClient.ClientHandler[101]
+      Received HTTP response headers after 786.5293ms - 200
+info: System.Net.Http.HttpClient.TorClient.LogicalHandler[101]
+      End processing HTTP request after 786.7794ms - 200
+info: System.Net.Http.HttpClient.TorClient.LogicalHandler[100]
+      Start processing HTTP request GET https://pitchprash4aqilfr7sbmuwve3pnkpylqwxjbj2q5o4szcfeea6d27yd.onion/
+info: System.Net.Http.HttpClient.TorClient.ClientHandler[100]
+      Sending HTTP request GET https://pitchprash4aqilfr7sbmuwve3pnkpylqwxjbj2q5o4szcfeea6d27yd.onion/
+info: System.Net.Http.HttpClient.TorClient.ClientHandler[101]
+      Received HTTP response headers after 436.8938ms - 200
+info: System.Net.Http.HttpClient.TorClient.LogicalHandler[101]
+      End processing HTTP request after 436.9663ms - 200
+info: System.Net.Http.HttpClient.TorClient.LogicalHandler[100]
+      Start processing HTTP request GET https://pitchprash4aqilfr7sbmuwve3pnkpylqwxjbj2q5o4szcfeea6d27yd.onion/
+info: System.Net.Http.HttpClient.TorClient.ClientHandler[100]
+      Sending HTTP request GET https://pitchprash4aqilfr7sbmuwve3pnkpylqwxjbj2q5o4szcfeea6d27yd.onion/
+info: System.Net.Http.HttpClient.TorClient.ClientHandler[101]
+      Received HTTP response headers after 431.4421ms - 200
+info: System.Net.Http.HttpClient.TorClient.LogicalHandler[101]
+      End processing HTTP request after 431.5386ms - 200
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (4ms) [Parameters=[@p3='?' (DbType = Int32), @p0='?' (DbType = Double), @p1='?' (DbType = DateTime), @p2='?' (DbType = Double)], CommandType='Text', CommandTimeout='30']
+      UPDATE "OnionStatuses" SET "AverageLatency" = @p0, "LastChecked" = @p1, "ResponseTime" = @p2
+      WHERE "Id" = @p3;
+info: System.Net.Http.HttpClient.TorClient.LogicalHandler[100]
+      Start processing HTTP request GET http://jaz45aabn5vkemy4jkg4mi4syheisqn2wn2n4fsuitpccdackjwxplad.onion/
+info: System.Net.Http.HttpClient.TorClient.ClientHandler[100]
+      Sending HTTP request GET http://jaz45aabn5vkemy4jkg4mi4syheisqn2wn2n4fsuitpccdackjwxplad.onion/
+info: System.Net.Http.HttpClient.TorClient.ClientHandler[101]
+      Received HTTP response headers after 4489.1391ms - 200
+info: System.Net.Http.HttpClient.TorClient.LogicalHandler[101]
+      End processing HTTP request after 4489.3632ms - 200
+info: System.Net.Http.HttpClient.TorClient.LogicalHandler[100]
+      Start processing HTTP request GET http://jaz45aabn5vkemy4jkg4mi4syheisqn2wn2n4fsuitpccdackjwxplad.onion/
+info: System.Net.Http.HttpClient.TorClient.ClientHandler[100]
+      Sending HTTP request GET http://jaz45aabn5vkemy4jkg4mi4syheisqn2wn2n4fsuitpccdackjwxplad.onion/
+info: System.Net.Http.HttpClient.TorClient.ClientHandler[101]
+      Received HTTP response headers after 3631.5095ms - 200
+info: System.Net.Http.HttpClient.TorClient.LogicalHandler[101]
+      End processing HTTP request after 3631.9418ms - 200
+info: System.Net.Http.HttpClient.TorClient.LogicalHandler[100]
+      Start processing HTTP request GET http://jaz45aabn5vkemy4jkg4mi4syheisqn2wn2n4fsuitpccdackjwxplad.onion/
+info: System.Net.Http.HttpClient.TorClient.ClientHandler[100]
+      Sending HTTP request GET http://jaz45aabn5vkemy4jkg4mi4syheisqn2wn2n4fsuitpccdackjwxplad.onion/
+info: System.Net.Http.HttpClient.TorClient.ClientHandler[101]
+      Received HTTP response headers after 5133.6739ms - 200
+info: System.Net.Http.HttpClient.TorClient.LogicalHandler[101]
+      End processing HTTP request after 5133.7386ms - 200
+info: System.Net.Http.HttpClient.TorClient.LogicalHandler[100]
+      Start processing HTTP request GET http://jaz45aabn5vkemy4jkg4mi4syheisqn2wn2n4fsuitpccdackjwxplad.onion/
+info: System.Net.Http.HttpClient.TorClient.ClientHandler[100]
+      Sending HTTP request GET http://jaz45aabn5vkemy4jkg4mi4syheisqn2wn2n4fsuitpccdackjwxplad.onion/
+info: System.Net.Http.HttpClient.TorClient.ClientHandler[101]
+      Received HTTP response headers after 3264.3366ms - 200
+info: System.Net.Http.HttpClient.TorClient.LogicalHandler[101]
+      End processing HTTP request after 3265.0835ms - 200
+info: System.Net.Http.HttpClient.TorClient.LogicalHandler[100]
+      Start processing HTTP request GET http://jaz45aabn5vkemy4jkg4mi4syheisqn2wn2n4fsuitpccdackjwxplad.onion/
+info: System.Net.Http.HttpClient.TorClient.ClientHandler[100]
+      Sending HTTP request GET http://jaz45aabn5vkemy4jkg4mi4syheisqn2wn2n4fsuitpccdackjwxplad.onion/
+info: System.Net.Http.HttpClient.TorClient.ClientHandler[101]
+      Received HTTP response headers after 3831.0753ms - 200
+info: System.Net.Http.HttpClient.TorClient.LogicalHandler[101]
+      End processing HTTP request after 3831.8328ms - 200
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (2ms) [Parameters=[@p3='?' (DbType = Int32), @p0='?' (DbType = Double), @p1='?' (DbType = DateTime), @p2='?' (DbType = Double)], CommandType='Text', CommandTimeout='30']
+      UPDATE "OnionStatuses" SET "AverageLatency" = @p0, "LastChecked" = @p1, "ResponseTime" = @p2
+      WHERE "Id" = @p3;
+info: System.Net.Http.HttpClient.TorClient.LogicalHandler[100]
+      Start processing HTTP request GET http://dumpliwoard5qsrrsroni7bdiishealhky4snigbzfmzcquwo3kml4id.onion/
+info: System.Net.Http.HttpClient.TorClient.ClientHandler[100]
+      Sending HTTP request GET http://dumpliwoard5qsrrsroni7bdiishealhky4snigbzfmzcquwo3kml4id.onion/
+info: System.Net.Http.HttpClient.TorClient.ClientHandler[101]
+      Received HTTP response headers after 1985.0456ms - 200
+info: System.Net.Http.HttpClient.TorClient.LogicalHandler[101]
+      End processing HTTP request after 1985.1036ms - 200
+info: System.Net.Http.HttpClient.TorClient.LogicalHandler[100]
+      Start processing HTTP request GET http://dumpliwoard5qsrrsroni7bdiishealhky4snigbzfmzcquwo3kml4id.onion/
+info: System.Net.Http.HttpClient.TorClient.ClientHandler[100]
+      Sending HTTP request GET http://dumpliwoard5qsrrsroni7bdiishealhky4snigbzfmzcquwo3kml4id.onion/
+info: System.Net.Http.HttpClient.TorClient.ClientHandler[101]
+      Received HTTP response headers after 1164.5517ms - 200
+info: System.Net.Http.HttpClient.TorClient.LogicalHandler[101]
+      End processing HTTP request after 1164.6533ms - 200
+info: System.Net.Http.HttpClient.TorClient.LogicalHandler[100]
+      Start processing HTTP request GET http://dumpliwoard5qsrrsroni7bdiishealhky4snigbzfmzcquwo3kml4id.onion/
+info: System.Net.Http.HttpClient.TorClient.ClientHandler[100]
+      Sending HTTP request GET http://dumpliwoard5qsrrsroni7bdiishealhky4snigbzfmzcquwo3kml4id.onion/
+info: System.Net.Http.HttpClient.TorClient.ClientHandler[101]
+      Received HTTP response headers after 1187.7214ms - 200
+info: System.Net.Http.HttpClient.TorClient.LogicalHandler[101]
+      End processing HTTP request after 1188.1076ms - 200
+info: System.Net.Http.HttpClient.TorClient.LogicalHandler[100]
+      Start processing HTTP request GET http://dumpliwoard5qsrrsroni7bdiishealhky4snigbzfmzcquwo3kml4id.onion/
+info: System.Net.Http.HttpClient.TorClient.ClientHandler[100]
+      Sending HTTP request GET http://dumpliwoard5qsrrsroni7bdiishealhky4snigbzfmzcquwo3kml4id.onion/
+info: System.Net.Http.HttpClient.TorClient.ClientHandler[101]
+      Received HTTP response headers after 993.1206ms - 200
+info: System.Net.Http.HttpClient.TorClient.LogicalHandler[101]
+      End processing HTTP request after 993.2646ms - 200
+info: System.Net.Http.HttpClient.TorClient.LogicalHandler[100]
+      Start processing HTTP request GET http://dumpliwoard5qsrrsroni7bdiishealhky4snigbzfmzcquwo3kml4id.onion/
+info: System.Net.Http.HttpClient.TorClient.ClientHandler[100]
+      Sending HTTP request GET http://dumpliwoard5qsrrsroni7bdiishealhky4snigbzfmzcquwo3kml4id.onion/
+info: System.Net.Http.HttpClient.TorClient.ClientHandler[101]
+      Received HTTP response headers after 1128.425ms - 200
+info: System.Net.Http.HttpClient.TorClient.LogicalHandler[101]
+      End processing HTTP request after 1128.5336ms - 200
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (2ms) [Parameters=[@p3='?' (DbType = Int32), @p0='?' (DbType = Double), @p1='?' (DbType = DateTime), @p2='?' (DbType = Double)], CommandType='Text', CommandTimeout='30']
+      UPDATE "OnionStatuses" SET "AverageLatency" = @p0, "LastChecked" = @p1, "ResponseTime" = @p2
+      WHERE "Id" = @p3;
+info: System.Net.Http.HttpClient.TorClient.LogicalHandler[100]
+      Start processing HTTP request GET http://dauntdatakit2xi4usevwp3pajyppsgsrbzkfqyrp6ufsdwrnm6g5tqd.onion/
+info: System.Net.Http.HttpClient.TorClient.ClientHandler[100]
+      Sending HTTP request GET http://dauntdatakit2xi4usevwp3pajyppsgsrbzkfqyrp6ufsdwrnm6g5tqd.onion/
+info: System.Net.Http.HttpClient.TorClient.ClientHandler[101]
+      Received HTTP response headers after 4344.9659ms - 503
+info: System.Net.Http.HttpClient.TorClient.LogicalHandler[101]
+      End processing HTTP request after 4345.0703ms - 503
+info: System.Net.Http.HttpClient.TorClient.LogicalHandler[100]
+      Start processing HTTP request GET http://dauntdatakit2xi4usevwp3pajyppsgsrbzkfqyrp6ufsdwrnm6g5tqd.onion/
+info: System.Net.Http.HttpClient.TorClient.ClientHandler[100]
+      Sending HTTP request GET http://dauntdatakit2xi4usevwp3pajyppsgsrbzkfqyrp6ufsdwrnm6g5tqd.onion/
+info: System.Net.Http.HttpClient.TorClient.ClientHandler[101]
+      Received HTTP response headers after 5594.7155ms - 503
+info: System.Net.Http.HttpClient.TorClient.LogicalHandler[101]
+      End processing HTTP request after 5594.9686ms - 503
+info: System.Net.Http.HttpClient.TorClient.LogicalHandler[100]
+      Start processing HTTP request GET http://dauntdatakit2xi4usevwp3pajyppsgsrbzkfqyrp6ufsdwrnm6g5tqd.onion/
+info: System.Net.Http.HttpClient.TorClient.ClientHandler[100]
+      Sending HTTP request GET http://dauntdatakit2xi4usevwp3pajyppsgsrbzkfqyrp6ufsdwrnm6g5tqd.onion/
+info: System.Net.Http.HttpClient.TorClient.ClientHandler[101]
+      Received HTTP response headers after 4503.1788ms - 503
+info: System.Net.Http.HttpClient.TorClient.LogicalHandler[101]
+      End processing HTTP request after 4503.5623ms - 503
+info: System.Net.Http.HttpClient.TorClient.LogicalHandler[100]
+      Start processing HTTP request GET http://dauntdatakit2xi4usevwp3pajyppsgsrbzkfqyrp6ufsdwrnm6g5tqd.onion/
+info: System.Net.Http.HttpClient.TorClient.ClientHandler[100]
+      Sending HTTP request GET http://dauntdatakit2xi4usevwp3pajyppsgsrbzkfqyrp6ufsdwrnm6g5tqd.onion/
+info: System.Net.Http.HttpClient.TorClient.ClientHandler[101]
+      Received HTTP response headers after 4171.2321ms - 503
+info: System.Net.Http.HttpClient.TorClient.LogicalHandler[101]
+      End processing HTTP request after 4171.6603ms - 503
+info: System.Net.Http.HttpClient.TorClient.LogicalHandler[100]
+      Start processing HTTP request GET http://dauntdatakit2xi4usevwp3pajyppsgsrbzkfqyrp6ufsdwrnm6g5tqd.onion/
+info: System.Net.Http.HttpClient.TorClient.ClientHandler[100]
+      Sending HTTP request GET http://dauntdatakit2xi4usevwp3pajyppsgsrbzkfqyrp6ufsdwrnm6g5tqd.onion/
+info: System.Net.Http.HttpClient.TorClient.ClientHandler[101]
+      Received HTTP response headers after 5109.6628ms - 503
+info: System.Net.Http.HttpClient.TorClient.LogicalHandler[101]
+      End processing HTTP request after 5110.5494ms - 503
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (2ms) [Parameters=[@p1='?' (DbType = Int32), @p0='?' (DbType = DateTime)], CommandType='Text', CommandTimeout='30']
+      UPDATE "OnionStatuses" SET "LastChecked" = @p0
+      WHERE "Id" = @p1;
+info: System.Net.Http.HttpClient.TorClient.LogicalHandler[100]
+      Start processing HTTP request GET https://digdig2nugjpszzmqe5ep2bk7lqfpdlyrkojsx2j6kzalnrqtwedr3id.onion/
+info: System.Net.Http.HttpClient.TorClient.ClientHandler[100]
+      Sending HTTP request GET https://digdig2nugjpszzmqe5ep2bk7lqfpdlyrkojsx2j6kzalnrqtwedr3id.onion/
+info: System.Net.Http.HttpClient.TorClient.ClientHandler[101]
+      Received HTTP response headers after 1074.6181ms - 200
+info: System.Net.Http.HttpClient.TorClient.LogicalHandler[101]
+      End processing HTTP request after 1074.7046ms - 200
+info: System.Net.Http.HttpClient.TorClient.LogicalHandler[100]
+      Start processing HTTP request GET https://digdig2nugjpszzmqe5ep2bk7lqfpdlyrkojsx2j6kzalnrqtwedr3id.onion/
+info: System.Net.Http.HttpClient.TorClient.ClientHandler[100]
+      Sending HTTP request GET https://digdig2nugjpszzmqe5ep2bk7lqfpdlyrkojsx2j6kzalnrqtwedr3id.onion/
+info: System.Net.Http.HttpClient.TorClient.ClientHandler[101]
+      Received HTTP response headers after 367.5419ms - 200
+info: System.Net.Http.HttpClient.TorClient.LogicalHandler[101]
+      End processing HTTP request after 367.8674ms - 200
+info: System.Net.Http.HttpClient.TorClient.LogicalHandler[100]
+      Start processing HTTP request GET https://digdig2nugjpszzmqe5ep2bk7lqfpdlyrkojsx2j6kzalnrqtwedr3id.onion/
+info: System.Net.Http.HttpClient.TorClient.ClientHandler[100]
+      Sending HTTP request GET https://digdig2nugjpszzmqe5ep2bk7lqfpdlyrkojsx2j6kzalnrqtwedr3id.onion/
+info: System.Net.Http.HttpClient.TorClient.ClientHandler[101]
+      Received HTTP response headers after 361.8781ms - 200
+info: System.Net.Http.HttpClient.TorClient.LogicalHandler[101]
+      End processing HTTP request after 361.9715ms - 200
+info: System.Net.Http.HttpClient.TorClient.LogicalHandler[100]
+      Start processing HTTP request GET https://digdig2nugjpszzmqe5ep2bk7lqfpdlyrkojsx2j6kzalnrqtwedr3id.onion/
+info: System.Net.Http.HttpClient.TorClient.ClientHandler[100]
+      Sending HTTP request GET https://digdig2nugjpszzmqe5ep2bk7lqfpdlyrkojsx2j6kzalnrqtwedr3id.onion/
+info: System.Net.Http.HttpClient.TorClient.ClientHandler[101]
+      Received HTTP response headers after 366.5602ms - 200
+info: System.Net.Http.HttpClient.TorClient.LogicalHandler[101]
+      End processing HTTP request after 366.6748ms - 200
+info: System.Net.Http.HttpClient.TorClient.LogicalHandler[100]
+      Start processing HTTP request GET https://digdig2nugjpszzmqe5ep2bk7lqfpdlyrkojsx2j6kzalnrqtwedr3id.onion/
+info: System.Net.Http.HttpClient.TorClient.ClientHandler[100]
+      Sending HTTP request GET https://digdig2nugjpszzmqe5ep2bk7lqfpdlyrkojsx2j6kzalnrqtwedr3id.onion/
+info: System.Net.Http.HttpClient.TorClient.ClientHandler[101]
+      Received HTTP response headers after 366.327ms - 200
+info: System.Net.Http.HttpClient.TorClient.LogicalHandler[101]
+      End processing HTTP request after 366.5937ms - 200
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (2ms) [Parameters=[@p3='?' (DbType = Int32), @p0='?' (DbType = Double), @p1='?' (DbType = DateTime), @p2='?' (DbType = Double)], CommandType='Text', CommandTimeout='30']
+      UPDATE "OnionStatuses" SET "AverageLatency" = @p0, "LastChecked" = @p1, "ResponseTime" = @p2
+      WHERE "Id" = @p3;
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (2ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT o."Id", o."AverageLatency", o."Description", o."LastChecked", o."Name", o."OnionUrl", o."ReachableAttempts", o."ResponseTime", o."Status", o."TotalAttempts"
+      FROM "OnionStatuses" AS o
+info: System.Net.Http.HttpClient.TorClient.LogicalHandler[100]
+      Start processing HTTP request GET https://pitchprash4aqilfr7sbmuwve3pnkpylqwxjbj2q5o4szcfeea6d27yd.onion/
+info: System.Net.Http.HttpClient.TorClient.ClientHandler[100]
+      Sending HTTP request GET https://pitchprash4aqilfr7sbmuwve3pnkpylqwxjbj2q5o4szcfeea6d27yd.onion/
+info: System.Net.Http.HttpClient.TorClient.ClientHandler[101]
+      Received HTTP response headers after 2989.0373ms - 200
+info: System.Net.Http.HttpClient.TorClient.LogicalHandler[101]
+      End processing HTTP request after 2989.2273ms - 200
+info: System.Net.Http.HttpClient.TorClient.LogicalHandler[100]
+      Start processing HTTP request GET https://pitchprash4aqilfr7sbmuwve3pnkpylqwxjbj2q5o4szcfeea6d27yd.onion/
+info: System.Net.Http.HttpClient.TorClient.ClientHandler[100]
+      Sending HTTP request GET https://pitchprash4aqilfr7sbmuwve3pnkpylqwxjbj2q5o4szcfeea6d27yd.onion/
+info: System.Net.Http.HttpClient.TorClient.ClientHandler[101]
+      Received HTTP response headers after 441.6294ms - 200
+info: System.Net.Http.HttpClient.TorClient.LogicalHandler[101]
+      End processing HTTP request after 441.7323ms - 200
+info: System.Net.Http.HttpClient.TorClient.LogicalHandler[100]
+      Start processing HTTP request GET https://pitchprash4aqilfr7sbmuwve3pnkpylqwxjbj2q5o4szcfeea6d27yd.onion/
+info: System.Net.Http.HttpClient.TorClient.ClientHandler[100]
+      Sending HTTP request GET https://pitchprash4aqilfr7sbmuwve3pnkpylqwxjbj2q5o4szcfeea6d27yd.onion/
+info: System.Net.Http.HttpClient.TorClient.ClientHandler[101]
+      Received HTTP response headers after 569.5266ms - 200
+info: System.Net.Http.HttpClient.TorClient.LogicalHandler[101]
+      End processing HTTP request after 569.7134ms - 200
+info: System.Net.Http.HttpClient.TorClient.LogicalHandler[100]
+      Start processing HTTP request GET https://pitchprash4aqilfr7sbmuwve3pnkpylqwxjbj2q5o4szcfeea6d27yd.onion/
+info: System.Net.Http.HttpClient.TorClient.ClientHandler[100]
+      Sending HTTP request GET https://pitchprash4aqilfr7sbmuwve3pnkpylqwxjbj2q5o4szcfeea6d27yd.onion/
+info: System.Net.Http.HttpClient.TorClient.ClientHandler[101]
+      Received HTTP response headers after 416.1776ms - 200
+info: System.Net.Http.HttpClient.TorClient.LogicalHandler[101]
+      End processing HTTP request after 416.7036ms - 200
+info: System.Net.Http.HttpClient.TorClient.LogicalHandler[100]
+      Start processing HTTP request GET https://pitchprash4aqilfr7sbmuwve3pnkpylqwxjbj2q5o4szcfeea6d27yd.onion/
+info: System.Net.Http.HttpClient.TorClient.ClientHandler[100]
+      Sending HTTP request GET https://pitchprash4aqilfr7sbmuwve3pnkpylqwxjbj2q5o4szcfeea6d27yd.onion/
+info: System.Net.Http.HttpClient.TorClient.ClientHandler[101]
+      Received HTTP response headers after 431.3779ms - 200
+info: System.Net.Http.HttpClient.TorClient.LogicalHandler[101]
+      End processing HTTP request after 431.6659ms - 200
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (5ms) [Parameters=[@p3='?' (DbType = Int32), @p0='?' (DbType = Double), @p1='?' (DbType = DateTime), @p2='?' (DbType = Double)], CommandType='Text', CommandTimeout='30']
+      UPDATE "OnionStatuses" SET "AverageLatency" = @p0, "LastChecked" = @p1, "ResponseTime" = @p2
+      WHERE "Id" = @p3;
+info: System.Net.Http.HttpClient.TorClient.LogicalHandler[100]
+      Start processing HTTP request GET http://jaz45aabn5vkemy4jkg4mi4syheisqn2wn2n4fsuitpccdackjwxplad.onion/
+info: System.Net.Http.HttpClient.TorClient.ClientHandler[100]
+      Sending HTTP request GET http://jaz45aabn5vkemy4jkg4mi4syheisqn2wn2n4fsuitpccdackjwxplad.onion/
+info: System.Net.Http.HttpClient.TorClient.ClientHandler[101]
+      Received HTTP response headers after 5606.5392ms - 200
+info: System.Net.Http.HttpClient.TorClient.LogicalHandler[101]
+      End processing HTTP request after 5606.764ms - 200
+info: System.Net.Http.HttpClient.TorClient.LogicalHandler[100]
+      Start processing HTTP request GET http://jaz45aabn5vkemy4jkg4mi4syheisqn2wn2n4fsuitpccdackjwxplad.onion/
+info: System.Net.Http.HttpClient.TorClient.ClientHandler[100]
+      Sending HTTP request GET http://jaz45aabn5vkemy4jkg4mi4syheisqn2wn2n4fsuitpccdackjwxplad.onion/
+info: System.Net.Http.HttpClient.TorClient.ClientHandler[101]
+      Received HTTP response headers after 1659.096ms - 200
+info: System.Net.Http.HttpClient.TorClient.LogicalHandler[101]
+      End processing HTTP request after 1659.1671ms - 200
+info: System.Net.Http.HttpClient.TorClient.LogicalHandler[100]
+      Start processing HTTP request GET http://jaz45aabn5vkemy4jkg4mi4syheisqn2wn2n4fsuitpccdackjwxplad.onion/
+info: System.Net.Http.HttpClient.TorClient.ClientHandler[100]
+      Sending HTTP request GET http://jaz45aabn5vkemy4jkg4mi4syheisqn2wn2n4fsuitpccdackjwxplad.onion/
+info: System.Net.Http.HttpClient.TorClient.ClientHandler[101]
+      Received HTTP response headers after 3980.7749ms - 200
+info: System.Net.Http.HttpClient.TorClient.LogicalHandler[101]
+      End processing HTTP request after 3981.0507ms - 200
+info: System.Net.Http.HttpClient.TorClient.LogicalHandler[100]
+      Start processing HTTP request GET http://jaz45aabn5vkemy4jkg4mi4syheisqn2wn2n4fsuitpccdackjwxplad.onion/
+info: System.Net.Http.HttpClient.TorClient.ClientHandler[100]
+      Sending HTTP request GET http://jaz45aabn5vkemy4jkg4mi4syheisqn2wn2n4fsuitpccdackjwxplad.onion/
+info: System.Net.Http.HttpClient.TorClient.ClientHandler[101]
+      Received HTTP response headers after 4280.7166ms - 200
+info: System.Net.Http.HttpClient.TorClient.LogicalHandler[101]
+      End processing HTTP request after 4280.7804ms - 200
+info: System.Net.Http.HttpClient.TorClient.LogicalHandler[100]
+      Start processing HTTP request GET http://jaz45aabn5vkemy4jkg4mi4syheisqn2wn2n4fsuitpccdackjwxplad.onion/
+info: System.Net.Http.HttpClient.TorClient.ClientHandler[100]
+      Sending HTTP request GET http://jaz45aabn5vkemy4jkg4mi4syheisqn2wn2n4fsuitpccdackjwxplad.onion/
+info: System.Net.Http.HttpClient.TorClient.ClientHandler[101]
+      Received HTTP response headers after 4046.2221ms - 200
+info: System.Net.Http.HttpClient.TorClient.LogicalHandler[101]
+      End processing HTTP request after 4046.6273ms - 200
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (2ms) [Parameters=[@p3='?' (DbType = Int32), @p0='?' (DbType = Double), @p1='?' (DbType = DateTime), @p2='?' (DbType = Double)], CommandType='Text', CommandTimeout='30']
+      UPDATE "OnionStatuses" SET "AverageLatency" = @p0, "LastChecked" = @p1, "ResponseTime" = @p2
+      WHERE "Id" = @p3;
+info: System.Net.Http.HttpClient.TorClient.LogicalHandler[100]
+      Start processing HTTP request GET http://dumpliwoard5qsrrsroni7bdiishealhky4snigbzfmzcquwo3kml4id.onion/
+info: System.Net.Http.HttpClient.TorClient.ClientHandler[100]
+      Sending HTTP request GET http://dumpliwoard5qsrrsroni7bdiishealhky4snigbzfmzcquwo3kml4id.onion/
+info: System.Net.Http.HttpClient.TorClient.ClientHandler[101]
+      Received HTTP response headers after 3919.9219ms - 200
+info: System.Net.Http.HttpClient.TorClient.LogicalHandler[101]
+      End processing HTTP request after 3920.4894ms - 200
+info: System.Net.Http.HttpClient.TorClient.LogicalHandler[100]
+      Start processing HTTP request GET http://dumpliwoard5qsrrsroni7bdiishealhky4snigbzfmzcquwo3kml4id.onion/
+info: System.Net.Http.HttpClient.TorClient.ClientHandler[100]
+      Sending HTTP request GET http://dumpliwoard5qsrrsroni7bdiishealhky4snigbzfmzcquwo3kml4id.onion/
+info: System.Net.Http.HttpClient.TorClient.ClientHandler[101]
+      Received HTTP response headers after 1558.2201ms - 200
+info: System.Net.Http.HttpClient.TorClient.LogicalHandler[101]
+      End processing HTTP request after 1558.4665ms - 200
+info: System.Net.Http.HttpClient.TorClient.LogicalHandler[100]
+      Start processing HTTP request GET http://dumpliwoard5qsrrsroni7bdiishealhky4snigbzfmzcquwo3kml4id.onion/
+info: System.Net.Http.HttpClient.TorClient.ClientHandler[100]
+      Sending HTTP request GET http://dumpliwoard5qsrrsroni7bdiishealhky4snigbzfmzcquwo3kml4id.onion/
+info: System.Net.Http.HttpClient.TorClient.ClientHandler[101]
+      Received HTTP response headers after 1120.2122ms - 200
+info: System.Net.Http.HttpClient.TorClient.LogicalHandler[101]
+      End processing HTTP request after 1120.2896ms - 200
+info: System.Net.Http.HttpClient.TorClient.LogicalHandler[100]
+      Start processing HTTP request GET http://dumpliwoard5qsrrsroni7bdiishealhky4snigbzfmzcquwo3kml4id.onion/
+info: System.Net.Http.HttpClient.TorClient.ClientHandler[100]
+      Sending HTTP request GET http://dumpliwoard5qsrrsroni7bdiishealhky4snigbzfmzcquwo3kml4id.onion/
+info: System.Net.Http.HttpClient.TorClient.ClientHandler[101]
+      Received HTTP response headers after 3204.1853ms - 200
+info: System.Net.Http.HttpClient.TorClient.LogicalHandler[101]
+      End processing HTTP request after 3204.3437ms - 200
+info: System.Net.Http.HttpClient.TorClient.LogicalHandler[100]
+      Start processing HTTP request GET http://dumpliwoard5qsrrsroni7bdiishealhky4snigbzfmzcquwo3kml4id.onion/
+info: System.Net.Http.HttpClient.TorClient.ClientHandler[100]
+      Sending HTTP request GET http://dumpliwoard5qsrrsroni7bdiishealhky4snigbzfmzcquwo3kml4id.onion/
+info: System.Net.Http.HttpClient.TorClient.ClientHandler[101]
+      Received HTTP response headers after 1462.3401ms - 200
+info: System.Net.Http.HttpClient.TorClient.LogicalHandler[101]
+      End processing HTTP request after 1462.9529ms - 200
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (2ms) [Parameters=[@p3='?' (DbType = Int32), @p0='?' (DbType = Double), @p1='?' (DbType = DateTime), @p2='?' (DbType = Double)], CommandType='Text', CommandTimeout='30']
+      UPDATE "OnionStatuses" SET "AverageLatency" = @p0, "LastChecked" = @p1, "ResponseTime" = @p2
+      WHERE "Id" = @p3;
+info: System.Net.Http.HttpClient.TorClient.LogicalHandler[100]
+      Start processing HTTP request GET http://dauntdatakit2xi4usevwp3pajyppsgsrbzkfqyrp6ufsdwrnm6g5tqd.onion/
+info: System.Net.Http.HttpClient.TorClient.ClientHandler[100]
+      Sending HTTP request GET http://dauntdatakit2xi4usevwp3pajyppsgsrbzkfqyrp6ufsdwrnm6g5tqd.onion/
+info: System.Net.Http.HttpClient.TorClient.ClientHandler[101]
+      Received HTTP response headers after 4491.5534ms - 503
+info: System.Net.Http.HttpClient.TorClient.LogicalHandler[101]
+      End processing HTTP request after 4491.6134ms - 503
+info: System.Net.Http.HttpClient.TorClient.LogicalHandler[100]
+      Start processing HTTP request GET http://dauntdatakit2xi4usevwp3pajyppsgsrbzkfqyrp6ufsdwrnm6g5tqd.onion/
+info: System.Net.Http.HttpClient.TorClient.ClientHandler[100]
+      Sending HTTP request GET http://dauntdatakit2xi4usevwp3pajyppsgsrbzkfqyrp6ufsdwrnm6g5tqd.onion/
+info: System.Net.Http.HttpClient.TorClient.ClientHandler[101]
+      Received HTTP response headers after 4853.9466ms - 503
+info: System.Net.Http.HttpClient.TorClient.LogicalHandler[101]
+      End processing HTTP request after 4854.0095ms - 503
+info: System.Net.Http.HttpClient.TorClient.LogicalHandler[100]
+      Start processing HTTP request GET http://dauntdatakit2xi4usevwp3pajyppsgsrbzkfqyrp6ufsdwrnm6g5tqd.onion/
+info: System.Net.Http.HttpClient.TorClient.ClientHandler[100]
+      Sending HTTP request GET http://dauntdatakit2xi4usevwp3pajyppsgsrbzkfqyrp6ufsdwrnm6g5tqd.onion/
+info: System.Net.Http.HttpClient.TorClient.ClientHandler[101]
+      Received HTTP response headers after 4512.0608ms - 503
+info: System.Net.Http.HttpClient.TorClient.LogicalHandler[101]
+      End processing HTTP request after 4512.1096ms - 503
+info: System.Net.Http.HttpClient.TorClient.LogicalHandler[100]
+      Start processing HTTP request GET http://dauntdatakit2xi4usevwp3pajyppsgsrbzkfqyrp6ufsdwrnm6g5tqd.onion/
+info: System.Net.Http.HttpClient.TorClient.ClientHandler[100]
+      Sending HTTP request GET http://dauntdatakit2xi4usevwp3pajyppsgsrbzkfqyrp6ufsdwrnm6g5tqd.onion/
+info: System.Net.Http.HttpClient.TorClient.ClientHandler[101]
+      Received HTTP response headers after 4735.2937ms - 503
+info: System.Net.Http.HttpClient.TorClient.LogicalHandler[101]
+      End processing HTTP request after 4735.4937ms - 503
+info: System.Net.Http.HttpClient.TorClient.LogicalHandler[100]
+      Start processing HTTP request GET http://dauntdatakit2xi4usevwp3pajyppsgsrbzkfqyrp6ufsdwrnm6g5tqd.onion/
+info: System.Net.Http.HttpClient.TorClient.ClientHandler[100]
+      Sending HTTP request GET http://dauntdatakit2xi4usevwp3pajyppsgsrbzkfqyrp6ufsdwrnm6g5tqd.onion/
+info: System.Net.Http.HttpClient.TorClient.ClientHandler[101]
+      Received HTTP response headers after 5398.6747ms - 503
+info: System.Net.Http.HttpClient.TorClient.LogicalHandler[101]
+      End processing HTTP request after 5398.7619ms - 503
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (2ms) [Parameters=[@p1='?' (DbType = Int32), @p0='?' (DbType = DateTime)], CommandType='Text', CommandTimeout='30']
+      UPDATE "OnionStatuses" SET "LastChecked" = @p0
+      WHERE "Id" = @p1;
+info: System.Net.Http.HttpClient.TorClient.LogicalHandler[100]
+      Start processing HTTP request GET https://digdig2nugjpszzmqe5ep2bk7lqfpdlyrkojsx2j6kzalnrqtwedr3id.onion/
+info: System.Net.Http.HttpClient.TorClient.ClientHandler[100]
+      Sending HTTP request GET https://digdig2nugjpszzmqe5ep2bk7lqfpdlyrkojsx2j6kzalnrqtwedr3id.onion/
+info: System.Net.Http.HttpClient.TorClient.ClientHandler[101]
+      Received HTTP response headers after 4313.3271ms - 200
+info: System.Net.Http.HttpClient.TorClient.LogicalHandler[101]
+      End processing HTTP request after 4313.401ms - 200
+info: System.Net.Http.HttpClient.TorClient.LogicalHandler[100]
+      Start processing HTTP request GET https://digdig2nugjpszzmqe5ep2bk7lqfpdlyrkojsx2j6kzalnrqtwedr3id.onion/
+info: System.Net.Http.HttpClient.TorClient.ClientHandler[100]
+      Sending HTTP request GET https://digdig2nugjpszzmqe5ep2bk7lqfpdlyrkojsx2j6kzalnrqtwedr3id.onion/
+info: System.Net.Http.HttpClient.TorClient.ClientHandler[101]
+      Received HTTP response headers after 459.8405ms - 200
+info: System.Net.Http.HttpClient.TorClient.LogicalHandler[101]
+      End processing HTTP request after 460.2304ms - 200
+info: System.Net.Http.HttpClient.TorClient.LogicalHandler[100]
+      Start processing HTTP request GET https://digdig2nugjpszzmqe5ep2bk7lqfpdlyrkojsx2j6kzalnrqtwedr3id.onion/
+info: System.Net.Http.HttpClient.TorClient.ClientHandler[100]
+      Sending HTTP request GET https://digdig2nugjpszzmqe5ep2bk7lqfpdlyrkojsx2j6kzalnrqtwedr3id.onion/
+info: System.Net.Http.HttpClient.TorClient.ClientHandler[101]
+      Received HTTP response headers after 677.7987ms - 200
+info: System.Net.Http.HttpClient.TorClient.LogicalHandler[101]
+      End processing HTTP request after 677.8626ms - 200
+info: System.Net.Http.HttpClient.TorClient.LogicalHandler[100]
+      Start processing HTTP request GET https://digdig2nugjpszzmqe5ep2bk7lqfpdlyrkojsx2j6kzalnrqtwedr3id.onion/
+info: System.Net.Http.HttpClient.TorClient.ClientHandler[100]
+      Sending HTTP request GET https://digdig2nugjpszzmqe5ep2bk7lqfpdlyrkojsx2j6kzalnrqtwedr3id.onion/
+info: System.Net.Http.HttpClient.TorClient.ClientHandler[101]
+      Received HTTP response headers after 485.2151ms - 200
+info: System.Net.Http.HttpClient.TorClient.LogicalHandler[101]
+      End processing HTTP request after 485.2819ms - 200
+info: System.Net.Http.HttpClient.TorClient.LogicalHandler[100]
+      Start processing HTTP request GET https://digdig2nugjpszzmqe5ep2bk7lqfpdlyrkojsx2j6kzalnrqtwedr3id.onion/
+info: System.Net.Http.HttpClient.TorClient.ClientHandler[100]
+      Sending HTTP request GET https://digdig2nugjpszzmqe5ep2bk7lqfpdlyrkojsx2j6kzalnrqtwedr3id.onion/
+info: System.Net.Http.HttpClient.TorClient.ClientHandler[101]
+      Received HTTP response headers after 472.1514ms - 200
+info: System.Net.Http.HttpClient.TorClient.LogicalHandler[101]
+      End processing HTTP request after 472.2254ms - 200
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[@p3='?' (DbType = Int32), @p0='?' (DbType = Double), @p1='?' (DbType = DateTime), @p2='?' (DbType = Double)], CommandType='Text', CommandTimeout='30']
+      UPDATE "OnionStatuses" SET "AverageLatency" = @p0, "LastChecked" = @p1, "ResponseTime" = @p2
+      WHERE "Id" = @p3;
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT o."Id", o."AverageLatency", o."Description", o."LastChecked", o."Name", o."OnionUrl", o."ReachableAttempts", o."ResponseTime", o."Status", o."TotalAttempts"
+      FROM "OnionStatuses" AS o
+info: System.Net.Http.HttpClient.TorClient.LogicalHandler[100]
+      Start processing HTTP request GET https://digdig2nugjpszzmqe5ep2bk7lqfpdlyrkojsx2j6kzalnrqtwedr3id.onion/
+info: System.Net.Http.HttpClient.TorClient.ClientHandler[100]
+      Sending HTTP request GET https://digdig2nugjpszzmqe5ep2bk7lqfpdlyrkojsx2j6kzalnrqtwedr3id.onion/
+info: System.Net.Http.HttpClient.TorClient.ClientHandler[101]
+      Received HTTP response headers after 1319.6098ms - 200
+info: System.Net.Http.HttpClient.TorClient.LogicalHandler[101]
+      End processing HTTP request after 1319.9935ms - 200
+info: System.Net.Http.HttpClient.TorClient.LogicalHandler[100]
+      Start processing HTTP request GET https://digdig2nugjpszzmqe5ep2bk7lqfpdlyrkojsx2j6kzalnrqtwedr3id.onion/
+info: System.Net.Http.HttpClient.TorClient.ClientHandler[100]
+      Sending HTTP request GET https://digdig2nugjpszzmqe5ep2bk7lqfpdlyrkojsx2j6kzalnrqtwedr3id.onion/
+info: System.Net.Http.HttpClient.TorClient.ClientHandler[101]
+      Received HTTP response headers after 715.0373ms - 200
+info: System.Net.Http.HttpClient.TorClient.LogicalHandler[101]
+      End processing HTTP request after 715.2525ms - 200
+info: System.Net.Http.HttpClient.TorClient.LogicalHandler[100]
+      Start processing HTTP request GET https://digdig2nugjpszzmqe5ep2bk7lqfpdlyrkojsx2j6kzalnrqtwedr3id.onion/
+info: System.Net.Http.HttpClient.TorClient.ClientHandler[100]
+      Sending HTTP request GET https://digdig2nugjpszzmqe5ep2bk7lqfpdlyrkojsx2j6kzalnrqtwedr3id.onion/
+info: System.Net.Http.HttpClient.TorClient.ClientHandler[101]
+      Received HTTP response headers after 3562.2398ms - 200
+info: System.Net.Http.HttpClient.TorClient.LogicalHandler[101]
+      End processing HTTP request after 3562.4773ms - 200
+info: System.Net.Http.HttpClient.TorClient.LogicalHandler[100]
+      Start processing HTTP request GET https://digdig2nugjpszzmqe5ep2bk7lqfpdlyrkojsx2j6kzalnrqtwedr3id.onion/
+info: System.Net.Http.HttpClient.TorClient.ClientHandler[100]
+      Sending HTTP request GET https://digdig2nugjpszzmqe5ep2bk7lqfpdlyrkojsx2j6kzalnrqtwedr3id.onion/
+info: System.Net.Http.HttpClient.TorClient.ClientHandler[101]
+      Received HTTP response headers after 455.7031ms - 200
+info: System.Net.Http.HttpClient.TorClient.LogicalHandler[101]
+      End processing HTTP request after 456.5757ms - 200
+info: System.Net.Http.HttpClient.TorClient.LogicalHandler[100]
+      Start processing HTTP request GET https://digdig2nugjpszzmqe5ep2bk7lqfpdlyrkojsx2j6kzalnrqtwedr3id.onion/
+info: System.Net.Http.HttpClient.TorClient.ClientHandler[100]
+      Sending HTTP request GET https://digdig2nugjpszzmqe5ep2bk7lqfpdlyrkojsx2j6kzalnrqtwedr3id.onion/
+info: System.Net.Http.HttpClient.TorClient.ClientHandler[101]
+      Received HTTP response headers after 577.1606ms - 200
+info: System.Net.Http.HttpClient.TorClient.LogicalHandler[101]
+      End processing HTTP request after 577.6553ms - 200
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (3ms) [Parameters=[@p3='?' (DbType = Int32), @p0='?' (DbType = Double), @p1='?' (DbType = DateTime), @p2='?' (DbType = Double)], CommandType='Text', CommandTimeout='30']
+      UPDATE "OnionStatuses" SET "AverageLatency" = @p0, "LastChecked" = @p1, "ResponseTime" = @p2
+      WHERE "Id" = @p3;
+info: System.Net.Http.HttpClient.TorClient.LogicalHandler[100]
+      Start processing HTTP request GET https://pitchprash4aqilfr7sbmuwve3pnkpylqwxjbj2q5o4szcfeea6d27yd.onion/
+info: System.Net.Http.HttpClient.TorClient.ClientHandler[100]
+      Sending HTTP request GET https://pitchprash4aqilfr7sbmuwve3pnkpylqwxjbj2q5o4szcfeea6d27yd.onion/
+info: System.Net.Http.HttpClient.TorClient.ClientHandler[101]
+      Received HTTP response headers after 1194.3597ms - 200
+info: System.Net.Http.HttpClient.TorClient.LogicalHandler[101]
+      End processing HTTP request after 1194.505ms - 200
+info: System.Net.Http.HttpClient.TorClient.LogicalHandler[100]
+      Start processing HTTP request GET https://pitchprash4aqilfr7sbmuwve3pnkpylqwxjbj2q5o4szcfeea6d27yd.onion/
+info: System.Net.Http.HttpClient.TorClient.ClientHandler[100]
+      Sending HTTP request GET https://pitchprash4aqilfr7sbmuwve3pnkpylqwxjbj2q5o4szcfeea6d27yd.onion/
+info: System.Net.Http.HttpClient.TorClient.ClientHandler[101]
+      Received HTTP response headers after 460.3757ms - 200
+info: System.Net.Http.HttpClient.TorClient.LogicalHandler[101]
+      End processing HTTP request after 460.5272ms - 200
+info: System.Net.Http.HttpClient.TorClient.LogicalHandler[100]
+      Start processing HTTP request GET https://pitchprash4aqilfr7sbmuwve3pnkpylqwxjbj2q5o4szcfeea6d27yd.onion/
+info: System.Net.Http.HttpClient.TorClient.ClientHandler[100]
+      Sending HTTP request GET https://pitchprash4aqilfr7sbmuwve3pnkpylqwxjbj2q5o4szcfeea6d27yd.onion/
+info: System.Net.Http.HttpClient.TorClient.ClientHandler[101]
+      Received HTTP response headers after 423.8861ms - 200
+info: System.Net.Http.HttpClient.TorClient.LogicalHandler[101]
+      End processing HTTP request after 423.9746ms - 200
+info: System.Net.Http.HttpClient.TorClient.LogicalHandler[100]
+      Start processing HTTP request GET https://pitchprash4aqilfr7sbmuwve3pnkpylqwxjbj2q5o4szcfeea6d27yd.onion/
+info: System.Net.Http.HttpClient.TorClient.ClientHandler[100]
+      Sending HTTP request GET https://pitchprash4aqilfr7sbmuwve3pnkpylqwxjbj2q5o4szcfeea6d27yd.onion/
+info: System.Net.Http.HttpClient.TorClient.ClientHandler[101]
+      Received HTTP response headers after 465.4958ms - 200
+info: System.Net.Http.HttpClient.TorClient.LogicalHandler[101]
+      End processing HTTP request after 465.7416ms - 200
+info: System.Net.Http.HttpClient.TorClient.LogicalHandler[100]
+      Start processing HTTP request GET https://pitchprash4aqilfr7sbmuwve3pnkpylqwxjbj2q5o4szcfeea6d27yd.onion/
+info: System.Net.Http.HttpClient.TorClient.ClientHandler[100]
+      Sending HTTP request GET https://pitchprash4aqilfr7sbmuwve3pnkpylqwxjbj2q5o4szcfeea6d27yd.onion/
+info: System.Net.Http.HttpClient.TorClient.ClientHandler[101]
+      Received HTTP response headers after 455.5629ms - 200
+info: System.Net.Http.HttpClient.TorClient.LogicalHandler[101]
+      End processing HTTP request after 455.6956ms - 200
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (4ms) [Parameters=[@p3='?' (DbType = Int32), @p0='?' (DbType = Double), @p1='?' (DbType = DateTime), @p2='?' (DbType = Double)], CommandType='Text', CommandTimeout='30']
+      UPDATE "OnionStatuses" SET "AverageLatency" = @p0, "LastChecked" = @p1, "ResponseTime" = @p2
+      WHERE "Id" = @p3;
+info: System.Net.Http.HttpClient.TorClient.LogicalHandler[100]
+      Start processing HTTP request GET http://jaz45aabn5vkemy4jkg4mi4syheisqn2wn2n4fsuitpccdackjwxplad.onion/
+info: System.Net.Http.HttpClient.TorClient.ClientHandler[100]
+      Sending HTTP request GET http://jaz45aabn5vkemy4jkg4mi4syheisqn2wn2n4fsuitpccdackjwxplad.onion/
+info: System.Net.Http.HttpClient.TorClient.ClientHandler[101]
+      Received HTTP response headers after 3606.2051ms - 200
+info: System.Net.Http.HttpClient.TorClient.LogicalHandler[101]
+      End processing HTTP request after 3606.4027ms - 200
+info: System.Net.Http.HttpClient.TorClient.LogicalHandler[100]
+      Start processing HTTP request GET http://jaz45aabn5vkemy4jkg4mi4syheisqn2wn2n4fsuitpccdackjwxplad.onion/
+info: System.Net.Http.HttpClient.TorClient.ClientHandler[100]
+      Sending HTTP request GET http://jaz45aabn5vkemy4jkg4mi4syheisqn2wn2n4fsuitpccdackjwxplad.onion/

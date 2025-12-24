@@ -20,12 +20,25 @@ public class ThreadController : Controller
     public async Task<IActionResult> Index(int page = 1)
     {
         const int pageSize = 25;
-        var threads = await _forumService.GetThreadsAsync((page - 1) * pageSize, pageSize);
+        
+        // Hot: Wilson Score + Time Decay ranking with failsafe
+        ViewBag.HotThreads = await _forumService.GetHotThreadsAsync(pageSize);
+        
+        // New: Simple chronological order, newest first
+        var allThreads = await _forumService.GetThreadsAsync(0, 1000);
+        ViewBag.NewThreads = allThreads.OrderByDescending(t => t.CreatedAt).Take(pageSize).ToList();
+        
+        // News: Only threads with News category
+        ViewBag.NewsThreads = allThreads.Where(t => t.Category == "News").OrderByDescending(t => t.CreatedAt).Take(pageSize).ToList();
+        
+        // Announcements: Only threads with Announcements category
+        ViewBag.AnnouncementsThreads = allThreads.Where(t => t.Category == "Announcements").OrderByDescending(t => t.CreatedAt).Take(pageSize).ToList();
         
         ViewBag.CurrentPage = page;
-        ViewBag.HasMorePages = threads.Count == pageSize;
+        ViewBag.HasMorePages = false;
         
-        return View(threads);
+        // Return hot as default
+        return View(ViewBag.HotThreads as List<MyFace.Core.Entities.Thread>);
     }
 
     [HttpGet]

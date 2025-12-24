@@ -13,11 +13,13 @@ public class AccountController : Controller
 {
     private readonly UserService _userService;
     private readonly ApplicationDbContext _db;
+    private readonly MyFace.Web.Services.CaptchaService _captchaService;
 
-    public AccountController(UserService userService, ApplicationDbContext db)
+    public AccountController(UserService userService, ApplicationDbContext db, MyFace.Web.Services.CaptchaService captchaService)
     {
         _userService = userService;
         _db = db;
+        _captchaService = captchaService;
     }
 
     [HttpGet]
@@ -50,13 +52,30 @@ public class AccountController : Controller
     [HttpGet]
     public IActionResult Login()
     {
+        var challenge = _captchaService.GenerateChallenge();
+        HttpContext.Session.SetString("LoginCaptchaAnswer", challenge.Answer);
+        ViewBag.CaptchaContext = challenge.Context;
+        ViewBag.CaptchaQuestion = challenge.Question;
         return View();
     }
 
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Login(LoginViewModel model)
+    public async Task<IActionResult> Login(LoginViewModel model, string captchaAnswer)
     {
+        // Verify captcha first
+        var correctAnswer = HttpContext.Session.GetString("LoginCaptchaAnswer");
+        if (string.IsNullOrEmpty(captchaAnswer) || captchaAnswer != correctAnswer)
+        {
+            ModelState.AddModelError("", "Incorrect security check answer.");
+            // Regenerate captcha
+            var challenge = _captchaService.GenerateChallenge();
+            HttpContext.Session.SetString("LoginCaptchaAnswer", challenge.Answer);
+            ViewBag.CaptchaContext = challenge.Context;
+            ViewBag.CaptchaQuestion = challenge.Question;
+            return View(model);
+        }
+
         if (!ModelState.IsValid)
         {
             return View(model);
@@ -67,6 +86,11 @@ public class AccountController : Controller
         if (user == null)
         {
             ModelState.AddModelError("", "Invalid username or password.");
+            // Regenerate captcha
+            var challenge = _captchaService.GenerateChallenge();
+            HttpContext.Session.SetString("LoginCaptchaAnswer", challenge.Answer);
+            ViewBag.CaptchaContext = challenge.Context;
+            ViewBag.CaptchaQuestion = challenge.Question;
             return View(model);
         }
 

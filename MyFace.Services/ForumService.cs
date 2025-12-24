@@ -239,4 +239,102 @@ public class ForumService
 
         return votes.Sum(v => v.Value);
     }
+
+    // Wilson Score + Time Decay for Hot ranking
+    public double CalculateHotScore(int upvotes, int downvotes, DateTime createdAt)
+    {
+        int total = upvotes + downvotes;
+        if (total == 0) return 0;
+
+        // Wilson score confidence interval
+        double z = 1.96; // 95% confidence
+        double phat = (double)upvotes / total;
+        double wilson = (phat + z * z / (2 * total) - z * Math.Sqrt((phat * (1 - phat) + z * z / (4 * total)) / total)) / (1 + z * z / total);
+
+        // Time decay
+        double daysOld = (DateTime.UtcNow - createdAt).TotalDays;
+        double timeDecay = 1.0 / (daysOld + 0.5);
+
+        return wilson * timeDecay * 1000; // Scale up for easier sorting
+    }
+
+    public async Task<List<ThreadEntity>> GetHotThreadsAsync(int take = 25)
+    {
+        var threads = await _context.Threads
+            .Include(t => t.User)
+            .Include(t => t.Posts)
+                .ThenInclude(p => p.Votes)
+            .Where(t => !t.IsLocked)
+            .ToListAsync();
+
+        // Calculate hot scores
+        var rankedThreads = threads
+            .Select(t => new
+            {
+                Thread = t,
+                HotScore = CalculateHotScoreForThread(t)
+            })
+            .OrderByDescending(x => x.HotScore)
+            .Take(take)
+            .Select(x => x.Thread)
+            .ToList();
+
+        // Failsafe: if no hot threads, return by vote count
+        if (!rankedThreads.Any() || rankedThreads.All(t => CalculateHotScoreForThread(t) == 0))
+        {
+            return threads
+                .OrderByDescending(t => t.Posts.SelectMany(p => p.Votes).Sum(v => v.Value))
+                .Take(take)
+                .ToList();
+        }
+
+        return rankedThreads;
+    }
+
+    private double CalculateHotScoreForThread(ThreadEntity thread)
+    {
+        var votes = thread.Posts.SelectMany(p => p.Votes).ToList();
+        int upvotes = votes.Count(v => v.Value > 0);
+        int downvotes = votes.Count(v => v.Value < 0);
+        return CalculateHotScore(upvotes, downvotes, thread.CreatedAt);
+    }
+
+    public async Task<List<Post>> GetHotPostsForThreadAsync(int threadId, int skip, int take)
+    {
+        var posts = await _context.Posts
+            .Include(p => p.User)
+            .Include(p => p.Votes)
+            .Where(p => p.ThreadId == threadId && !p.IsDeleted)
+            .ToListAsync();
+
+        // Calculate hot scores
+        var rankedPosts = posts
+            .Select(p => new
+            {
+                Post = p,
+                HotScore = CalculateHotScore(
+                    p.Votes.Count(v => v.Value > 0),
+                    p.Votes.Count(v => v.Value < 0),
+                    p.CreatedAt
+                )
+            })
+            .OrderByDescending(x => x.HotScore)
+            .Skip(skip)
+            .Take(take)
+            .Select(x => x.Post)
+            .ToList();
+
+        // Failsafe: if no hot posts, return by vote count
+        if (!rankedPosts.Any() || rankedPosts.All(p => p.Votes.Sum(v => v.Value) == 0))
+        {
+            return posts
+                .OrderByDescending(p => p.Votes.Sum(v => v.Value))
+                .Skip(skip)
+                .Take(take)
+                .ToList();
+        }
+
+        return rankedPosts;
+    }
 }
+
