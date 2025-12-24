@@ -7,7 +7,7 @@
 <div style="color: @Model.User.FontColor; font-family: @Model.User.FontFamily">
     <h1>@Model.Title</h1>
     <p class="meta">
-        Posted by <a href="/user/@Model.User.Username">@Model.User.Username</a> on @Model.CreatedAt.ToString("u")
+        Posted by @await Html.PartialAsync("_UserName", Model.User) on @Model.CreatedAt.ToString("u")
     </p>
 
     <div class="card">

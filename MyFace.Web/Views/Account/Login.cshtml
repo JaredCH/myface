@@ -4,8 +4,9 @@
 }
 <h1>Login</h1>
 <form asp-action="Login" method="post">
-    <label asp-for="Username"></label>
-    <input asp-for="Username" class="input" />
+    <label asp-for="Username">🔐 Login Name (Private)</label>
+    <input asp-for="Username" class="input" placeholder="Your private login name" />
+    <p class="meta" style="margin-top: 0.25rem; font-size: 0.85rem;">Enter your private login name, not your public username.</p>
 
     <label asp-for="Password"></label>
     <input asp-for="Password" class="input" />

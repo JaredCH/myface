@@ -37,16 +37,16 @@ public class AccountController : Controller
             return View(model);
         }
 
-        var user = await _userService.RegisterAsync(model.Username, model.Password, model.PgpPublicKey);
+        var user = await _userService.RegisterAsync(model.Username, model.Password, null);
         
         if (user == null)
         {
-            ModelState.AddModelError("", "Username already exists.");
+            ModelState.AddModelError("", "Login name already exists. Please choose a different one.");
             return View(model);
         }
 
-        await SignInUserAsync(user.Id, user.Username);
-        return RedirectToAction("Index", "Home");
+        await SignInUserAsync(user.Id, user.LoginName, string.Empty);
+        return RedirectToAction("SetUsername");
     }
 
     [HttpGet]
@@ -85,7 +85,7 @@ public class AccountController : Controller
         
         if (user == null)
         {
-            ModelState.AddModelError("", "Invalid username or password.");
+            ModelState.AddModelError("", "Invalid login credentials.");
             // Regenerate captcha
             var challenge = _captchaService.GenerateChallenge();
             HttpContext.Session.SetString("LoginCaptchaAnswer", challenge.Answer);
@@ -94,7 +94,14 @@ public class AccountController : Controller
             return View(model);
         }
 
-        await SignInUserAsync(user.Id, user.Username);
+        // If user hasn't set a username yet, redirect to SetUsername
+        if (string.IsNullOrEmpty(user.Username))
+        {
+            await SignInUserAsync(user.Id, user.LoginName, string.Empty);
+            return RedirectToAction("SetUsername");
+        }
+
+        await SignInUserAsync(user.Id, user.LoginName, user.Username);
         return RedirectToAction("Index", "Home");
     }
 
@@ -104,15 +111,18 @@ public class AccountController : Controller
         return RedirectToAction("Index", "Home");
     }
 
-    private async Task SignInUserAsync(int userId, string username)
+    private async Task SignInUserAsync(int userId, string loginName, string username)
     {
         var user = await _userService.GetUserByIdAsync(userId);
         var role = user?.Role ?? "User";
 
+        // Use username for display if set, otherwise use LoginName temporarily
+        var displayName = !string.IsNullOrEmpty(username) ? username : loginName;
+
         var claims = new List<Claim>
         {
             new Claim(ClaimTypes.NameIdentifier, userId.ToString()),
-            new Claim(ClaimTypes.Name, username),
+            new Claim(ClaimTypes.Name, displayName),
             new Claim(ClaimTypes.Role, role)
         };
 
@@ -127,6 +137,208 @@ public class AccountController : Controller
             CookieAuthenticationDefaults.AuthenticationScheme,
             new ClaimsPrincipal(claimsIdentity),
             authProperties);
+    }
+
+    [HttpGet]
+    public IActionResult SetUsername()
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (string.IsNullOrEmpty(userId))
+        {
+            return RedirectToAction("Login");
+        }
+
+        return View();
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> SetUsername(string username, string action)
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (string.IsNullOrEmpty(userId))
+        {
+            return RedirectToAction("Login");
+        }
+
+        if (string.IsNullOrWhiteSpace(username))
+        {
+            TempData["Error"] = "Username cannot be empty.";
+            return View();
+        }
+
+        // Validate username format
+        if (!System.Text.RegularExpressions.Regex.IsMatch(username, @"^[a-zA-Z0-9_]+$"))
+        {
+            TempData["Error"] = "Username can only contain letters, numbers, and underscores.";
+            return View();
+        }
+
+        // Set the username
+        var success = await _userService.SetUsernameAsync(int.Parse(userId), username);
+        
+        if (!success)
+        {
+            TempData["Error"] = "Username is already taken. Please choose a different one.";
+            return View();
+        }
+
+        // Update the claims with the new username
+        var user = await _userService.GetByIdAsync(int.Parse(userId));
+        if (user != null)
+        {
+            await SignInUserAsync(user.Id, user.LoginName, user.Username);
+        }
+
+        // Redirect based on action
+        if (action == "save_and_pgp")
+        {
+            return RedirectToAction("PgpSetup");
+        }
+
+        TempData["Success"] = $"Welcome, {username}! Your username has been set.";
+        return RedirectToAction("Index", "Thread");
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> PgpSetup()
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (string.IsNullOrEmpty(userId))
+        {
+            return RedirectToAction("Login");
+        }
+
+        var user = await _userService.GetByIdAsync(int.Parse(userId));
+        if (user == null)
+        {
+            return RedirectToAction("Login");
+        }
+
+        ViewBag.Username = user.Username;
+        ViewBag.CurrentKey = user.PgpPublicKey;
+        ViewBag.Step = TempData["Step"] ?? "1";
+        ViewBag.Challenge = TempData["Challenge"];
+        ViewBag.Fingerprint = TempData["Fingerprint"];
+        ViewBag.Error = TempData["Error"];
+        ViewBag.Message = TempData["Message"];
+        return View();
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> PgpSetupStep1(string PgpPublicKey)
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (string.IsNullOrEmpty(userId))
+        {
+            return RedirectToAction("Login");
+        }
+
+        var user = await _userService.GetByIdAsync(int.Parse(userId));
+        if (user == null)
+        {
+            return RedirectToAction("Login");
+        }
+
+        if (string.IsNullOrWhiteSpace(PgpPublicKey))
+        {
+            TempData["Error"] = "Please provide a PGP public key.";
+            TempData["Step"] = "1";
+            return RedirectToAction("PgpSetup");
+        }
+
+        // Extract fingerprint from the public key
+        if (!PgpVerifier.TryGetPrimaryPublicKey(PgpPublicKey, out var pubKey, out var fingerprint, out var error))
+        {
+            TempData["Error"] = $"Invalid PGP key: {error}";
+            TempData["Step"] = "1";
+            return RedirectToAction("PgpSetup");
+        }
+
+        // Save the key
+        user.PgpPublicKey = PgpPublicKey;
+        await _db.SaveChangesAsync();
+
+        // Generate challenge
+        var challenge = new PGPVerification
+        {
+            UserId = user.Id,
+            Fingerprint = fingerprint,
+            ChallengeText = Guid.NewGuid().ToString("N"),
+            Verified = false,
+            CreatedAt = DateTime.UtcNow
+        };
+        _db.PGPVerifications.Add(challenge);
+        await _db.SaveChangesAsync();
+
+        TempData["Step"] = "2";
+        TempData["Challenge"] = challenge.ChallengeText;
+        TempData["Fingerprint"] = fingerprint;
+        return RedirectToAction("PgpSetup");
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> PgpSetupStep2(string Response, string Fingerprint)
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (string.IsNullOrEmpty(userId))
+        {
+            return RedirectToAction("Login");
+        }
+
+        var user = await _userService.GetByIdAsync(int.Parse(userId));
+        if (user == null)
+        {
+            return RedirectToAction("Login");
+        }
+
+        if (string.IsNullOrWhiteSpace(Response))
+        {
+            TempData["Error"] = "Please provide a signature.";
+            TempData["Step"] = "2";
+            TempData["Fingerprint"] = Fingerprint;
+            return RedirectToAction("PgpSetup");
+        }
+
+        var latest = _db.PGPVerifications
+            .Where(v => v.UserId == user.Id)
+            .OrderByDescending(v => v.CreatedAt)
+            .FirstOrDefault();
+
+        if (latest == null)
+        {
+            TempData["Error"] = "No challenge found. Please start over.";
+            TempData["Step"] = "1";
+            return RedirectToAction("PgpSetup");
+        }
+
+        if (string.IsNullOrWhiteSpace(user.PgpPublicKey))
+        {
+            TempData["Error"] = "No PGP key found. Please start over.";
+            TempData["Step"] = "1";
+            return RedirectToAction("PgpSetup");
+        }
+
+        // Verify signature
+        if (!PgpVerifier.VerifySignature(user.PgpPublicKey, Response, latest.ChallengeText, out var error))
+        {
+            TempData["Error"] = $"Signature verification failed: {error}";
+            TempData["Step"] = "2";
+            TempData["Challenge"] = latest.ChallengeText;
+            TempData["Fingerprint"] = Fingerprint;
+            return RedirectToAction("PgpSetup");
+        }
+
+        // Mark as verified
+        latest.Verified = true;
+        await _db.SaveChangesAsync();
+
+        TempData["Step"] = "3";
+        TempData["Message"] = "PGP key verified successfully!";
+        TempData["Fingerprint"] = Fingerprint;
+        return RedirectToAction("PgpSetup");
     }
 
     [HttpGet]

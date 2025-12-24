@@ -26,7 +26,7 @@
     }
     else
     {
-        <a href="/user/@(Model.User?.Username ?? "Anonymous")">@(Model.User?.Username ?? "Anonymous")</a>
+        @await Html.PartialAsync("_UserName", Model.User)
     }
     @if (Model.IsLocked)
     {
@@ -43,18 +43,21 @@
     <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 0.5rem 1rem; margin-bottom: 1rem; border-radius: 8px; display: flex; align-items: center; gap: 0.75rem; box-shadow: 0 2px 8px rgba(102, 126, 234, 0.2);">
         <span style="color: white; font-weight: 600; font-size: 0.9rem;">📁 Category:</span>
         <form method="post" action="/thread/setcategory/@Model.Id" style="display: inline;">
-            <button type="submit" name="category" value="Hot" style="background: rgba(255,255,255,0.95); color: #667eea; border: none; padding: 0.35rem 0.9rem; border-radius: 6px; font-size: 0.85rem; font-weight: 600; cursor: pointer; transition: all 0.2s; box-shadow: 0 2px 4px rgba(0,0,0,0.1);" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 8px rgba(0,0,0,0.15)'" onmouseout="this.style.transform=''; this.style.boxShadow='0 2px 4px rgba(0,0,0,0.1)'">🔥 Hot</button>
+            <button type="submit" name="category" value="Hot" class="category-btn">🔥 Hot</button>
+            @Html.AntiForgeryToken()
         </form>
         @if (userRole == "Moderator" || userRole == "Admin")
         {
             <form method="post" action="/thread/setcategory/@Model.Id" style="display: inline;">
-                <button type="submit" name="category" value="News" style="background: rgba(255,255,255,0.95); color: #667eea; border: none; padding: 0.35rem 0.9rem; border-radius: 6px; font-size: 0.85rem; font-weight: 600; cursor: pointer; transition: all 0.2s; box-shadow: 0 2px 4px rgba(0,0,0,0.1);" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 8px rgba(0,0,0,0.15)'" onmouseout="this.style.transform=''; this.style.boxShadow='0 2px 4px rgba(0,0,0,0.1)'">📰 News</button>
+                <button type="submit" name="category" value="News" class="category-btn">📰 News</button>
+                @Html.AntiForgeryToken()
             </form>
         }
         @if (userRole == "Admin")
         {
             <form method="post" action="/thread/setcategory/@Model.Id" style="display: inline;">
-                <button type="submit" name="category" value="Announcements" style="background: rgba(255,255,255,0.95); color: #667eea; border: none; padding: 0.35rem 0.9rem; border-radius: 6px; font-size: 0.85rem; font-weight: 600; cursor: pointer; transition: all 0.2s; box-shadow: 0 2px 4px rgba(0,0,0,0.1);" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 8px rgba(0,0,0,0.15)'" onmouseout="this.style.transform=''; this.style.boxShadow='0 2px 4px rgba(0,0,0,0.1)'">📢 Announcements</button>
+                <button type="submit" name="category" value="Announcements" class="category-btn">📢 Announcements</button>
+                @Html.AntiForgeryToken()
             </form>
         }
     </div>
@@ -75,7 +78,7 @@
             }
             else
             {
-                <a href="/user/@(post.User?.Username ?? "Anonymous")">@(post.User?.Username ?? "Anonymous")</a>
+                @await Html.PartialAsync("_UserName", post.User)
             }
             @if (post.EditedAt.HasValue)
             {

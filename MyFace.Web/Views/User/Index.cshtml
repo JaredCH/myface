@@ -11,7 +11,13 @@
 }
 
 <div style="color: @user.FontColor; font-family: @user.FontFamily">
-    <h1>@user.Username</h1>
+    <h1 style="display: inline-flex; align-items: center; gap: 0.5rem;">
+        @user.Username
+        @if (user.PGPVerifications?.Any(v => v.Verified) == true)
+        {
+            <span style="color: #10b981; font-size: 1.5rem;" title="PGP Verified">✓</span>
+        }
+    </h1>
     <p class="meta">Joined @user.CreatedAt.ToString("u")</p>
 
     @if (isSelf)
@@ -21,37 +27,50 @@
 
     @if (isAdminOrMod)
     {
-        <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 0.4rem 0.6rem; margin-bottom: 1rem; border-radius: 6px; box-shadow: 0 2px 4px rgba(102, 126, 234, 0.15);">
-            <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem;">
-                <span style="color: white; font-weight: 600; font-size: 0.8rem;">⚙️</span>
-                
-                <form asp-action="AdminEditAboutMe" method="post" style="display: flex; align-items: center; gap: 0.3rem; flex: 1; min-width: 200px;">
-                    <input type="hidden" name="userId" value="@user.Id" />
-                    <input name="aboutMe" value="@user.AboutMe" placeholder="About me..." style="flex: 1; padding: 0.3rem 0.5rem; border: none; border-radius: 4px; font-size: 0.75rem; background: rgba(255,255,255,0.95);" />
-                    <button type="submit" style="background: rgba(255,255,255,0.95); color: #667eea; border: none; padding: 0.3rem 0.6rem; border-radius: 4px; font-size: 0.75rem; font-weight: 600; cursor: pointer; white-space: nowrap;">✏️ Save</button>
-                </form>
-                
-                <form asp-action="SuspendUser" method="post" style="display: flex; align-items: center; gap: 0.3rem;">
-                    <input type="hidden" name="userId" value="@user.Id" />
-                    <select name="duration" style="padding: 0.3rem; border: none; border-radius: 4px; font-size: 0.75rem; background: rgba(255,255,255,0.95); color: #1e293b;">
-                        <option value="24h">24h</option>
-                        <option value="72h">3d</option>
-                        <option value="1w">1w</option>
-                        <option value="2w">2w</option>
-                        <option value="1m">1m</option>
-                        <option value="forever">∞</option>
-                        <option value="unsuspend">Unsuspend</option>
-                    </select>
-                    <button type="submit" style="background: rgba(255,255,255,0.95); color: #667eea; border: none; padding: 0.3rem 0.6rem; border-radius: 4px; font-size: 0.75rem; font-weight: 600; cursor: pointer;">⏸️</button>
-                </form>
-                
-                @if (isAdmin)
-                {
-                    <form asp-action="DeleteAccount" method="post" onsubmit="return confirm('Permanently delete @user.Username?');" style="display: flex;">
+        <div style="background: #1e293b; border: 1px solid #334155; padding: 1rem; margin-bottom: 1rem; border-radius: 6px;">
+            <div style="color: #94a3b8; font-weight: 600; font-size: 0.9rem; margin-bottom: 0.75rem; display: flex; align-items: center; gap: 0.5rem;">
+                <span>⚙️ Moderation Tools</span>
+            </div>
+            
+            <div style="display: grid; gap: 1rem;">
+                <div>
+                    <label style="display: block; color: #94a3b8; font-size: 0.85rem; font-weight: 500; margin-bottom: 0.4rem;">Edit About Me</label>
+                    <form asp-action="AdminEditAboutMe" method="post" style="display: flex; gap: 0.5rem;">
                         <input type="hidden" name="userId" value="@user.Id" />
-                        <button type="submit" style="background: #dc2626; color: white; border: none; padding: 0.3rem 0.6rem; border-radius: 4px; font-size: 0.75rem; font-weight: 600; cursor: pointer;">🗑️</button>
+                        <input name="aboutMe" value="@user.AboutMe" placeholder="About me text..." style="flex: 1; padding: 0.5rem; border: 1px solid #475569; border-radius: 4px; font-size: 0.85rem; background: #0f172a; color: #e2e8f0;" />
+                        <button type="submit" style="background: #3b82f6; color: white; border: none; padding: 0.5rem 1rem; border-radius: 4px; font-size: 0.85rem; font-weight: 500; cursor: pointer; white-space: nowrap;">✏️ Save</button>
                     </form>
-                }
+                </div>
+                
+                <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+                    <div style="flex: 1; min-width: 200px;">
+                        <label style="display: block; color: #94a3b8; font-size: 0.85rem; font-weight: 500; margin-bottom: 0.4rem;">Suspend User</label>
+                        <form asp-action="SuspendUser" method="post" style="display: flex; gap: 0.5rem;">
+                            <input type="hidden" name="userId" value="@user.Id" />
+                            <select name="duration" style="flex: 1; padding: 0.5rem; border: 1px solid #475569; border-radius: 4px; font-size: 0.85rem; background: #0f172a; color: #e2e8f0;">
+                                <option value="24h">24 Hours</option>
+                                <option value="72h">3 Days</option>
+                                <option value="1w">1 Week</option>
+                                <option value="2w">2 Weeks</option>
+                                <option value="1m">1 Month</option>
+                                <option value="forever">Forever</option>
+                                <option value="unsuspend">Unsuspend</option>
+                            </select>
+                            <button type="submit" style="background: #f59e0b; color: white; border: none; padding: 0.5rem 1rem; border-radius: 4px; font-size: 0.85rem; font-weight: 500; cursor: pointer;">⏸️ Apply</button>
+                        </form>
+                    </div>
+                    
+                    @if (isAdmin)
+                    {
+                        <div style="flex: 1; min-width: 200px;">
+                            <label style="display: block; color: #fca5a5; font-size: 0.85rem; font-weight: 500; margin-bottom: 0.4rem;">Delete Account</label>
+                            <form asp-action="DeleteAccount" method="post">
+                                <input type="hidden" name="userId" value="@user.Id" />
+                                <button type="submit" style="background: #dc2626; color: white; border: none; padding: 0.5rem 1rem; border-radius: 4px; font-size: 0.85rem; font-weight: 500; cursor: pointer; width: 100%;">🗑️ Delete Account</button>
+                            </form>
+                        </div>
+                    }
+                </div>
             </div>
         </div>
     }
@@ -119,71 +138,32 @@
         }
     </div>
 
-    @if (!string.IsNullOrWhiteSpace(user.PgpPublicKey))
-    {
-        <h2>PGP Public Key</h2>
-        <pre class="card" style="white-space: pre-wrap; font-size: 4px; max-height: 120px; overflow: auto; padding: 0.25rem;">@user.PgpPublicKey</pre>
-    }
-
-    @if (user.PGPVerifications?.Any() == true)
-    {
-        <h3>PGP Verifications</h3>
-        <div class="card">
-            @foreach (var v in user.PGPVerifications)
+    <div class="card">
+        <h3>🔐 PGP Public Key</h3>
+        @if (!string.IsNullOrWhiteSpace(user.PgpPublicKey))
+        {
+            @if (user.PGPVerifications?.Any(v => v.Verified) == true)
             {
-                <p class="meta">Fingerprint: @v.Fingerprint | Created @v.CreatedAt.ToString("u") | Status: @(v.Verified ? "Verified" : "Pending")</p>
+                <p style="color: #10b981; font-weight: 600; margin-bottom: 0.5rem;">✓ Verified</p>
             }
-        </div>
-    }
-
-    @if (isSelf)
-    {
-        <div class="card">
-            <h3>Attach / Update PGP Key</h3>
-            <form asp-controller="Account" asp-action="AttachPgp" method="post">
-                <label for="PgpPublicKey">PGP Public Key (ASCII-armored)</label>
-                <textarea id="PgpPublicKey" name="PgpPublicKey" rows="6" class="input">@user.PgpPublicKey</textarea>
-                <div class="form-actions">
-                    <button type="submit" class="button">Save Key</button>
-                </div>
-            </form>
-        </div>
-
-        <div class="card">
-            <h3>Request PGP Challenge</h3>
-            <form asp-controller="Account" asp-action="RequestPgpChallenge" method="post">
-                <label for="Fingerprint">PGP Fingerprint (hex)</label>
-                <input id="Fingerprint" name="Fingerprint" class="input" />
-                <div class="form-actions">
-                    <button type="submit" class="button">Generate Challenge</button>
-                </div>
-            </form>
-            @if (TempData["Challenge"] != null)
+            else
             {
-                <p class="meta">Challenge: <code>@TempData["Challenge"]</code></p>
-                <p class="meta">Sign this exact text with your PGP key and submit the signature below.</p>
+                <p style="color: #f59e0b; font-weight: 600; margin-bottom: 0.5rem;">⚠ Not Verified</p>
             }
-        </div>
-
-        <div class="card">
-            <h3>Verify PGP Challenge</h3>
-            <form asp-controller="Account" asp-action="VerifyPgpChallenge" method="post">
-                <label for="Response">ASCII-armored signature</label>
-                <textarea id="Response" name="Response" rows="6" class="input"></textarea>
-                <div class="form-actions">
-                    <button type="submit" class="button">Verify</button>
-                </div>
-            </form>
-            @if (TempData["Message"] != null)
-            {
-                <p class="meta">@TempData["Message"]</p>
-            }
-            @if (TempData["Error"] != null)
-            {
-                <p class="meta">@TempData["Error"]</p>
-            }
-        </div>
-    }
+            <pre style="white-space: pre-wrap; font-size: 0.7rem; max-height: 100px; overflow: auto; padding: 0.5rem; background: #1e293b; border: 1px solid #334155; border-radius: 4px; color: #e2e8f0;">@user.PgpPublicKey</pre>
+        }
+        else
+        {
+            <p class="meta">No PGP key configured</p>
+        }
+        
+        @if (isSelf)
+        {
+            <div style="margin-top: 1rem;">
+                <a href="/account/pgpsetup" class="button" style="background: #3b82f6;">🔑 Setup/Update PGP Key</a>
+            </div>
+        }
+    </div>
 
     <h3>Recent Posts</h3>
     @foreach (var post in Model)

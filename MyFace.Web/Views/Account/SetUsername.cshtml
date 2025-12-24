@@ -1,0 +1,68 @@
+@{
+    ViewData["Title"] = "Choose Your Username";
+    var error = TempData["Error"] as string;
+    var success = TempData["Success"] as string;
+}
+
+<div style="max-width: 600px; margin: 0 auto;">
+    <h1 style="text-align: center; margin-bottom: 0.5rem;">Choose Your Public Username</h1>
+    <p class="meta" style="text-align: center; margin-bottom: 2rem;">This name will be visible to everyone on the site</p>
+
+    <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 2rem; border-radius: 12px; margin-bottom: 2rem; box-shadow: 0 8px 16px rgba(102, 126, 234, 0.3);">
+        <div style="text-align: center; margin-bottom: 1.5rem;">
+            <span style="font-size: 3rem;">👤</span>
+        </div>
+        
+        @if (!string.IsNullOrEmpty(error))
+        {
+            <div style="background: #fef2f2; border-left: 4px solid #dc2626; padding: 1rem; margin-bottom: 1.5rem; color: #991b1b; border-radius: 6px;">
+                <strong>⚠️ @error</strong>
+            </div>
+        }
+
+        @if (!string.IsNullOrEmpty(success))
+        {
+            <div style="background: #ecfdf5; border-left: 4px solid #10b981; padding: 1rem; margin-bottom: 1.5rem; color: #065f46; border-radius: 6px;">
+                <strong>✓ @success</strong>
+            </div>
+        }
+
+        <form asp-action="SetUsername" method="post">
+            <div style="background: rgba(255,255,255,0.15); padding: 1.5rem; border-radius: 8px; margin-bottom: 1.5rem;">
+                <label style="display: block; color: white; font-weight: 600; margin-bottom: 0.75rem; font-size: 1rem;">
+                    ✨ Your Public Username
+                </label>
+                <input name="username" class="input" placeholder="CoolUsername123" required 
+                       style="font-size: 1.1rem; padding: 0.75rem; background: rgba(255,255,255,0.95);" 
+                       pattern="[a-zA-Z0-9_]+" title="Only letters, numbers, and underscores allowed" />
+                <p style="color: rgba(255,255,255,0.9); font-size: 0.85rem; margin: 0.5rem 0 0 0;">
+                    Letters, numbers, and underscores only. Choose wisely - this is how others will know you!
+                </p>
+            </div>
+
+            <div style="background: rgba(255,255,255,0.1); padding: 1rem; border-radius: 6px; margin-bottom: 1.5rem;">
+                <p style="color: rgba(255,255,255,0.95); font-size: 0.9rem; margin: 0; line-height: 1.6;">
+                    <strong>💡 Tips:</strong><br>
+                    • Make it memorable but different from your login name<br>
+                    • This username will appear on all your posts and threads<br>
+                    • You can verify your identity later with PGP
+                </p>
+            </div>
+
+            <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+                <button type="submit" name="action" value="save" class="button" style="flex: 1; background: #10b981; font-size: 1rem; padding: 0.75rem; min-width: 200px;">
+                    💾 Save Username
+                </button>
+                <button type="submit" name="action" value="save_and_pgp" class="button" style="flex: 1; background: #3b82f6; font-size: 1rem; padding: 0.75rem; min-width: 200px;">
+                    🔑 Save & Setup PGP
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <div style="background: #1e293b; border: 1px solid #334155; padding: 1rem; border-radius: 8px; text-align: center;">
+        <p style="color: #94a3b8; font-size: 0.85rem; margin: 0;">
+            🔒 <strong>Your login name remains private.</strong> Only this public username will be visible to others.
+        </p>
+    </div>
+</div>

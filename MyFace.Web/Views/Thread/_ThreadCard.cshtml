@@ -15,7 +15,7 @@
         }
         else
         {
-            <a href="/user/@(Model.User?.Username ?? "Anonymous")">@(Model.User?.Username ?? "Anonymous")</a>
+            @await Html.PartialAsync("_UserName", Model.User)
         }
     </p>
     <div class="preview clamp-5">@Formatter.Format(firstPost?.Content ?? "")</div>

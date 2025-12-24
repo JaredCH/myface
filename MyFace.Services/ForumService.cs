@@ -36,6 +36,7 @@ public class ForumService
     {
         return await _context.Threads
             .Include(t => t.User)
+                .ThenInclude(u => u.PGPVerifications)
             .Include(t => t.Posts)
             .OrderByDescending(t => t.IsPinned)
             .ThenByDescending(t => t.CreatedAt)
@@ -48,8 +49,10 @@ public class ForumService
     {
         return await _context.Threads
             .Include(t => t.User)
+                .ThenInclude(u => u.PGPVerifications)
             .Include(t => t.Posts)
                 .ThenInclude(p => p.User)
+                    .ThenInclude(u => u.PGPVerifications)
             .Include(t => t.Posts)
                 .ThenInclude(p => p.Votes)
             .FirstOrDefaultAsync(t => t.Id == id);
@@ -275,6 +278,7 @@ public class ForumService
     {
         var threads = await _context.Threads
             .Include(t => t.User)
+                .ThenInclude(u => u.PGPVerifications)
             .Include(t => t.Posts)
                 .ThenInclude(p => p.Votes)
             .Where(t => !t.IsLocked)
@@ -316,6 +320,7 @@ public class ForumService
     {
         var posts = await _context.Posts
             .Include(p => p.User)
+                .ThenInclude(u => u.PGPVerifications)
             .Include(p => p.Votes)
             .Where(p => p.ThreadId == threadId && !p.IsDeleted)
             .ToListAsync();

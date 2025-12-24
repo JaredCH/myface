@@ -19,6 +19,7 @@ public class RssService
     {
         var threads = await _context.Threads
             .Include(t => t.User)
+                .ThenInclude(u => u.PGPVerifications)
             .OrderByDescending(t => t.CreatedAt)
             .Take(50)
             .ToListAsync();

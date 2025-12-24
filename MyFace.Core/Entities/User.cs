@@ -3,7 +3,8 @@ namespace MyFace.Core.Entities;
 public class User
 {
     public int Id { get; set; }
-    public string Username { get; set; } = string.Empty;
+    public string LoginName { get; set; } = string.Empty; // Private - used for authentication only
+    public string Username { get; set; } = string.Empty; // Public - displayed on site
     public string PasswordHash { get; set; } = string.Empty;
     public string? PgpPublicKey { get; set; }
     public string Role { get; set; } = "User"; // User, Moderator, Admin

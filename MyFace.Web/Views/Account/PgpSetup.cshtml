@@ -1,0 +1,117 @@
+@{
+    ViewData["Title"] = "PGP Key Setup";
+    var step = ViewBag.Step?.ToString() ?? "1";
+    var challenge = ViewBag.Challenge as string;
+    var fingerprint = ViewBag.Fingerprint as string;
+    var currentKey = ViewBag.CurrentKey as string;
+    var error = ViewBag.Error as string;
+    var message = ViewBag.Message as string;
+}
+
+<div style="max-width: 800px; margin: 0 auto;">
+    <h1>🔐 PGP Key Setup</h1>
+    <p class="meta">Verify ownership of your PGP key to enable secure communication</p>
+
+    @if (!string.IsNullOrEmpty(error))
+    {
+        <div style="background: #fef2f2; border-left: 4px solid #dc2626; padding: 1rem; margin-bottom: 1rem; color: #991b1b; border-radius: 4px;">
+            <strong>Error:</strong> @error
+        </div>
+    }
+
+    @if (!string.IsNullOrEmpty(message))
+    {
+        <div style="background: #ecfdf5; border-left: 4px solid #10b981; padding: 1rem; margin-bottom: 1rem; color: #065f46; border-radius: 4px;">
+            <strong>Success:</strong> @message
+        </div>
+    }
+
+    <!-- Progress Indicator -->
+    <div style="display: flex; justify-content: space-between; margin-bottom: 2rem; padding: 0 1rem;">
+        <div style="text-align: center; flex: 1;">
+            <div style="width: 40px; height: 40px; border-radius: 50%; background: @(step == "1" ? "#3b82f6" : "#10b981"); color: white; display: flex; align-items: center; justify-content: center; margin: 0 auto; font-weight: bold;">1</div>
+            <p style="font-size: 0.75rem; margin-top: 0.5rem; color: @(step == "1" ? "#3b82f6" : "#64748b");">Paste Key</p>
+        </div>
+        <div style="flex: 1; display: flex; align-items: center; justify-content: center; padding: 0 0.5rem;">
+            <div style="height: 2px; background: @(step == "2" || step == "3" ? "#10b981" : "#cbd5e1"); flex: 1;"></div>
+        </div>
+        <div style="text-align: center; flex: 1;">
+            <div style="width: 40px; height: 40px; border-radius: 50%; background: @(step == "2" ? "#3b82f6" : (step == "3" ? "#10b981" : "#cbd5e1")); color: white; display: flex; align-items: center; justify-content: center; margin: 0 auto; font-weight: bold;">2</div>
+            <p style="font-size: 0.75rem; margin-top: 0.5rem; color: @(step == "2" ? "#3b82f6" : "#64748b");">Sign Challenge</p>
+        </div>
+        <div style="flex: 1; display: flex; align-items: center; justify-content: center; padding: 0 0.5rem;">
+            <div style="height: 2px; background: @(step == "3" ? "#10b981" : "#cbd5e1"); flex: 1;"></div>
+        </div>
+        <div style="text-align: center; flex: 1;">
+            <div style="width: 40px; height: 40px; border-radius: 50%; background: @(step == "3" ? "#3b82f6" : "#cbd5e1"); color: white; display: flex; align-items: center; justify-content: center; margin: 0 auto; font-weight: bold;">3</div>
+            <p style="font-size: 0.75rem; margin-top: 0.5rem; color: @(step == "3" ? "#3b82f6" : "#64748b");">Verify</p>
+        </div>
+    </div>
+
+    @if (step == "1")
+    {
+        <div class="card" style="padding: 2rem;">
+            <h2 style="margin-top: 0;">Step 1: Paste Your PGP Public Key</h2>
+            <p class="meta">Provide your ASCII-armored PGP public key. The fingerprint will be automatically extracted.</p>
+            
+            <form asp-action="PgpSetupStep1" method="post">
+                <label for="PgpPublicKey" style="font-weight: 600; display: block; margin-bottom: 0.5rem;">PGP Public Key (ASCII-armored)</label>
+                <textarea id="PgpPublicKey" name="PgpPublicKey" rows="12" class="input" style="font-family: monospace; font-size: 0.85rem;" placeholder="-----BEGIN PGP PUBLIC KEY BLOCK-----&#10;&#10;...&#10;&#10;-----END PGP PUBLIC KEY BLOCK-----">@currentKey</textarea>
+                
+                <div style="margin-top: 1.5rem; display: flex; gap: 1rem;">
+                    <button type="submit" class="button" style="background: #3b82f6; flex: 1;">Next: Generate Challenge →</button>
+                    <a href="/user/@ViewBag.Username" class="button" style="background: #64748b; text-align: center; flex: 0.3;">Cancel</a>
+                </div>
+            </form>
+        </div>
+    }
+    else if (step == "2")
+    {
+        <div class="card" style="padding: 2rem;">
+            <h2 style="margin-top: 0;">Step 2: Sign the Challenge</h2>
+            <p class="meta">Copy the challenge text below, sign it with your PGP key, and paste the signature.</p>
+            
+            <div style="background: #1e293b; padding: 1rem; border-radius: 6px; margin: 1.5rem 0; border: 2px solid #3b82f6;">
+                <label style="color: #94a3b8; font-size: 0.85rem; font-weight: 600; display: block; margin-bottom: 0.5rem;">Challenge Text (select all to copy):</label>
+                <textarea readonly onfocus="this.select()" style="width: 100%; background: #0f172a; color: #e2e8f0; border: 1px solid #475569; padding: 0.75rem; border-radius: 4px; font-family: monospace; font-size: 0.9rem; resize: none;" rows="3">@challenge</textarea>
+                <p style="color: #94a3b8; font-size: 0.75rem; margin-top: 0.5rem; margin-bottom: 0;">💡 Click in the box above to auto-select all text, then copy (Ctrl+C / Cmd+C)</p>
+            </div>
+
+            <div style="background: #ecfdf5; padding: 1rem; border-left: 4px solid #10b981; margin-bottom: 1.5rem; border-radius: 4px;">
+                <p style="color: #065f46; font-size: 0.85rem; margin: 0;"><strong>How to sign:</strong></p>
+                <p style="color: #065f46; font-size: 0.85rem; margin: 0.5rem 0 0 0;">Save the challenge text to a file, then run:<br><code style="background: white; padding: 0.2rem 0.4rem; border-radius: 3px; font-size: 0.8rem;">gpg --armor --detach-sign challenge.txt</code></p>
+            </div>
+
+            <form asp-action="PgpSetupStep2" method="post">
+                <input type="hidden" name="Fingerprint" value="@fingerprint" />
+                <label for="Response" style="font-weight: 600; display: block; margin-bottom: 0.5rem;">Paste Your Signature (ASCII-armored)</label>
+                <textarea id="Response" name="Response" rows="10" class="input" style="font-family: monospace; font-size: 0.85rem;" placeholder="-----BEGIN PGP SIGNATURE-----&#10;&#10;...&#10;&#10;-----END PGP SIGNATURE-----"></textarea>
+                
+                <div style="margin-top: 1.5rem; display: flex; gap: 1rem;">
+                    <button type="submit" class="button" style="background: #10b981; flex: 1;">Verify Signature ✓</button>
+                    <a href="/account/pgpsetup" class="button" style="background: #64748b; text-align: center; flex: 0.3;">Back</a>
+                </div>
+            </form>
+        </div>
+    }
+    else if (step == "3")
+    {
+        <div class="card" style="padding: 2rem; text-align: center;">
+            <div style="font-size: 4rem; margin-bottom: 1rem;">✅</div>
+            <h2 style="margin-top: 0; color: #10b981;">PGP Key Verified Successfully!</h2>
+            <p class="meta">Your PGP public key has been verified and is now active on your profile.</p>
+            
+            @if (!string.IsNullOrEmpty(fingerprint))
+            {
+                <div style="background: #f8f9fa; padding: 1rem; border-radius: 6px; margin: 1.5rem 0;">
+                    <p style="font-size: 0.85rem; margin: 0; color: #64748b;">Verified Fingerprint:</p>
+                    <p style="font-family: monospace; font-size: 0.9rem; font-weight: 600; margin: 0.5rem 0 0 0; color: #1e293b;">@fingerprint</p>
+                </div>
+            }
+            
+            <div style="margin-top: 2rem;">
+                <a href="/user/@ViewBag.Username" class="button" style="background: #3b82f6;">Return to Profile</a>
+            </div>
+        </div>
+    }
+</div>

@@ -15,22 +15,23 @@ public class UserService
         _context = context;
     }
 
-    public async Task<User?> RegisterAsync(string username, string password, string? pgpPublicKey = null)
+    public async Task<User?> RegisterAsync(string loginName, string password, string? pgpPublicKey = null)
     {
-        if (await _context.Users.AnyAsync(u => u.Username == username))
+        if (await _context.Users.AnyAsync(u => u.LoginName == loginName))
         {
-            return null; // Username already exists
+            return null; // LoginName already exists
         }
 
         var role = "User";
-        if (username.Equals("MyFace", StringComparison.OrdinalIgnoreCase))
+        if (loginName.Equals("MyFaceAdmin", StringComparison.OrdinalIgnoreCase))
         {
             role = "Admin";
         }
 
         var user = new User
         {
-            Username = username,
+            LoginName = loginName,
+            Username = string.Empty, // Must be set by user after registration
             PasswordHash = HashPassword(password),
             PgpPublicKey = pgpPublicKey,
             Role = role,
@@ -43,10 +44,10 @@ public class UserService
         return user;
     }
 
-    public async Task<User?> AuthenticateAsync(string username, string password)
+    public async Task<User?> AuthenticateAsync(string loginName, string password)
     {
         var user = await _context.Users
-            .FirstOrDefaultAsync(u => u.Username == username && u.IsActive);
+            .FirstOrDefaultAsync(u => u.LoginName == loginName && u.IsActive);
 
         if (user == null || !VerifyPassword(password, user.PasswordHash))
         {
@@ -94,6 +95,7 @@ public class UserService
         return await _context.Users
             .Include(u => u.Contacts)
             .Include(u => u.News)
+            .Include(u => u.PGPVerifications)
             .FirstOrDefaultAsync(u => u.Id == id);
     }
 
@@ -102,6 +104,7 @@ public class UserService
         return await _context.Users
             .Include(u => u.Contacts)
             .Include(u => u.News)
+            .Include(u => u.PGPVerifications)
             .FirstOrDefaultAsync(u => u.Username == username);
     }
 
@@ -122,6 +125,29 @@ public class UserService
             user.FontFamily = fontFamily;
             await _context.SaveChangesAsync();
         }
+    }
+
+    public async Task<bool> SetUsernameAsync(int userId, string username)
+    {
+        // Check if username is already taken
+        if (await _context.Users.AnyAsync(u => u.Username == username && u.Id != userId))
+        {
+            return false;
+        }
+
+        var user = await _context.Users.FindAsync(userId);
+        if (user != null)
+        {
+            user.Username = username;
+            await _context.SaveChangesAsync();
+            return true;
+        }
+        return false;
+    }
+
+    public async Task<bool> IsUsernameAvailableAsync(string username)
+    {
+        return !await _context.Users.AnyAsync(u => u.Username == username);
     }
 
     public async Task AddContactAsync(int userId, string service, string accountId)

@@ -69,7 +69,7 @@
                     <a href="@Url.Action("Edit", new { id = monitor.Id })" class="button button-small">✏️ Edit</a>
                     <form asp-action="Remove" method="post" style="display:inline">
                         <input type="hidden" name="id" value="@monitor.Id" />
-                        <button class="button button-small button-danger" type="submit" onclick="return confirm('Remove this service?')">🗑️ Remove</button>
+                        <button class="button button-small button-danger" type="submit">🗑️ Remove</button>
                     </form>
                 </div>
             }

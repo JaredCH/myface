@@ -1,0 +1,19 @@
+@model MyFace.Core.Entities.User?
+@{
+    var username = Model?.Username ?? "Anonymous";
+    var isVerified = Model?.PGPVerifications?.Any(v => v.Verified) == true;
+}
+@if (Model != null && !string.IsNullOrEmpty(Model.Username))
+{
+    <a href="/user/@username" style="display: inline-flex; align-items: center; gap: 0.25rem;">
+        <span>@username</span>
+        @if (isVerified)
+        {
+            <span style="color: #10b981; font-size: 0.85rem;" title="PGP Verified">✓</span>
+        }
+    </a>
+}
+else
+{
+    <span>Anonymous</span>
+}

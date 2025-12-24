@@ -2,11 +2,25 @@
 @{
     ViewData["Title"] = "Register";
 }
-<h1>Register</h1>
+<h1>Create Account</h1>
+
+<div style="background: #1e3a8a; border-left: 4px solid #3b82f6; padding: 1rem; margin-bottom: 1.5rem; border-radius: 6px;">
+    <h3 style="margin: 0 0 0.5rem 0; color: #93c5fd; font-size: 1rem;">🔒 Privacy Notice</h3>
+    <p style="margin: 0; color: #dbeafe; font-size: 0.9rem; line-height: 1.5;">
+        Your <strong>Login Name</strong> below is <strong>private and never displayed</strong> on the site. 
+        It is used only for authentication. After registration, you will choose a separate <strong>public username</strong> 
+        that will be visible to others.
+    </p>
+    <p style="margin: 0.5rem 0 0 0; color: #fbbf24; font-size: 0.85rem;">
+        ⚠️ <strong>Important:</strong> Use a different Login Name than your planned public username for maximum privacy.
+    </p>
+</div>
+
 <form asp-action="Register" method="post">
-    <label asp-for="Username"></label>
-    <input asp-for="Username" class="input" />
+    <label asp-for="Username" style="font-weight: 600;">🔐 Login Name (Private - Not Displayed)</label>
+    <input asp-for="Username" class="input" placeholder="secret_login_name_123" />
     <span asp-validation-for="Username"></span>
+    <p class="meta" style="margin-top: 0.25rem; font-size: 0.85rem;">This will never be shown publicly. Use something unique and unrelated to your public identity.</p>
 
     <label asp-for="Password"></label>
     <input asp-for="Password" class="input" />
@@ -16,10 +30,7 @@
     <input asp-for="ConfirmPassword" class="input" />
     <span asp-validation-for="ConfirmPassword"></span>
 
-    <label asp-for="PgpPublicKey">PGP Public Key (optional)</label>
-    <textarea asp-for="PgpPublicKey"></textarea>
-
     <div class="form-actions">
-        <button type="submit" class="button">Register</button>
+        <button type="submit" class="button">Create Account & Choose Username →</button>
     </div>
 </form>

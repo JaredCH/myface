@@ -132,6 +132,7 @@ app.UseSession();
 app.UseMiddleware<MyFace.Web.Middleware.CaptchaMiddleware>();
 app.UseAuthentication();
 app.UseAuthorization();
+app.UseMiddleware<MyFace.Web.Middleware.UsernameRequiredMiddleware>();
 
 app.MapControllerRoute(
     name: "default",

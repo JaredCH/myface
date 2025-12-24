@@ -20,6 +20,8 @@ a:hover { color: var(--accent-hover); }
 .logo { font-weight: 700; color: var(--accent); }
 .button { display: inline-block; padding: .5rem .75rem; border: 1px solid var(--accent); border-radius: .375rem; color: var(--accent); background-color: transparent; cursor: pointer; transition: all 0.2s; font-weight: 500; }
 .button:hover { background: var(--accent); color: white; }
+.category-btn { background: rgba(255,255,255,0.95); color: #667eea; border: none; padding: 0.35rem 0.9rem; border-radius: 6px; font-size: 0.85rem; font-weight: 600; cursor: pointer; transition: all 0.2s; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+.category-btn:hover { transform: translateY(-2px); box-shadow: 0 4px 8px rgba(0,0,0,0.15); }
 .input, textarea { width: 100%; padding: .5rem; background: var(--input-bg); border: 1px solid var(--border); color: var(--fg); border-radius: .375rem; transition: border-color 0.2s; }
 .input:focus, textarea:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1); }
 label { display: block; margin-top: .75rem; font-weight: 500; }
