@@ -17,14 +17,19 @@ public class OnionStatusService
         _httpClient.Timeout = TimeSpan.FromSeconds(15);
     }
 
-    public async Task<OnionStatus> AddAsync(string onionUrl)
+    public async Task<OnionStatus> AddAsync(string name, string description, string onionUrl)
     {
         var status = new OnionStatus
         {
+            Name = name,
+            Description = description,
             OnionUrl = onionUrl,
             Status = "Unknown",
             LastChecked = null,
-            ResponseTime = null
+            ResponseTime = null,
+            ReachableAttempts = 0,
+            TotalAttempts = 0,
+            AverageLatency = null
         };
 
         _context.OnionStatuses.Add(status);
@@ -53,19 +58,53 @@ public class OnionStatusService
         var item = await _context.OnionStatuses.FindAsync(id);
         if (item == null) return false;
 
-        var sw = System.Diagnostics.Stopwatch.StartNew();
-        try
+        int successes = 0;
+        int attempts = 5;
+        double totalLatency = 0;
+
+        for (int i = 0; i < attempts; i++)
         {
-            var response = await _httpClient.GetAsync(item.OnionUrl);
-            sw.Stop();
-            item.Status = response.IsSuccessStatusCode ? "Reachable" : $"Unreachable (HTTP {(int)response.StatusCode})";
-            item.ResponseTime = sw.Elapsed.TotalMilliseconds;
+            var sw = System.Diagnostics.Stopwatch.StartNew();
+            try
+            {
+                var response = await _httpClient.GetAsync(item.OnionUrl);
+                sw.Stop();
+                if (response.IsSuccessStatusCode)
+                {
+                    successes++;
+                    totalLatency += sw.Elapsed.TotalMilliseconds;
+                }
+            }
+            catch
+            {
+                sw.Stop();
+                // Failed attempt
+            }
+            // Small delay between attempts? Maybe not needed for this simple check
         }
-        catch (Exception ex)
+
+        item.ReachableAttempts = successes;
+        item.TotalAttempts = attempts;
+        
+        if (successes == 0)
         {
-            sw.Stop();
-            item.Status = "Unreachable";
+            item.Status = "Offline";
+            item.AverageLatency = null;
             item.ResponseTime = null;
+        }
+        else
+        {
+            item.AverageLatency = totalLatency / successes;
+            item.ResponseTime = item.AverageLatency; // Keep backward compatibility if needed
+            
+            if (successes == attempts)
+            {
+                item.Status = "Online";
+            }
+            else
+            {
+                item.Status = "DEGRADED";
+            }
         }
 
         item.LastChecked = DateTime.UtcNow;
@@ -81,5 +120,23 @@ public class OnionStatusService
         _context.OnionStatuses.Remove(item);
         await _context.SaveChangesAsync();
         return true;
+    }
+
+    public async Task<bool> UpdateAsync(int id, string name, string description, string onionUrl)
+    {
+        var item = await _context.OnionStatuses.FindAsync(id);
+        if (item == null) return false;
+
+        item.Name = name;
+        item.Description = description;
+        item.OnionUrl = onionUrl;
+        
+        await _context.SaveChangesAsync();
+        return true;
+    }
+
+    public async Task<OnionStatus?> GetByIdAsync(int id)
+    {
+        return await _context.OnionStatuses.FindAsync(id);
     }
 }

@@ -10,6 +10,7 @@ public class Post
     public DateTime? EditedAt { get; set; }
     public bool IsAnonymous { get; set; }
     public bool IsDeleted { get; set; }
+    public bool IsSticky { get; set; } = false;
     
     // Navigation properties
     public Thread Thread { get; set; } = null!;

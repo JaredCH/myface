@@ -16,6 +16,8 @@ public class ApplicationDbContext : DbContext
     public DbSet<Vote> Votes { get; set; }
     public DbSet<OnionStatus> OnionStatuses { get; set; }
     public DbSet<PGPVerification> PGPVerifications { get; set; }
+    public DbSet<UserContact> UserContacts { get; set; }
+    public DbSet<UserNews> UserNews { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -110,6 +112,33 @@ public class ApplicationDbContext : DbContext
             entity.Property(e => e.Status).HasMaxLength(50).IsRequired();
             entity.Property(e => e.ResponseTime);
             entity.Property(e => e.LastChecked).HasDefaultValueSql("CURRENT_TIMESTAMP");
+        });
+
+        // UserContact configuration
+        modelBuilder.Entity<UserContact>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.ServiceName).HasMaxLength(50).IsRequired();
+            entity.Property(e => e.AccountId).HasMaxLength(100).IsRequired();
+            
+            entity.HasOne(e => e.User)
+                .WithMany(u => u.Contacts)
+                .HasForeignKey(e => e.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        // UserNews configuration
+        modelBuilder.Entity<UserNews>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Title).HasMaxLength(200).IsRequired();
+            entity.Property(e => e.Content).IsRequired();
+            entity.Property(e => e.CreatedAt).HasDefaultValueSql("CURRENT_TIMESTAMP");
+            
+            entity.HasOne(e => e.User)
+                .WithMany(u => u.News)
+                .HasForeignKey(e => e.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
         });
     }
 }

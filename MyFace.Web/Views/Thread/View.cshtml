@@ -1,12 +1,17 @@
 @model MyFace.Core.Entities.Thread
+@inject MyFace.Web.Services.BBCodeFormatter Formatter
+@using System.Security.Claims
 @{
     ViewData["Title"] = Model.Title;
     var postScores = (Dictionary<int, int>)ViewBag.PostScores;
+    var currentUserId = (int?)ViewBag.CurrentUserId;
+    var userRole = User.FindFirstValue(ClaimTypes.Role);
+    var isAdminOrMod = userRole == "Admin" || userRole == "Moderator";
     // Simple server-side pagination inside the view
     var pageParam = ViewContext.HttpContext.Request.Query["page"].ToString();
     var currPage = int.TryParse(pageParam, out var p) && p > 0 ? p : 1;
     const int pageSize = 25;
-    var ordered = Model.Posts.OrderBy(p => p.CreatedAt).ToList();
+    var ordered = Model.Posts.OrderBy(p => p.IsSticky ? 0 : 1).ThenBy(p => p.CreatedAt).ToList();
     var total = ordered.Count;
     var skip = (currPage - 1) * pageSize;
     var pagePosts = ordered.Skip(skip).Take(pageSize).ToList();
@@ -14,22 +19,70 @@
     var hasNext = skip + pagePosts.Count < total;
 }
 <h1>@Model.Title</h1>
-<p class="meta">Started @Model.CreatedAt.ToString("u") by @(Model.IsAnonymous ? "Anonymous" : Model.User?.Username ?? "Anonymous")</p>
+<p class="meta">Started @Model.CreatedAt.ToString("u") by 
+    @if (Model.IsAnonymous)
+    {
+        <span>Anonymous</span>
+    }
+    else
+    {
+        <a href="/user/@(Model.User?.Username ?? "Anonymous")">@(Model.User?.Username ?? "Anonymous")</a>
+    }
+    @if (Model.IsLocked)
+    {
+        <span style="margin-left: 1rem; color: #f39c12;">🔒 LOCKED</span>
+    }
+</p>
 
 @foreach (var post in pagePosts)
 {
     <div class="card" id="post-@post.Id">
-        <p>@post.Content</p>
-        <p class="meta">@post.CreatedAt.ToString("u") by @(post.IsAnonymous ? "Anonymous" : post.User?.Username ?? "Anonymous")</p>
+        @if (post.IsSticky)
+        {
+            <div style="background: #27ae60; color: white; padding: 0.5rem; margin-bottom: 0.5rem; border-radius: 4px;">📌 Pinned Reply</div>
+        }
+        <div>@Formatter.Format(post.Content)</div>
+        <p class="meta">@post.CreatedAt.ToString("u") by 
+            @if (post.IsAnonymous)
+            {
+                <span>Anonymous</span>
+            }
+            else
+            {
+                <a href="/user/@(post.User?.Username ?? "Anonymous")">@(post.User?.Username ?? "Anonymous")</a>
+            }
+            @if (post.EditedAt.HasValue)
+            {
+                <span>(edited @post.EditedAt.Value.ToString("u"))</span>
+            }
+        </p>
         <p class="score">Score: @postScores[post.Id]</p>
         <form asp-controller="Vote" asp-action="Up" method="post" style="display:inline">
             <input type="hidden" name="postId" value="@post.Id" />
-            <button class="button" type="submit">Upvote</button>
+            <button class="button" type="submit">👍 Upvote</button>
         </form>
         <form asp-controller="Vote" asp-action="Down" method="post" style="display:inline">
             <input type="hidden" name="postId" value="@post.Id" />
-            <button class="button" type="submit">Downvote</button>
+            <button class="button" type="submit">👎 Downvote</button>
         </form>
+
+        @if (isAdminOrMod)
+        {
+            <div class="post-controls" style="margin-top: 0.5rem;">
+                <form method="post" style="display:inline;">
+                    <button formaction="@Url.Action("AdminDeletePost", "Thread", new { postId = post.Id })" type="submit" class="button" style="padding: 0.2rem 0.4rem; font-size: 0.8rem; background: #c0392b;">🗑️ Delete</button>
+                    
+                    @if (post.IsSticky)
+                    {
+                        <button formaction="@Url.Action("SetSticky", "Thread", new { postId = post.Id, isSticky = false })" type="submit" class="button" style="padding: 0.2rem 0.4rem; font-size: 0.8rem;">📌 Unpin</button>
+                    }
+                    else
+                    {
+                        <button formaction="@Url.Action("SetSticky", "Thread", new { postId = post.Id, isSticky = true })" type="submit" class="button" style="padding: 0.2rem 0.4rem; font-size: 0.8rem;">📌 Pin</button>
+                    }
+                </form>
+            </div>
+        }
     </div>
 }
 
@@ -47,11 +100,24 @@
 }</div>
 
 <h2 id="reply">Reply</h2>
+@if (Context.Request.Query["error"] == "CaptchaFailed")
+{
+    <div style="color: red; margin-bottom: 1rem;">Incorrect security check answer. Please try again.</div>
+}
 <form asp-action="Reply" method="post">
     <input type="hidden" name="threadId" value="@Model.Id" />
     <label for="content">Content</label>
     <textarea id="content" name="content" rows="6"></textarea>
     <label><input type="checkbox" name="postAsAnonymous" /> Post as Anonymous</label>
+    
+    <div style="background: #e0f2fe; padding: 1rem; border-left: 4px solid #2563eb; margin: 1rem 0; color: #1e293b;">
+        <strong>@Html.Raw(ViewBag.CaptchaContext)</strong>
+    </div>
+    <div class="form-group">
+        <label for="captchaAnswer">@ViewBag.CaptchaQuestion</label>
+        <input name="captchaAnswer" id="captchaAnswer" class="input" required autocomplete="off" />
+    </div>
+
     <div class="form-actions">
         <button class="button" type="submit">Reply</button>
     </div>

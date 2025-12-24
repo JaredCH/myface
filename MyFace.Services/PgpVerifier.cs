@@ -50,6 +50,13 @@ public static class PgpVerifier
                 return false;
             }
 
+            // Handle Cleartext Signed Messages by extracting the signature block
+            if (armoredSignature.Contains("-----BEGIN PGP SIGNATURE-----"))
+            {
+                var startIndex = armoredSignature.IndexOf("-----BEGIN PGP SIGNATURE-----", StringComparison.Ordinal);
+                armoredSignature = armoredSignature.Substring(startIndex);
+            }
+
             using var sigStream = new MemoryStream(Encoding.UTF8.GetBytes(armoredSignature));
             using var sigDecoded = PgpUtilities.GetDecoderStream(sigStream);
             var pgpObjFactory = new PgpObjectFactory(sigDecoded);

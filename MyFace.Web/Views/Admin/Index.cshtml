@@ -1,0 +1,37 @@
+@model IEnumerable<MyFace.Core.Entities.User>
+
+@{
+    ViewData["Title"] = "Admin Panel";
+}
+
+<h1>Admin Panel - User Management</h1>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Username</th>
+            <th>Current Role</th>
+            <th>Action</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var user in Model)
+        {
+            <tr>
+                <td>@user.Username</td>
+                <td>@user.Role</td>
+                <td>
+                    <form asp-action="SetRole" method="post" class="d-inline">
+                        <input type="hidden" name="userId" value="@user.Id" />
+                        <select name="role" class="form-select d-inline w-auto">
+                            <option value="User" selected="@(user.Role == "User")">User</option>
+                            <option value="Moderator" selected="@(user.Role == "Moderator")">Moderator</option>
+                            <option value="Admin" selected="@(user.Role == "Admin")">Admin</option>
+                        </select>
+                        <button type="submit" class="btn btn-primary btn-sm">Update</button>
+                    </form>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

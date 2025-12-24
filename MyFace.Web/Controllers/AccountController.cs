@@ -82,10 +82,14 @@ public class AccountController : Controller
 
     private async Task SignInUserAsync(int userId, string username)
     {
+        var user = await _userService.GetUserByIdAsync(userId);
+        var role = user?.Role ?? "User";
+
         var claims = new List<Claim>
         {
             new Claim(ClaimTypes.NameIdentifier, userId.ToString()),
-            new Claim(ClaimTypes.Name, username)
+            new Claim(ClaimTypes.Name, username),
+            new Claim(ClaimTypes.Role, role)
         };
 
         var claimsIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
@@ -149,6 +153,12 @@ public class AccountController : Controller
             return RedirectToAction("Login");
         }
 
+        if (!ModelState.IsValid)
+        {
+            TempData["Error"] = "Invalid fingerprint provided.";
+            return RedirectToAction("Index", "User", new { username = user.Username });
+        }
+
         var challenge = new PGPVerification
         {
             UserId = user.Id,
@@ -177,6 +187,12 @@ public class AccountController : Controller
         if (user == null)
         {
             return RedirectToAction("Login");
+        }
+
+        if (!ModelState.IsValid)
+        {
+            TempData["Error"] = "Invalid verification response.";
+            return RedirectToAction("Index", "User", new { username = user.Username });
         }
 
         var latest = _db.PGPVerifications

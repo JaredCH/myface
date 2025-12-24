@@ -6,7 +6,10 @@ using MyFace.Services;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container
-builder.Services.AddControllersWithViews();
+builder.Services.AddControllersWithViews(options =>
+{
+    options.Filters.Add<MyFace.Web.Services.SuspensionFilter>();
+});
 
 // Database configuration
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") 
@@ -30,6 +33,8 @@ builder.Services.AddScoped<ForumService>();
 builder.Services.AddScoped<OnionStatusService>();
 builder.Services.AddScoped<RssService>();
 builder.Services.AddScoped<ReputationService>();
+builder.Services.AddScoped<MyFace.Web.Services.BBCodeFormatter>();
+builder.Services.AddSingleton<MyFace.Web.Services.CaptchaService>();
 builder.Services.AddHostedService<MyFace.Web.Services.OnionMonitorWorker>();
 
 // HttpClient for Tor/Onion monitoring
@@ -59,7 +64,8 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
         }
         else
         {
-            options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
+            // Tor hidden services run over HTTP (but are encrypted), so we cannot enforce Secure cookies
+            options.Cookie.SecurePolicy = CookieSecurePolicy.None;
             options.Cookie.SameSite = SameSiteMode.Strict;
         }
     });
@@ -72,6 +78,7 @@ builder.Services.AddSession(options =>
     options.IdleTimeout = TimeSpan.FromHours(2);
     options.Cookie.HttpOnly = true;
     options.Cookie.IsEssential = true;
+    options.Cookie.SecurePolicy = CookieSecurePolicy.None; // Required for Tor (HTTP)
 });
 
 // Security headers
@@ -86,7 +93,7 @@ else
 {
     builder.Services.AddAntiforgery(options =>
     {
-        options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
+        options.Cookie.SecurePolicy = CookieSecurePolicy.None;
     });
 }
 
@@ -96,7 +103,7 @@ var app = builder.Build();
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Home/Error");
-    app.UseHsts();
+    // app.UseHsts(); // Disable HSTS for Tor hidden service
 }
 
 // Security: Remove X-Powered-By header
@@ -118,6 +125,7 @@ app.UseStaticFiles();
 app.UseRouting();
 
 app.UseSession();
+app.UseMiddleware<MyFace.Web.Middleware.CaptchaMiddleware>();
 app.UseAuthentication();
 app.UseAuthorization();
 

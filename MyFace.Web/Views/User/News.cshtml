@@ -1,0 +1,20 @@
+@model MyFace.Core.Entities.UserNews
+@inject MyFace.Web.Services.BBCodeFormatter Formatter
+@{
+    ViewData["Title"] = Model.Title;
+}
+
+<div style="color: @Model.User.FontColor; font-family: @Model.User.FontFamily">
+    <h1>@Model.Title</h1>
+    <p class="meta">
+        Posted by <a href="/user/@Model.User.Username">@Model.User.Username</a> on @Model.CreatedAt.ToString("u")
+    </p>
+
+    <div class="card">
+        <div>@Formatter.Format(Model.Content)</div>
+    </div>
+
+    <p>
+        <a href="/user/@Model.User.Username" class="button">Back to Profile</a>
+    </p>
+</div>

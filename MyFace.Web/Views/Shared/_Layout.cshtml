@@ -18,6 +18,14 @@
                     <li><a href="@Url.Action("Index", "Monitor")">Monitor</a></li>
                     @if (User.Identity?.IsAuthenticated == true)
                     {
+                        @if (User.IsInRole("Admin"))
+                        {
+                            <li><a href="@Url.Action("Index", "Admin")">Admin</a></li>
+                        }
+                        @if (User.IsInRole("Admin") || User.IsInRole("Moderator"))
+                        {
+                            <li><a href="@Url.Action("Index", "Moderator")">Mod</a></li>
+                        }
                         <li><a href="@Url.Action("Index", "User", new { username = User.Identity.Name })">@User.Identity.Name</a></li>
                         <li><a href="@Url.Action("Logout", "Account")">Logout</a></li>
                     }
@@ -30,14 +38,57 @@
             </div>
         </nav>
     </header>
-    <div class="container">
-        <main>
-            @RenderBody()
-        </main>
+    <div class="main-wrapper">
+        <aside class="sidebar sidebar-left">
+            <nav class="sidebar-nav">
+                <h3>Navigation</h3>
+                <ul>
+                    <li><a href="@Url.Action("Index", "Thread")">Threads</a></li>
+                    <li><a href="@Url.Action("Index", "Monitor")">Monitor</a></li>
+                    @if (User.Identity?.IsAuthenticated == true)
+                    {
+                        @if (User.IsInRole("Admin"))
+                        {
+                            <li><a href="@Url.Action("Index", "Admin")">Admin Panel</a></li>
+                        }
+                        @if (User.IsInRole("Admin") || User.IsInRole("Moderator"))
+                        {
+                            <li><a href="@Url.Action("Index", "Moderator")">Moderation</a></li>
+                        }
+                        <li><a href="@Url.Action("Index", "User", new { username = User.Identity.Name })">My Profile</a></li>
+                    }
+                    else
+                    {
+                        <li><a href="@Url.Action("Login", "Account")">Login</a></li>
+                        <li><a href="@Url.Action("Register", "Account")">Register</a></li>
+                    }
+                </ul>
+            </nav>
+        </aside>
+        <div class="container main-content">
+            <main>
+                @RenderBody()
+            </main>
+        </div>
+        <aside class="sidebar sidebar-right">
+            <div class="ad-frame">
+                <div class="ad-placeholder">
+                    <p><strong>Advertisement</strong></p>
+                    <p style="font-size: 0.85rem; color: var(--muted);">Your ad here</p>
+                </div>
+            </div>
+        </aside>
     </div>
     <footer>
         <div class="container">
             <p>MyFace - Privacy-focused forum | <a href="@Url.Action("Threads", "Rss")">RSS</a> | No JavaScript | No tracking</p>
+            @if (User.Identity?.IsAuthenticated == true)
+            {
+                <p style="font-size: 0.8em; color: #666;">
+                    Debug: Role Claim = @User.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value <br/>
+                    IsAdmin = @User.IsInRole("Admin")
+                </p>
+            }
         </div>
     </footer>
 </body>

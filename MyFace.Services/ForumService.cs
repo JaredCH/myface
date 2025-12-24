@@ -106,6 +106,74 @@ public class ForumService
         return true;
     }
 
+    // Admin/Mod post management
+    public async Task<bool> AdminDeletePostAsync(int postId)
+    {
+        var post = await _context.Posts.FindAsync(postId);
+        if (post == null)
+        {
+            return false;
+        }
+
+        post.IsDeleted = true;
+        post.Content = "[removed by moderator]";
+        await _context.SaveChangesAsync();
+        return true;
+    }
+
+    public async Task<bool> AdminEditPostAsync(int postId, string content)
+    {
+        var post = await _context.Posts.FindAsync(postId);
+        if (post == null)
+        {
+            return false;
+        }
+
+        post.Content = content;
+        post.EditedAt = DateTime.UtcNow;
+        await _context.SaveChangesAsync();
+        return true;
+    }
+
+    public async Task<bool> SetStickyAsync(int postId, bool isSticky)
+    {
+        var post = await _context.Posts.FindAsync(postId);
+        if (post == null)
+        {
+            return false;
+        }
+
+        post.IsSticky = isSticky;
+        await _context.SaveChangesAsync();
+        return true;
+    }
+
+    public async Task<bool> LockThreadAsync(int threadId, bool isLocked)
+    {
+        var thread = await _context.Threads.FindAsync(threadId);
+        if (thread == null)
+        {
+            return false;
+        }
+
+        thread.IsLocked = isLocked;
+        await _context.SaveChangesAsync();
+        return true;
+    }
+
+    public async Task<bool> DeleteThreadAsync(int threadId)
+    {
+        var thread = await _context.Threads.FindAsync(threadId);
+        if (thread == null)
+        {
+            return false;
+        }
+
+        _context.Threads.Remove(thread);
+        await _context.SaveChangesAsync();
+        return true;
+    }
+
     public async Task<List<Post>> GetUserPostsAsync(int userId, int skip = 0, int take = 50)
     {
         return await _context.Posts

@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "+pHETb8PpTc=",
+  "dgSpecHash": "pQNr2OEuUZI=",
   "success": true,
-  "projectFilePath": "c:\\myface\\MyFace.Core\\MyFace.Core.csproj",
+  "projectFilePath": "/home/server/myface/MyFace.Core/MyFace.Core.csproj",
   "expectedPackageFiles": [],
   "logs": []
 }

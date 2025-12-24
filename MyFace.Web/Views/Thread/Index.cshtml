@@ -1,6 +1,10 @@
 @model List<MyFace.Core.Entities.Thread>
+@inject MyFace.Web.Services.BBCodeFormatter Formatter
+@using System.Security.Claims
 @{
     ViewData["Title"] = "Threads";
+    var userRole = User.FindFirstValue(ClaimTypes.Role);
+    var isAdminOrMod = userRole == "Admin" || userRole == "Moderator";
 }
 <h1>Threads</h1>
 <p><a href="@Url.Action("Create")" class="button">New Thread</a> | <a href="@Url.Action("Threads","Rss")">RSS</a></p>
@@ -12,11 +16,38 @@
         .FirstOrDefault();
     <div class="card thread-card">
         <h2 class="thread-title"><a href="@Url.Action("View", new { id = thread.Id })">@thread.Title</a></h2>
-        <p class="meta">Started @thread.CreatedAt.ToString("u") by @(thread.IsAnonymous ? "Anonymous" : thread.User?.Username ?? "Anonymous")</p>
-        <div class="preview clamp-5">@(firstPost?.Content ?? "")</div>
+        <p class="meta">Started @thread.CreatedAt.ToString("u") by 
+            @if (thread.IsAnonymous)
+            {
+                <span>Anonymous</span>
+            }
+            else
+            {
+                <a href="/user/@(thread.User?.Username ?? "Anonymous")">@(thread.User?.Username ?? "Anonymous")</a>
+            }
+        </p>
+        <div class="preview clamp-5">@Formatter.Format(firstPost?.Content ?? "")</div>
         <div class="card-footer">
             <a class="button" href="@Url.Action("View", new { id = thread.Id })">View Thread</a>
             <span class="meta">@thread.Posts.Count post(s)</span>
+            @if (thread.IsLocked)
+            {
+                <span class="status-badge" style="margin-left: 0.5rem;">🔒 Locked</span>
+            }
+            @if (isAdminOrMod)
+            {
+                <form method="post" style="display: inline; margin-left: 1rem;">
+                    @if (thread.IsLocked)
+                    {
+                        <button formaction="@Url.Action("UnlockThread", new { id = thread.Id })" type="submit" class="button" style="padding: 0.2rem 0.4rem; font-size: 0.8rem;">🔓 Unlock</button>
+                    }
+                    else
+                    {
+                        <button formaction="@Url.Action("LockThread", new { id = thread.Id })" type="submit" class="button" style="padding: 0.2rem 0.4rem; font-size: 0.8rem;">🔒 Lock</button>
+                    }
+                    <button formaction="@Url.Action("DeleteThread", new { id = thread.Id })" type="submit" class="button" style="padding: 0.2rem 0.4rem; font-size: 0.8rem; background: #c0392b;" onclick="return confirm('Delete this thread and all replies?');">🗑️ Delete</button>
+                </form>
+            }
         </div>
     </div>
 }

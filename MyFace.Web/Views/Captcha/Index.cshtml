@@ -1,0 +1,34 @@
+@{
+    ViewData["Title"] = "Security Check";
+    Layout = "_Layout";
+}
+
+<div class="card" style="max-width: 600px; margin: 2rem auto;">
+    <h1>Security Check</h1>
+    <p>Please complete this check to continue.</p>
+
+    <div style="background: #e0f2fe; padding: 1rem; border-left: 4px solid #2563eb; margin: 1rem 0; color: #1e293b;">
+        <strong>@Html.Raw(ViewBag.Context)</strong>
+    </div>
+
+    <form asp-action="Verify" method="post">
+        <input type="hidden" name="returnUrl" value="@ViewBag.ReturnUrl" />
+        
+        <div class="form-group">
+            <label for="answer">@ViewBag.Question</label>
+            <input name="answer" id="answer" class="input" required autocomplete="off" />
+        </div>
+
+        @if (!ViewData.ModelState.IsValid)
+        {
+            <div style="color: red; margin: 1rem 0;">
+                @foreach (var error in ViewData.ModelState.Values.SelectMany(v => v.Errors))
+                {
+                    <p>@error.ErrorMessage</p>
+                }
+            </div>
+        }
+
+        <button type="submit" class="button">Verify</button>
+    </form>
+</div>

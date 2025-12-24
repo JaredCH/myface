@@ -1,0 +1,4 @@
+DataDirectory /home/server/myface/tor/data
+HiddenServiceDir /home/server/myface/tor/hidden_service/
+HiddenServicePort 80 127.0.0.1:5000
+SocksPort 9052

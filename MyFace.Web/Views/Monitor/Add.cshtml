@@ -4,11 +4,17 @@
 }
 <h1>Add Monitor</h1>
 <form asp-action="Add" method="post">
+    <label asp-for="Name"></label>
+    <input asp-for="Name" class="input" />
+    <span asp-validation-for="Name"></span>
+
+    <label asp-for="Description"></label>
+    <textarea asp-for="Description" class="input" rows="3"></textarea>
+    <span asp-validation-for="Description"></span>
+
     <label asp-for="OnionUrl"></label>
     <input asp-for="OnionUrl" class="input" />
     <span asp-validation-for="OnionUrl"></span>
-
-    <!-- Only onion URL is needed for OnionStatus -->
 
     <div class="form-actions">
         <button type="submit" class="button">Add</button>

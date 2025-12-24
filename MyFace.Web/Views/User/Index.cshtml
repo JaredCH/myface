@@ -1,99 +1,211 @@
 @model List<MyFace.Core.Entities.Post>
+@inject MyFace.Web.Services.BBCodeFormatter Formatter
 @{
     var user = (MyFace.Core.Entities.User)ViewBag.User;
     ViewData["Title"] = user.Username;
     var currentPage = (int)ViewBag.CurrentPage;
     var hasMore = (bool)ViewBag.HasMorePages;
-    var isSelf = User?.Identity?.IsAuthenticated == true && string.Equals(User.Identity!.Name, user.Username, StringComparison.OrdinalIgnoreCase);
-}
-<h1>@user.Username</h1>
-<p class="meta">Joined @user.CreatedAt.ToString("u")</p>
-
-@if (!string.IsNullOrWhiteSpace(user.PgpPublicKey))
-{
-    <h2>PGP Public Key</h2>
-    <pre class="card" style="white-space: pre-wrap;">@user.PgpPublicKey</pre>
+    var isSelf = (bool)(ViewBag.IsOwner ?? false);
+    var isAdminOrMod = (bool)(ViewBag.IsAdminOrMod ?? false);
+    var isAdmin = (bool)(ViewBag.IsAdmin ?? false);
 }
 
-@if (user.PGPVerifications?.Any() == true)
-{
-    <h3>PGP Verifications</h3>
-    <div class="card">
-        @foreach (var v in user.PGPVerifications)
-        {
-            <p class="meta">Fingerprint: @v.Fingerprint | Created @v.CreatedAt.ToString("u") | Status: @(v.Verified ? "Verified" : "Pending")</p>
-        }
-    </div>
-}
+<div style="color: @user.FontColor; font-family: @user.FontFamily">
+    <h1>@user.Username</h1>
+    <p class="meta">Joined @user.CreatedAt.ToString("u")</p>
 
-<p><a href="@Url.Action("UserFeed","Rss", new { username = user.Username })">User RSS</a></p>
-
-@if (isSelf)
-{
-    <div class="card">
-        <h3>Attach / Update PGP Key</h3>
-        <form asp-controller="Account" asp-action="AttachPgp" method="post">
-            <label for="PgpPublicKey">PGP Public Key (ASCII-armored)</label>
-            <textarea id="PgpPublicKey" name="PgpPublicKey" rows="6" class="input">@user.PgpPublicKey</textarea>
-            <div class="form-actions">
-                <button type="submit" class="button">Save Key</button>
-            </div>
-        </form>
-    </div>
-
-    <div class="card">
-        <h3>Request PGP Challenge</h3>
-        <form asp-controller="Account" asp-action="RequestPgpChallenge" method="post">
-            <label for="Fingerprint">PGP Fingerprint (hex)</label>
-            <input id="Fingerprint" name="Fingerprint" class="input" />
-            <div class="form-actions">
-                <button type="submit" class="button">Generate Challenge</button>
-            </div>
-        </form>
-        @if (TempData["Challenge"] != null)
-        {
-            <p class="meta">Challenge: <code>@TempData["Challenge"]</code></p>
-            <p class="meta">Sign this exact text with your PGP key and submit the signature below.</p>
-        }
-    </div>
-
-    <div class="card">
-        <h3>Verify PGP Challenge</h3>
-        <form asp-controller="Account" asp-action="VerifyPgpChallenge" method="post">
-            <label for="Response">ASCII-armored signature</label>
-            <textarea id="Response" name="Response" rows="6" class="input"></textarea>
-            <div class="form-actions">
-                <button type="submit" class="button">Verify</button>
-            </div>
-        </form>
-        @if (TempData["Message"] != null)
-        {
-            <p class="meta">@TempData["Message"]</p>
-        }
-        @if (TempData["Error"] != null)
-        {
-            <p class="meta">@TempData["Error"]</p>
-        }
-    </div>
-}
-
-@foreach (var post in Model)
-{
-    <div class="card">
-        <p>@post.Content</p>
-        <p class="meta">@post.CreatedAt.ToString("u") in <a href="@Url.Action("View","Thread", new { id = post.ThreadId })">@post.Thread.Title</a></p>
-        <p><a class="button" href="@Url.Action("View","Thread", new { id = post.ThreadId })#reply">Reply in thread</a></p>
-    </div>
-}
-
-<div class="form-actions">
-    @if (currentPage > 1)
+    @if (isSelf)
     {
-        <a class="button" href="@Url.Action("Index", new { username = user.Username, page = currentPage - 1 })">Previous</a>
+        <p><a href="/user/edit" class="button">Edit Profile</a></p>
     }
-    @if (hasMore)
+
+    @if (isAdminOrMod)
     {
-        <a class="button" href="@Url.Action("Index", new { username = user.Username, page = currentPage + 1 })">Next</a>
+        <div class="card" style="border: 1px solid #f39c12; background: #f39c12a0;">
+            <h3>⚙️ Admin/Mod Controls</h3>
+            
+            <h4>Edit About Me</h4>
+            <form asp-action="AdminEditAboutMe" method="post" class="mb-2">
+                <input type="hidden" name="userId" value="@user.Id" />
+                <textarea name="aboutMe" class="input" rows="3">@user.AboutMe</textarea>
+                <button type="submit" class="button">Save About Me</button>
+            </form>
+
+            <h4>Suspend User</h4>
+            <form asp-action="SuspendUser" method="post" class="mb-2">
+                <input type="hidden" name="userId" value="@user.Id" />
+                <select name="duration" class="form-select">
+                    <option value="24h">24 Hours</option>
+                    <option value="72h">72 Hours</option>
+                    <option value="1w">1 Week</option>
+                    <option value="2w">2 Weeks</option>
+                    <option value="1m">1 Month</option>
+                    <option value="forever">Forever</option>
+                    <option value="unsuspend">Unsuspend</option>
+                </select>
+                <button type="submit" class="button">Apply</button>
+            </form>
+
+            @if (isAdmin)
+            {
+                <h4>Delete Account</h4>
+                <p class="meta">⚠️ This permanently deletes the user and all associated data.</p>
+                <form asp-action="DeleteAccount" method="post" onsubmit="return confirm('Are you sure? This cannot be undone.');">
+                    <input type="hidden" name="userId" value="@user.Id" />
+                    <button type="submit" class="button" style="background: #c0392b;">🗑️ Nuke Account</button>
+                </form>
+            }
+        </div>
     }
-    <span class="meta"> Page @currentPage </span>
+
+    <div class="card">
+        <h3>About Me</h3>
+        <div>@Formatter.Format(user.AboutMe)</div>
+    </div>
+
+    <div class="card">
+        <h3>Contact Info</h3>
+        <ul>
+            @foreach (var contact in user.Contacts)
+            {
+                <li>
+                    <strong>@contact.ServiceName</strong>: @contact.AccountId
+                    @if (isSelf)
+                    {
+                        <form asp-action="RemoveContact" method="post" style="display:inline">
+                            <input type="hidden" name="id" value="@contact.Id" />
+                            <button type="submit" class="button" style="padding: 0.2rem 0.5rem; font-size: 0.8rem;">Remove</button>
+                        </form>
+                    }
+                </li>
+            }
+        </ul>
+        @if (isSelf)
+        {
+            <h4>Add Contact</h4>
+            <form asp-action="AddContact" method="post">
+                <input name="ServiceName" placeholder="Service (e.g. XMPP)" class="input" style="width: 30%" />
+                <input name="AccountId" placeholder="Account ID" class="input" style="width: 40%" />
+                <button type="submit" class="button">Add</button>
+            </form>
+        }
+    </div>
+
+    <div class="card">
+        <h3>News Feed</h3>
+        @foreach (var news in user.News.OrderByDescending(n => n.CreatedAt))
+        {
+            <div style="border-bottom: 1px solid #333; padding-bottom: 1rem; margin-bottom: 1rem;">
+                <h4><a href="/user/news/@news.Id">@news.Title</a> <span class="meta" style="font-size: 0.8rem">@news.CreatedAt.ToString("g")</span></h4>
+                <div style="max-height: 200px; overflow: hidden; position: relative;">
+                    @Formatter.Format(news.Content)
+                </div>
+                <p><a href="/user/news/@news.Id" style="font-size: 0.9rem;">Read more / Permalink</a></p>
+                @if (isSelf)
+                {
+                    <form asp-action="RemoveNews" method="post" style="display:inline">
+                        <input type="hidden" name="id" value="@news.Id" />
+                        <button type="submit" class="button" style="padding: 0.2rem 0.5rem; font-size: 0.8rem;">Delete</button>
+                    </form>
+                }
+            </div>
+        }
+        @if (isSelf)
+        {
+            <h4>Post News</h4>
+            <form asp-action="AddNews" method="post">
+                <input name="Title" placeholder="Title" class="input" style="margin-bottom: 0.5rem" />
+                <textarea name="Content" placeholder="Content (BBCode supported)" class="input" rows="3"></textarea>
+                <button type="submit" class="button">Post</button>
+            </form>
+        }
+    </div>
+
+    @if (!string.IsNullOrWhiteSpace(user.PgpPublicKey))
+    {
+        <h2>PGP Public Key</h2>
+        <pre class="card" style="white-space: pre-wrap; font-size: 4px; max-height: 120px; overflow: auto; padding: 0.25rem;">@user.PgpPublicKey</pre>
+    }
+
+    @if (user.PGPVerifications?.Any() == true)
+    {
+        <h3>PGP Verifications</h3>
+        <div class="card">
+            @foreach (var v in user.PGPVerifications)
+            {
+                <p class="meta">Fingerprint: @v.Fingerprint | Created @v.CreatedAt.ToString("u") | Status: @(v.Verified ? "Verified" : "Pending")</p>
+            }
+        </div>
+    }
+
+    @if (isSelf)
+    {
+        <div class="card">
+            <h3>Attach / Update PGP Key</h3>
+            <form asp-controller="Account" asp-action="AttachPgp" method="post">
+                <label for="PgpPublicKey">PGP Public Key (ASCII-armored)</label>
+                <textarea id="PgpPublicKey" name="PgpPublicKey" rows="6" class="input">@user.PgpPublicKey</textarea>
+                <div class="form-actions">
+                    <button type="submit" class="button">Save Key</button>
+                </div>
+            </form>
+        </div>
+
+        <div class="card">
+            <h3>Request PGP Challenge</h3>
+            <form asp-controller="Account" asp-action="RequestPgpChallenge" method="post">
+                <label for="Fingerprint">PGP Fingerprint (hex)</label>
+                <input id="Fingerprint" name="Fingerprint" class="input" />
+                <div class="form-actions">
+                    <button type="submit" class="button">Generate Challenge</button>
+                </div>
+            </form>
+            @if (TempData["Challenge"] != null)
+            {
+                <p class="meta">Challenge: <code>@TempData["Challenge"]</code></p>
+                <p class="meta">Sign this exact text with your PGP key and submit the signature below.</p>
+            }
+        </div>
+
+        <div class="card">
+            <h3>Verify PGP Challenge</h3>
+            <form asp-controller="Account" asp-action="VerifyPgpChallenge" method="post">
+                <label for="Response">ASCII-armored signature</label>
+                <textarea id="Response" name="Response" rows="6" class="input"></textarea>
+                <div class="form-actions">
+                    <button type="submit" class="button">Verify</button>
+                </div>
+            </form>
+            @if (TempData["Message"] != null)
+            {
+                <p class="meta">@TempData["Message"]</p>
+            }
+            @if (TempData["Error"] != null)
+            {
+                <p class="meta">@TempData["Error"]</p>
+            }
+        </div>
+    }
+
+    <h3>Recent Posts</h3>
+    @foreach (var post in Model)
+    {
+        <div class="card">
+            <div>@Formatter.Format(post.Content)</div>
+            <p class="meta">@post.CreatedAt.ToString("u") in <a href="@Url.Action("View","Thread", new { id = post.ThreadId })">@post.Thread.Title</a></p>
+            <p><a class="button" href="@Url.Action("View","Thread", new { id = post.ThreadId })#reply">Reply in thread</a></p>
+        </div>
+    }
+
+    <div class="form-actions">
+        @if (currentPage > 1)
+        {
+            <a class="button" href="@Url.Action("Index", new { username = user.Username, page = currentPage - 1 })">Previous</a>
+        }
+        @if (hasMore)
+        {
+            <a class="button" href="@Url.Action("Index", new { username = user.Username, page = currentPage + 1 })">Next</a>
+        }
+        <span class="meta"> Page @currentPage </span>
+    </div>
 </div>

@@ -1,0 +1,158 @@
+@model MyFace.Web.Models.ModeratorDashboardViewModel
+@using Microsoft.Extensions.Configuration
+@using System.Security.Claims
+@inject IConfiguration Configuration
+
+@{
+    ViewData["Title"] = "Moderator Panel";
+    var username = User.Identity?.Name;
+    var viewerRole = User.FindFirstValue(ClaimTypes.Role);
+    var viewerIsAdmin = string.Equals(viewerRole, "Admin", StringComparison.OrdinalIgnoreCase);
+    var viewerIsMod = string.Equals(viewerRole, "Moderator", StringComparison.OrdinalIgnoreCase);
+    var isAdminOrMod = viewerIsAdmin || viewerIsMod;
+}
+
+<h1>Moderator Panel</h1>
+
+@if (isAdminOrMod)
+{
+    <section class="panel-section">
+        <h2>📊 Manage Service Monitor</h2>
+        <p>Add, edit, or remove monitored onion services directly here.</p>
+
+        <h3>Add Service</h3>
+        <form asp-controller="Monitor" asp-action="Add" method="post" class="mb-3">
+            <div class="row g-2">
+                <div class="col-sm-3">
+                    <label for="Name">Name</label>
+                    <input name="Name" class="input w-100" />
+                </div>
+                <div class="col-sm-5">
+                    <label for="OnionUrl">Onion URL</label>
+                    <input name="OnionUrl" class="input w-100" />
+                </div>
+                <div class="col-sm-4">
+                    <label for="Description">Description</label>
+                    <input name="Description" class="input w-100" />
+                </div>
+            </div>
+            <div class="form-actions mt-2">
+                <button type="submit" class="button">➕ Add Service</button>
+            </div>
+        </form>
+
+        <h3>Existing Services</h3>
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Onion URL</th>
+                    <th>Description</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var m in Model.Monitors)
+                {
+                    <tr>
+                        <td>
+                            <input name="Name" value="@m.Name" class="input" placeholder="Name" form="edit-@m.Id" />
+                        </td>
+                        <td>
+                            <input name="OnionUrl" value="@m.OnionUrl" class="input" placeholder="Onion URL" form="edit-@m.Id" />
+                        </td>
+                        <td>
+                            <input name="Description" value="@m.Description" class="input" placeholder="Description" form="edit-@m.Id" />
+                        </td>
+                        <td>
+                            <span class="status-badge">@m.Status</span>
+                        </td>
+                        <td>
+                            <form id="edit-@m.Id" asp-controller="Monitor" asp-action="Edit" asp-route-id="@m.Id" method="post" class="d-inline-block">
+                                <button type="submit" class="button button-sm">💾 Save</button>
+                            </form>
+                            <form asp-controller="Monitor" asp-action="Remove" asp-route-id="@m.Id" method="post" class="d-inline-block ms-1">
+                                <button type="submit" class="button button-sm">🗑️ Remove</button>
+                            </form>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </section>
+}
+
+<section class="panel-section">
+    <h2>🔒 User Suspension Management</h2>
+    <p>Manage user suspensions and access control:</p>
+
+    <form method="get" class="mb-3">
+        <input name="search" placeholder="Search by username..." class="input" value="@(ViewBag.SearchQuery ?? "")" />
+        <button type="submit" class="button">Search</button>
+        <a href="@Url.Action("Index")" class="button">Clear</a>
+    </form>
+
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Username</th>
+                <th>Role</th>
+                <th>Suspended Until</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var user in Model.Users)
+            {
+                <tr>
+                    <td>@user.Username</td>
+                    <td>@user.Role</td>
+                    <td>
+                        @if (user.SuspendedUntil.HasValue)
+                        {
+                            if (user.SuspendedUntil.Value > DateTime.UtcNow)
+                            {
+                                <span class="text-danger">@user.SuspendedUntil.Value.ToString("g")</span>
+                            }
+                            else
+                            {
+                                <span class="text-muted">Expired (@user.SuspendedUntil.Value.ToString("g"))</span>
+                            }
+                        }
+                        else
+                        {
+                            <span>-</span>
+                        }
+                    </td>
+                    <td>
+                        @{
+                            var isSelf = string.Equals(user.Username, username, StringComparison.OrdinalIgnoreCase);
+                            var canSuspend = !isSelf && (viewerIsAdmin || user.Role == "User");
+                        }
+                        @if (canSuspend)
+                        {
+                            <form asp-action="SuspendUser" method="post" class="d-inline">
+                                <input type="hidden" name="userId" value="@user.Id" />
+                                <select name="duration" class="form-select d-inline w-auto">
+                                    <option value="24h">24 Hours</option>
+                                    <option value="72h">72 Hours</option>
+                                    <option value="1w">1 Week</option>
+                                    <option value="2w">2 Weeks</option>
+                                    <option value="1m">1 Month</option>
+                                    <option value="forever">Forever</option>
+                                    <option value="unsuspend">Unsuspend</option>
+                                </select>
+                                <button type="submit" class="btn btn-warning btn-sm">Apply</button>
+                            </form>
+                        }
+                        else
+                        {
+                            <span class="text-muted">Not permitted</span>
+                        }
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</section>

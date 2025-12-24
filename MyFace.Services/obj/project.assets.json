@@ -2,6 +2,19 @@
   "version": 3,
   "targets": {
     "net8.0": {
+      "BouncyCastle.Cryptography/2.4.0": {
+        "type": "package",
+        "compile": {
+          "lib/net6.0/BouncyCastle.Cryptography.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/net6.0/BouncyCastle.Cryptography.dll": {
+            "related": ".xml"
+          }
+        }
+      },
       "Isopoh.Cryptography.Argon2/2.0.0": {
         "type": "package",
         "dependencies": {
@@ -462,19 +475,6 @@
           }
         }
       },
-      "Portable.BouncyCastle/1.9.0": {
-        "type": "package",
-        "compile": {
-          "lib/netstandard2.0/BouncyCastle.Crypto.dll": {
-            "related": ".xml"
-          }
-        },
-        "runtime": {
-          "lib/netstandard2.0/BouncyCastle.Crypto.dll": {
-            "related": ".xml"
-          }
-        }
-      },
       "System.Diagnostics.DiagnosticSource/10.0.1": {
         "type": "package",
         "compile": {
@@ -519,6 +519,26 @@
     }
   },
   "libraries": {
+    "BouncyCastle.Cryptography/2.4.0": {
+      "sha512": "SwXsAV3sMvAU/Nn31pbjhWurYSjJ+/giI/0n6tCrYoupEK34iIHCuk3STAd9fx8yudM85KkLSVdn951vTng/vQ==",
+      "type": "package",
+      "path": "bouncycastle.cryptography/2.4.0",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "LICENSE.md",
+        "README.md",
+        "bouncycastle.cryptography.2.4.0.nupkg.sha512",
+        "bouncycastle.cryptography.nuspec",
+        "lib/net461/BouncyCastle.Cryptography.dll",
+        "lib/net461/BouncyCastle.Cryptography.xml",
+        "lib/net6.0/BouncyCastle.Cryptography.dll",
+        "lib/net6.0/BouncyCastle.Cryptography.xml",
+        "lib/netstandard2.0/BouncyCastle.Cryptography.dll",
+        "lib/netstandard2.0/BouncyCastle.Cryptography.xml",
+        "packageIcon.png"
+      ]
+    },
     "Isopoh.Cryptography.Argon2/2.0.0": {
       "sha512": "8ytWN19j+qARb/XYi7KkNMm4Z8zS6tfGgnsZ1N5ihbQ5LXfyL+uYowfJxtGW9TO0S8NM2q0BaTKGOtOlsrhclQ==",
       "type": "package",
@@ -1211,21 +1231,6 @@
         "postgresql.png"
       ]
     },
-    "Portable.BouncyCastle/1.9.0": {
-      "sha512": "eZZBCABzVOek+id9Xy04HhmgykF0wZg9wpByzrWN7q8qEI0Qen9b7tfd7w8VA3dOeesumMG7C5ZPy0jk7PSRHw==",
-      "type": "package",
-      "path": "portable.bouncycastle/1.9.0",
-      "files": [
-        ".nupkg.metadata",
-        ".signature.p7s",
-        "lib/net40/BouncyCastle.Crypto.dll",
-        "lib/net40/BouncyCastle.Crypto.xml",
-        "lib/netstandard2.0/BouncyCastle.Crypto.dll",
-        "lib/netstandard2.0/BouncyCastle.Crypto.xml",
-        "portable.bouncycastle.1.9.0.nupkg.sha512",
-        "portable.bouncycastle.nuspec"
-      ]
-    },
     "System.Diagnostics.DiagnosticSource/10.0.1": {
       "sha512": "wVYO4/71Pk177uQ3TG8ZQFS3Pnmr98cF9pYxnpuIb/bMnbEWsdZZoLU/euv29mfSi2/Iuypj0TRUchPk7aqBGg==",
       "type": "package",
@@ -1267,51 +1272,43 @@
   },
   "projectFileDependencyGroups": {
     "net8.0": [
+      "BouncyCastle.Cryptography >= 2.4.0",
       "Isopoh.Cryptography.Argon2 >= 1.4.2",
       "Microsoft.Extensions.Http >= 10.0.1",
       "MyFace.Core >= 1.0.0",
-      "MyFace.Data >= 1.0.0",
-      "Portable.BouncyCastle >= 1.9.0"
+      "MyFace.Data >= 1.0.0"
     ]
   },
   "packageFolders": {
-    "C:\\Users\\Jared\\.nuget\\packages\\": {},
-    "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages": {}
+    "/home/server/.nuget/packages/": {}
   },
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "c:\\myface\\MyFace.Services\\MyFace.Services.csproj",
+      "projectUniqueName": "/home/server/myface/MyFace.Services/MyFace.Services.csproj",
       "projectName": "MyFace.Services",
-      "projectPath": "c:\\myface\\MyFace.Services\\MyFace.Services.csproj",
-      "packagesPath": "C:\\Users\\Jared\\.nuget\\packages\\",
-      "outputPath": "c:\\myface\\MyFace.Services\\obj\\",
+      "projectPath": "/home/server/myface/MyFace.Services/MyFace.Services.csproj",
+      "packagesPath": "/home/server/.nuget/packages/",
+      "outputPath": "/home/server/myface/MyFace.Services/obj/",
       "projectStyle": "PackageReference",
-      "fallbackFolders": [
-        "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
-      ],
       "configFilePaths": [
-        "C:\\Users\\Jared\\AppData\\Roaming\\NuGet\\NuGet.Config",
-        "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
-        "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
+        "/home/server/.nuget/NuGet/NuGet.Config"
       ],
       "originalTargetFrameworks": [
         "net8.0"
       ],
       "sources": {
-        "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
-        "C:\\Program Files\\dotnet\\library-packs": {},
         "https://api.nuget.org/v3/index.json": {}
       },
       "frameworks": {
         "net8.0": {
           "targetAlias": "net8.0",
           "projectReferences": {
-            "c:\\myface\\MyFace.Core\\MyFace.Core.csproj": {
-              "projectPath": "c:\\myface\\MyFace.Core\\MyFace.Core.csproj"
+            "/home/server/myface/MyFace.Core/MyFace.Core.csproj": {
+              "projectPath": "/home/server/myface/MyFace.Core/MyFace.Core.csproj"
             },
-            "c:\\myface\\MyFace.Data\\MyFace.Data.csproj": {
-              "projectPath": "c:\\myface\\MyFace.Data\\MyFace.Data.csproj"
+            "/home/server/myface/MyFace.Data/MyFace.Data.csproj": {
+              "projectPath": "/home/server/myface/MyFace.Data/MyFace.Data.csproj"
             }
           }
         }
@@ -1325,13 +1322,16 @@
         "enableAudit": "true",
         "auditLevel": "low",
         "auditMode": "direct"
-      },
-      "SdkAnalysisLevel": "9.0.300"
+      }
     },
     "frameworks": {
       "net8.0": {
         "targetAlias": "net8.0",
         "dependencies": {
+          "BouncyCastle.Cryptography": {
+            "target": "Package",
+            "version": "[2.4.0, )"
+          },
           "Isopoh.Cryptography.Argon2": {
             "target": "Package",
             "version": "[1.4.2, )"
@@ -1339,10 +1339,6 @@
           "Microsoft.Extensions.Http": {
             "target": "Package",
             "version": "[10.0.1, )"
-          },
-          "Portable.BouncyCastle": {
-            "target": "Package",
-            "version": "[1.9.0, )"
           }
         },
         "imports": [
@@ -1361,7 +1357,7 @@
             "privateAssets": "all"
           }
         },
-        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.305/PortableRuntimeIdentifierGraph.json"
+        "runtimeIdentifierGraphPath": "/usr/share/dotnet/sdk/8.0.416/PortableRuntimeIdentifierGraph.json"
       }
     }
   },
@@ -1370,7 +1366,7 @@
       "code": "NU1603",
       "level": "Warning",
       "warningLevel": 1,
-      "message": "MyFace.Services depends on Isopoh.Cryptography.Argon2 (>= 1.4.2) but Isopoh.Cryptography.Argon2 1.4.2 was not found. Isopoh.Cryptography.Argon2 2.0.0 was resolved instead.",
+      "message": "MyFace.Services depends on Isopoh.Cryptography.Argon2 (>= 1.4.2) but Isopoh.Cryptography.Argon2 1.4.2 was not found. An approximate best match of Isopoh.Cryptography.Argon2 2.0.0 was resolved.",
       "libraryId": "Isopoh.Cryptography.Argon2",
       "targetGraphs": [
         "net8.0"
