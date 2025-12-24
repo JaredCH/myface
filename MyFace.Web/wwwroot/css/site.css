@@ -40,7 +40,7 @@ label { display: block; margin-top: .75rem; font-weight: 500; }
 .tabs { display: flex; gap: 0.5rem; margin-bottom: 1rem; border-bottom: 2px solid var(--border); }
 .tab-link { padding: 0.75rem 1.25rem; color: var(--muted); text-decoration: none; border-bottom: 3px solid transparent; transition: all 0.2s; font-weight: 500; margin-bottom: -2px; }
 .tab-link:hover { color: var(--accent); background: var(--sidebar-bg); }
-.tab-content { display: none; }
+.tab-content { display: none; scroll-margin-top: 100px; }
 .tab-content:target { display: block; }
 #hot { display: block; }
 #hot:target, #new:target, #news:target, #announcements:target { display: block; }
@@ -53,6 +53,7 @@ label { display: block; margin-top: .75rem; font-weight: 500; }
 #new:target ~ .tabs .tab-link[href="#new"] { color: var(--accent); border-bottom-color: var(--accent); }
 #news:target ~ .tabs .tab-link[href="#news"] { color: var(--accent); border-bottom-color: var(--accent); }
 #announcements:target ~ .tabs .tab-link[href="#announcements"] { color: var(--accent); border-bottom-color: var(--accent); }
+html { scroll-behavior: smooth; }
 
 /* Three-column layout */
 .main-wrapper { display: grid; grid-template-columns: 200px 1fr 200px; gap: 1rem; max-width: 1400px; margin: 0 auto; padding: 1rem; }

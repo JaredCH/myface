@@ -259,6 +259,38 @@ public class ThreadController : Controller
         return RedirectToAction("View", new { id = post.ThreadId });
     }
 
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> SetCategory(int id, string category)
+    {
+        var role = User.FindFirstValue(ClaimTypes.Role);
+        
+        // Only admins and mods can change categories
+        if (role != "Admin" && role != "Moderator")
+        {
+            return Forbid();
+        }
+        
+        // Validate category
+        var validCategories = new[] { "Hot", "New", "News", "Announcements" };
+        if (!validCategories.Contains(category))
+        {
+            return BadRequest("Invalid category");
+        }
+        
+        // Only admins can set Announcements
+        if (category == "Announcements" && role != "Admin")
+        {
+            return Forbid();
+        }
+        
+        var thread = await _forumService.GetThreadByIdAsync(id);
+        if (thread == null) return NotFound();
+        
+        await _forumService.SetThreadCategoryAsync(id, category);
+        return RedirectToAction("View", new { id });
+    }
+
     private int? GetCurrentUserId()
     {
         var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);

@@ -70,7 +70,7 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
         {
             // Tor hidden services run over HTTP (but are encrypted), so we cannot enforce Secure cookies
             options.Cookie.SecurePolicy = CookieSecurePolicy.None;
-            options.Cookie.SameSite = SameSiteMode.Strict;
+            options.Cookie.SameSite = SameSiteMode.Lax;
         }
     });
 

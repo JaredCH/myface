@@ -32,7 +32,33 @@
     {
         <span style="margin-left: 1rem; color: #f39c12;">🔒 LOCKED</span>
     }
+    @if (!string.IsNullOrEmpty(Model.Category) && Model.Category != "Hot")
+    {
+        <span style="margin-left: 1rem; background: #2563eb; color: white; padding: 0.25rem 0.75rem; border-radius: 4px; font-size: 0.9rem;">@Model.Category</span>
+    }
 </p>
+
+@if (isAdminOrMod)
+{
+    <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 0.5rem 1rem; margin-bottom: 1rem; border-radius: 8px; display: flex; align-items: center; gap: 0.75rem; box-shadow: 0 2px 8px rgba(102, 126, 234, 0.2);">
+        <span style="color: white; font-weight: 600; font-size: 0.9rem;">📁 Category:</span>
+        <form method="post" action="/thread/setcategory/@Model.Id" style="display: inline;">
+            <button type="submit" name="category" value="Hot" style="background: rgba(255,255,255,0.95); color: #667eea; border: none; padding: 0.35rem 0.9rem; border-radius: 6px; font-size: 0.85rem; font-weight: 600; cursor: pointer; transition: all 0.2s; box-shadow: 0 2px 4px rgba(0,0,0,0.1);" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 8px rgba(0,0,0,0.15)'" onmouseout="this.style.transform=''; this.style.boxShadow='0 2px 4px rgba(0,0,0,0.1)'">🔥 Hot</button>
+        </form>
+        @if (userRole == "Moderator" || userRole == "Admin")
+        {
+            <form method="post" action="/thread/setcategory/@Model.Id" style="display: inline;">
+                <button type="submit" name="category" value="News" style="background: rgba(255,255,255,0.95); color: #667eea; border: none; padding: 0.35rem 0.9rem; border-radius: 6px; font-size: 0.85rem; font-weight: 600; cursor: pointer; transition: all 0.2s; box-shadow: 0 2px 4px rgba(0,0,0,0.1);" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 8px rgba(0,0,0,0.15)'" onmouseout="this.style.transform=''; this.style.boxShadow='0 2px 4px rgba(0,0,0,0.1)'">📰 News</button>
+            </form>
+        }
+        @if (userRole == "Admin")
+        {
+            <form method="post" action="/thread/setcategory/@Model.Id" style="display: inline;">
+                <button type="submit" name="category" value="Announcements" style="background: rgba(255,255,255,0.95); color: #667eea; border: none; padding: 0.35rem 0.9rem; border-radius: 6px; font-size: 0.85rem; font-weight: 600; cursor: pointer; transition: all 0.2s; box-shadow: 0 2px 4px rgba(0,0,0,0.1);" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 8px rgba(0,0,0,0.15)'" onmouseout="this.style.transform=''; this.style.boxShadow='0 2px 4px rgba(0,0,0,0.1)'">📢 Announcements</button>
+            </form>
+        }
+    </div>
+}
 
 @foreach (var post in pagePosts)
 {

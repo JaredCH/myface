@@ -21,40 +21,38 @@
 
     @if (isAdminOrMod)
     {
-        <div class="card" style="border: 1px solid #f39c12; background: #f39c12a0;">
-            <h3>⚙️ Admin/Mod Controls</h3>
-            
-            <h4>Edit About Me</h4>
-            <form asp-action="AdminEditAboutMe" method="post" class="mb-2">
-                <input type="hidden" name="userId" value="@user.Id" />
-                <textarea name="aboutMe" class="input" rows="3">@user.AboutMe</textarea>
-                <button type="submit" class="button">Save About Me</button>
-            </form>
-
-            <h4>Suspend User</h4>
-            <form asp-action="SuspendUser" method="post" class="mb-2">
-                <input type="hidden" name="userId" value="@user.Id" />
-                <select name="duration" class="form-select">
-                    <option value="24h">24 Hours</option>
-                    <option value="72h">72 Hours</option>
-                    <option value="1w">1 Week</option>
-                    <option value="2w">2 Weeks</option>
-                    <option value="1m">1 Month</option>
-                    <option value="forever">Forever</option>
-                    <option value="unsuspend">Unsuspend</option>
-                </select>
-                <button type="submit" class="button">Apply</button>
-            </form>
-
-            @if (isAdmin)
-            {
-                <h4>Delete Account</h4>
-                <p class="meta">⚠️ This permanently deletes the user and all associated data.</p>
-                <form asp-action="DeleteAccount" method="post" onsubmit="return confirm('Are you sure? This cannot be undone.');">
+        <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 0.4rem 0.6rem; margin-bottom: 1rem; border-radius: 6px; box-shadow: 0 2px 4px rgba(102, 126, 234, 0.15);">
+            <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem;">
+                <span style="color: white; font-weight: 600; font-size: 0.8rem;">⚙️</span>
+                
+                <form asp-action="AdminEditAboutMe" method="post" style="display: flex; align-items: center; gap: 0.3rem; flex: 1; min-width: 200px;">
                     <input type="hidden" name="userId" value="@user.Id" />
-                    <button type="submit" class="button" style="background: #c0392b;">🗑️ Nuke Account</button>
+                    <input name="aboutMe" value="@user.AboutMe" placeholder="About me..." style="flex: 1; padding: 0.3rem 0.5rem; border: none; border-radius: 4px; font-size: 0.75rem; background: rgba(255,255,255,0.95);" />
+                    <button type="submit" style="background: rgba(255,255,255,0.95); color: #667eea; border: none; padding: 0.3rem 0.6rem; border-radius: 4px; font-size: 0.75rem; font-weight: 600; cursor: pointer; white-space: nowrap;">✏️ Save</button>
                 </form>
-            }
+                
+                <form asp-action="SuspendUser" method="post" style="display: flex; align-items: center; gap: 0.3rem;">
+                    <input type="hidden" name="userId" value="@user.Id" />
+                    <select name="duration" style="padding: 0.3rem; border: none; border-radius: 4px; font-size: 0.75rem; background: rgba(255,255,255,0.95); color: #1e293b;">
+                        <option value="24h">24h</option>
+                        <option value="72h">3d</option>
+                        <option value="1w">1w</option>
+                        <option value="2w">2w</option>
+                        <option value="1m">1m</option>
+                        <option value="forever">∞</option>
+                        <option value="unsuspend">Unsuspend</option>
+                    </select>
+                    <button type="submit" style="background: rgba(255,255,255,0.95); color: #667eea; border: none; padding: 0.3rem 0.6rem; border-radius: 4px; font-size: 0.75rem; font-weight: 600; cursor: pointer;">⏸️</button>
+                </form>
+                
+                @if (isAdmin)
+                {
+                    <form asp-action="DeleteAccount" method="post" onsubmit="return confirm('Permanently delete @user.Username?');" style="display: flex;">
+                        <input type="hidden" name="userId" value="@user.Id" />
+                        <button type="submit" style="background: #dc2626; color: white; border: none; padding: 0.3rem 0.6rem; border-radius: 4px; font-size: 0.75rem; font-weight: 600; cursor: pointer;">🗑️</button>
+                    </form>
+                }
+            </div>
         </div>
     }
 

@@ -161,6 +161,19 @@ public class ForumService
         return true;
     }
 
+    public async Task<bool> SetThreadCategoryAsync(int threadId, string category)
+    {
+        var thread = await _context.Threads.FindAsync(threadId);
+        if (thread == null)
+        {
+            return false;
+        }
+
+        thread.Category = category;
+        await _context.SaveChangesAsync();
+        return true;
+    }
+
     public async Task<bool> DeleteThreadAsync(int threadId)
     {
         var thread = await _context.Threads.FindAsync(threadId);

@@ -1302,3 +1302,45 @@ info: System.Net.Http.HttpClient.TorClient.LogicalHandler[100]
       Start processing HTTP request GET http://dauntdatakit2xi4usevwp3pajyppsgsrbzkfqyrp6ufsdwrnm6g5tqd.onion/
 info: System.Net.Http.HttpClient.TorClient.ClientHandler[100]
       Sending HTTP request GET http://dauntdatakit2xi4usevwp3pajyppsgsrbzkfqyrp6ufsdwrnm6g5tqd.onion/
+info: System.Net.Http.HttpClient.TorClient.ClientHandler[101]
+      Received HTTP response headers after 4029.4498ms - 503
+info: System.Net.Http.HttpClient.TorClient.LogicalHandler[101]
+      End processing HTTP request after 4029.5313ms - 503
+info: System.Net.Http.HttpClient.TorClient.LogicalHandler[100]
+      Start processing HTTP request GET http://dauntdatakit2xi4usevwp3pajyppsgsrbzkfqyrp6ufsdwrnm6g5tqd.onion/
+info: System.Net.Http.HttpClient.TorClient.ClientHandler[100]
+      Sending HTTP request GET http://dauntdatakit2xi4usevwp3pajyppsgsrbzkfqyrp6ufsdwrnm6g5tqd.onion/
+info: System.Net.Http.HttpClient.TorClient.ClientHandler[101]
+      Received HTTP response headers after 7981.1121ms - 503
+info: System.Net.Http.HttpClient.TorClient.LogicalHandler[101]
+      End processing HTTP request after 7981.2459ms - 503
+info: System.Net.Http.HttpClient.TorClient.LogicalHandler[100]
+      Start processing HTTP request GET http://dauntdatakit2xi4usevwp3pajyppsgsrbzkfqyrp6ufsdwrnm6g5tqd.onion/
+info: System.Net.Http.HttpClient.TorClient.ClientHandler[100]
+      Sending HTTP request GET http://dauntdatakit2xi4usevwp3pajyppsgsrbzkfqyrp6ufsdwrnm6g5tqd.onion/
+info: System.Net.Http.HttpClient.TorClient.ClientHandler[101]
+      Received HTTP response headers after 6684.6863ms - 503
+info: System.Net.Http.HttpClient.TorClient.LogicalHandler[101]
+      End processing HTTP request after 6684.8081ms - 503
+info: System.Net.Http.HttpClient.TorClient.LogicalHandler[100]
+      Start processing HTTP request GET http://dauntdatakit2xi4usevwp3pajyppsgsrbzkfqyrp6ufsdwrnm6g5tqd.onion/
+info: System.Net.Http.HttpClient.TorClient.ClientHandler[100]
+      Sending HTTP request GET http://dauntdatakit2xi4usevwp3pajyppsgsrbzkfqyrp6ufsdwrnm6g5tqd.onion/
+info: System.Net.Http.HttpClient.TorClient.ClientHandler[101]
+      Received HTTP response headers after 6785.6227ms - 503
+info: System.Net.Http.HttpClient.TorClient.LogicalHandler[101]
+      End processing HTTP request after 6785.6789ms - 503
+info: System.Net.Http.HttpClient.TorClient.LogicalHandler[100]
+      Start processing HTTP request GET http://dauntdatakit2xi4usevwp3pajyppsgsrbzkfqyrp6ufsdwrnm6g5tqd.onion/
+info: System.Net.Http.HttpClient.TorClient.ClientHandler[100]
+      Sending HTTP request GET http://dauntdatakit2xi4usevwp3pajyppsgsrbzkfqyrp6ufsdwrnm6g5tqd.onion/
+info: System.Net.Http.HttpClient.TorClient.ClientHandler[101]
+      Received HTTP response headers after 5733.9595ms - 503
+info: System.Net.Http.HttpClient.TorClient.LogicalHandler[101]
+      End processing HTTP request after 5734.0326ms - 503
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (2ms) [Parameters=[@p1='?' (DbType = Int32), @p0='?' (DbType = DateTime)], CommandType='Text', CommandTimeout='30']
+      UPDATE "OnionStatuses" SET "LastChecked" = @p0
+      WHERE "Id" = @p1;
+info: Microsoft.Hosting.Lifetime[0]
+      Application is shutting down...
