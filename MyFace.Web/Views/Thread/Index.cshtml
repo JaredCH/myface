@@ -14,36 +14,45 @@
 <p><a href="@Url.Action("Create")" class="button">New Thread</a> | <a href="@Url.Action("Threads","Rss")">RSS</a></p>
 
 <div class="tabs">
-    <a href="#hot" class="tab-link">Hot</a>
-    <a href="#new" class="tab-link">New</a>
-    <a href="#news" class="tab-link">News</a>
-    <a href="#announcements" class="tab-link">Announcements</a>
-</div>
+    <input type="radio" name="tabset" id="tab-hot" checked />
+    <label for="tab-hot">🔥 Hot</label>
 
-<div id="hot" class="tab-content">
-    @foreach (var thread in hotThreads)
-    {
-        @await Html.PartialAsync("_ThreadCard", thread)
-    }
-</div>
+    <input type="radio" name="tabset" id="tab-new" />
+    <label for="tab-new">🆕 New</label>
 
-<div id="new" class="tab-content">
-    @foreach (var thread in newThreads)
-    {
-        @await Html.PartialAsync("_ThreadCard", thread)
-    }
-</div>
+    <input type="radio" name="tabset" id="tab-news" />
+    <label for="tab-news">📰 News</label>
 
-<div id="news" class="tab-content">
-    @foreach (var thread in newsThreads)
-    {
-        @await Html.PartialAsync("_ThreadCard", thread)
-    }
-</div>
+    <input type="radio" name="tabset" id="tab-announcements" />
+    <label for="tab-announcements">📢 Announcements</label>
 
-<div id="announcements" class="tab-content">
-    @foreach (var thread in announcementsThreads)
-    {
-        @await Html.PartialAsync("_ThreadCard", thread)
-    }
+    <div class="tab-panels">
+        <section class="tab-panel panel-hot">
+            @foreach (var thread in hotThreads)
+            {
+                @await Html.PartialAsync("_ThreadCard", thread)
+            }
+        </section>
+
+        <section class="tab-panel panel-new">
+            @foreach (var thread in newThreads)
+            {
+                @await Html.PartialAsync("_ThreadCard", thread)
+            }
+        </section>
+
+        <section class="tab-panel panel-news">
+            @foreach (var thread in newsThreads)
+            {
+                @await Html.PartialAsync("_ThreadCard", thread)
+            }
+        </section>
+
+        <section class="tab-panel panel-announcements">
+            @foreach (var thread in announcementsThreads)
+            {
+                @await Html.PartialAsync("_ThreadCard", thread)
+            }
+        </section>
+    </div>
 </div>

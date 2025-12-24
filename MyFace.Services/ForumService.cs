@@ -14,6 +14,18 @@ public class ForumService
         _context = context;
     }
 
+    // Helper to track activity (just adds to context, doesn't save)
+    private void TrackActivity(string activityType, int? userId)
+    {
+        var activity = new Activity
+        {
+            ActivityType = activityType,
+            UserId = userId,
+            CreatedAt = DateTime.UtcNow
+        };
+        _context.Activities.Add(activity);
+    }
+
     // Thread operations
     public async Task<ThreadEntity> CreateThreadAsync(string title, int? userId, bool isAnonymous)
     {
@@ -28,6 +40,7 @@ public class ForumService
         };
 
         _context.Threads.Add(thread);
+        TrackActivity("thread", userId);
         await _context.SaveChangesAsync();
         return thread;
     }
@@ -54,6 +67,9 @@ public class ForumService
                 .ThenInclude(p => p.User)
                     .ThenInclude(u => u.PGPVerifications)
             .Include(t => t.Posts)
+                .ThenInclude(p => p.EditedByUser)
+                    .ThenInclude(u => u.PGPVerifications)
+            .Include(t => t.Posts)
                 .ThenInclude(p => p.Votes)
             .FirstOrDefaultAsync(t => t.Id == id);
     }
@@ -77,6 +93,7 @@ public class ForumService
         };
 
         _context.Posts.Add(post);
+        TrackActivity("comment", userId);
         await _context.SaveChangesAsync();
         return post;
     }
@@ -91,6 +108,8 @@ public class ForumService
 
         post.Content = content;
         post.EditedAt = DateTime.UtcNow;
+        post.EditedByUserId = userId;
+        post.EditCount++;
         await _context.SaveChangesAsync();
         return true;
     }
@@ -134,6 +153,7 @@ public class ForumService
 
         post.Content = content;
         post.EditedAt = DateTime.UtcNow;
+        post.EditCount++;
         await _context.SaveChangesAsync();
         return true;
     }
@@ -243,7 +263,14 @@ public class ForumService
             _context.Votes.Add(vote);
         }
 
+        // Track activity
+        if (value > 0)
+            TrackActivity("upvote", userId);
+        else
+            TrackActivity("downvote", userId);
+        
         await _context.SaveChangesAsync();
+        await UpdateUserVoteStatisticsAsync();
         return true;
     }
 
@@ -254,6 +281,76 @@ public class ForumService
             .ToListAsync();
 
         return votes.Sum(v => v.Value);
+    }
+
+    // Thread voting
+    public async Task<bool> VoteOnThreadAsync(int threadId, int? userId, string? sessionId, int value)
+    {
+        Vote? existingVote = null;
+        if (userId != null)
+        {
+            existingVote = await _context.Votes
+                .FirstOrDefaultAsync(v => v.ThreadId == threadId && v.UserId == userId);
+        }
+        else if (!string.IsNullOrEmpty(sessionId))
+        {
+            existingVote = await _context.Votes
+                .FirstOrDefaultAsync(v => v.ThreadId == threadId && v.SessionId == sessionId);
+        }
+
+        if (existingVote != null)
+        {
+            if (existingVote.Value == value)
+            {
+                // Remove vote if clicking the same button
+                _context.Votes.Remove(existingVote);
+            }
+            else
+            {
+                // Change vote
+                existingVote.Value = value;
+            }
+        }
+        else
+        {
+            // New vote
+            var vote = new Vote
+            {
+                ThreadId = threadId,
+                UserId = userId,
+                SessionId = userId == null ? sessionId : null,
+                Value = value,
+                CreatedAt = DateTime.UtcNow
+            };
+            _context.Votes.Add(vote);
+        }
+
+        // Track activity
+        if (value > 0)
+            TrackActivity("thread_upvote", userId);
+        else
+            TrackActivity("thread_downvote", userId);
+        
+        await _context.SaveChangesAsync();
+        await UpdateUserVoteStatisticsAsync();
+        return true;
+    }
+
+    public async Task<int> GetThreadScoreAsync(int threadId)
+    {
+        var votes = await _context.Votes
+            .Where(v => v.ThreadId == threadId)
+            .ToListAsync();
+
+        return votes.Sum(v => v.Value);
+    }
+
+    // Update user vote statistics (simplified - don't load all data)
+    public async Task UpdateUserVoteStatisticsAsync()
+    {
+        // Temporarily disabled for performance - will be calculated on demand
+        // This was causing major performance issues by loading all users/posts/threads
+        await Task.CompletedTask;
     }
 
     // Wilson Score + Time Decay for Hot ranking
@@ -281,6 +378,7 @@ public class ForumService
                 .ThenInclude(u => u.PGPVerifications)
             .Include(t => t.Posts)
                 .ThenInclude(p => p.Votes)
+            .Include(t => t.Votes) // Include thread votes
             .Where(t => !t.IsLocked)
             .ToListAsync();
 
@@ -296,11 +394,12 @@ public class ForumService
             .Select(x => x.Thread)
             .ToList();
 
-        // Failsafe: if no hot threads, return by vote count
+        // Failsafe: if no hot threads, return by thread vote count
         if (!rankedThreads.Any() || rankedThreads.All(t => CalculateHotScoreForThread(t) == 0))
         {
             return threads
-                .OrderByDescending(t => t.Posts.SelectMany(p => p.Votes).Sum(v => v.Value))
+                .OrderByDescending(t => t.Votes.Sum(v => v.Value))
+                .ThenByDescending(t => t.Posts.SelectMany(p => p.Votes).Sum(v => v.Value))
                 .Take(take)
                 .ToList();
         }
@@ -310,10 +409,20 @@ public class ForumService
 
     private double CalculateHotScoreForThread(ThreadEntity thread)
     {
-        var votes = thread.Posts.SelectMany(p => p.Votes).ToList();
-        int upvotes = votes.Count(v => v.Value > 0);
-        int downvotes = votes.Count(v => v.Value < 0);
-        return CalculateHotScore(upvotes, downvotes, thread.CreatedAt);
+        // Thread votes weight: 70%, post votes weight: 30%
+        var threadVotes = thread.Votes.ToList();
+        int threadUpvotes = threadVotes.Count(v => v.Value > 0);
+        int threadDownvotes = threadVotes.Count(v => v.Value < 0);
+        
+        var postVotes = thread.Posts.SelectMany(p => p.Votes).ToList();
+        int postUpvotes = postVotes.Count(v => v.Value > 0);
+        int postDownvotes = postVotes.Count(v => v.Value < 0);
+        
+        // Combine with weighting
+        int totalUpvotes = (int)(threadUpvotes * 0.7 + postUpvotes * 0.3);
+        int totalDownvotes = (int)(threadDownvotes * 0.7 + postDownvotes * 0.3);
+        
+        return CalculateHotScore(totalUpvotes, totalDownvotes, thread.CreatedAt);
     }
 
     public async Task<List<Post>> GetHotPostsForThreadAsync(int threadId, int skip, int take)

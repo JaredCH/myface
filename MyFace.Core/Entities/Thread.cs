@@ -15,4 +15,5 @@ public class Thread
     // Navigation properties
     public User? User { get; set; }
     public ICollection<Post> Posts { get; set; } = new List<Post>();
+    public ICollection<Vote> Votes { get; set; } = new List<Vote>();
 }

@@ -1,6 +1,25 @@
 @model List<MyFace.Core.Entities.Post>
+@using System
 @inject MyFace.Web.Services.BBCodeFormatter Formatter
 @{
+    string AdjustColor(string hex, double factor)
+    {
+        if (string.IsNullOrWhiteSpace(hex) || !hex.StartsWith("#") || (hex.Length != 7 && hex.Length != 4)) return hex ?? string.Empty;
+        string Expand(string h) => h.Length == 4 ? $"#{h[1]}{h[1]}{h[2]}{h[2]}{h[3]}{h[3]}" : h;
+        var full = Expand(hex);
+        try
+        {
+            int r = Convert.ToInt32(full.Substring(1, 2), 16);
+            int g = Convert.ToInt32(full.Substring(3, 2), 16);
+            int b = Convert.ToInt32(full.Substring(5, 2), 16);
+            r = Math.Clamp((int)(r * factor), 0, 255);
+            g = Math.Clamp((int)(g * factor), 0, 255);
+            b = Math.Clamp((int)(b * factor), 0, 255);
+            return $"#{r:X2}{g:X2}{b:X2}";
+        }
+        catch { return hex; }
+    }
+
     var user = (MyFace.Core.Entities.User)ViewBag.User;
     ViewData["Title"] = user.Username;
     var currentPage = (int)ViewBag.CurrentPage;
@@ -8,22 +27,82 @@
     var isSelf = (bool)(ViewBag.IsOwner ?? false);
     var isAdminOrMod = (bool)(ViewBag.IsAdminOrMod ?? false);
     var isAdmin = (bool)(ViewBag.IsAdmin ?? false);
+    
+    // Provide defaults for theme properties
+    var bgColor = string.IsNullOrWhiteSpace(user.BackgroundColor) ? "#0f172a" : user.BackgroundColor;
+    var fontColor = string.IsNullOrWhiteSpace(user.FontColor) ? "#e5e7eb" : user.FontColor;
+    var fontFamily = string.IsNullOrWhiteSpace(user.FontFamily) ? "system-ui, -apple-system, sans-serif" : user.FontFamily;
+    var fontSize = 14; // fixed page-wide size; use BBCode for per-text sizing
+    var accentColor = string.IsNullOrWhiteSpace(user.AccentColor) ? "#3b82f6" : user.AccentColor;
+    var borderColor = string.IsNullOrWhiteSpace(user.BorderColor) ? "#334155" : user.BorderColor;
+
+    // Button theming (with derived hover/active)
+    var btnBg = string.IsNullOrWhiteSpace(user.ButtonBackgroundColor) ? "#0ea5e9" : user.ButtonBackgroundColor;
+    var btnText = string.IsNullOrWhiteSpace(user.ButtonTextColor) ? "#ffffff" : user.ButtonTextColor;
+    var btnBorder = string.IsNullOrWhiteSpace(user.ButtonBorderColor) ? btnBg : user.ButtonBorderColor;
+    var btnHover = AdjustColor(btnBg, 0.9);
+    var btnActive = AdjustColor(btnBg, 0.8);
+
+    // Site defaults for recent posts (not themed)
+    var defaultRecentBg = "#0b1220";
+    var defaultRecentBorder = "#334155";
+    var defaultRecentText = "#e5e7eb";
+    var defaultRecentAccent = "#3b82f6";
 }
 
-<div style="color: @user.FontColor; font-family: @user.FontFamily">
-    <h1 style="display: inline-flex; align-items: center; gap: 0.5rem;">
-        @user.Username
-        @if (user.PGPVerifications?.Any(v => v.Verified) == true)
-        {
-            <span style="color: #10b981; font-size: 1.5rem;" title="PGP Verified">✓</span>
-        }
-    </h1>
-    <p class="meta">Joined @user.CreatedAt.ToString("u")</p>
+<style>
+    .theme-button { background: @btnBg; color: @btnText; border: 1px solid @btnBorder; padding: 0.5rem 0.9rem; border-radius: 6px; font-weight: 700; letter-spacing: 0.01em; box-shadow: 0 6px 18px rgba(0,0,0,0.15); transition: transform 120ms ease, background 120ms ease, box-shadow 120ms ease; text-decoration: none; display: inline-block; }
+    .theme-button:hover { background: @btnHover; transform: translateY(-1px); box-shadow: 0 10px 24px rgba(0,0,0,0.2); }
+    .theme-button:active { background: @btnActive; transform: translateY(0); box-shadow: 0 4px 12px rgba(0,0,0,0.18); }
+    .theme-button.ghost { background: transparent; color: @btnBg; border-color: @btnBorder; box-shadow: none; }
+</style>
 
-    @if (isSelf)
-    {
-        <p><a href="/user/edit" class="button">Edit Profile</a></p>
-    }
+<div style="background-color: @bgColor; color: @fontColor; font-family: @fontFamily; font-size: @(fontSize)px; padding: 2rem; min-height: 100vh;">
+    <div style="max-width: 1200px; margin: 0 auto;">
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 1.5rem; margin-bottom: 1.5rem;">
+            <div>
+                <h1 style="display: inline-flex; align-items: center; gap: 0.5rem; margin: 0 0 0.5rem 0;">
+                    @user.Username
+                    @if (user.PGPVerifications?.Any(v => v.Verified) == true)
+                    {
+                        <span style="color: #10b981; font-size: 1.5rem;" title="PGP Verified">✓</span>
+                    }
+                </h1>
+                <p class="meta" style="color: @fontColor; opacity: 0.7; margin: 0;">Joined @user.CreatedAt.ToString("MMMM yyyy")</p>
+                
+                @if (isSelf)
+                {
+                    <div style="margin-top: 0.75rem; display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                        <a href="/user/editprofile" class="theme-button">🎨 Customize Page</a>
+                        <a href="/user/edit" class="theme-button ghost">📝 Quick Edit</a>
+                    </div>
+                }
+            </div>
+            
+            <!-- Trophy Display for Votes -->
+            <div style="display: flex; gap: 0.6rem; flex-wrap: wrap;">
+                <div style="text-align: center; min-width: 70px;" title="Thread upvotes received">
+                    <div style="font-size: 1.8rem; margin-bottom: 0.15rem; line-height: 1;">🏆</div>
+                    <div style="font-size: 1.3rem; font-weight: 700; color: #10b981; line-height: 1;">@user.PostUpvotes</div>
+                    <div style="font-size: 0.8rem; font-weight: 700; color: @fontColor; opacity: 0.85; line-height: 1;">Thread ↑</div>
+                </div>
+                <div style="text-align: center; min-width: 70px;" title="Thread downvotes received">
+                    <div style="font-size: 1.8rem; margin-bottom: 0.15rem; line-height: 1;">⚡</div>
+                    <div style="font-size: 1.3rem; font-weight: 700; color: #ef4444; line-height: 1;">@user.PostDownvotes</div>
+                    <div style="font-size: 0.8rem; font-weight: 700; color: @fontColor; opacity: 0.85; line-height: 1;">Thread ↓</div>
+                </div>
+                <div style="text-align: center; min-width: 70px;" title="Comment upvotes received">
+                    <div style="font-size: 1.8rem; margin-bottom: 0.15rem; line-height: 1;">💬</div>
+                    <div style="font-size: 1.3rem; font-weight: 700; color: #3b82f6; line-height: 1;">@user.CommentUpvotes</div>
+                    <div style="font-size: 0.8rem; font-weight: 700; color: @fontColor; opacity: 0.85; line-height: 1;">Comment ↑</div>
+                </div>
+                <div style="text-align: center; min-width: 70px;" title="Comment downvotes received">
+                    <div style="font-size: 1.8rem; margin-bottom: 0.15rem; line-height: 1;">💭</div>
+                    <div style="font-size: 1.3rem; font-weight: 700; color: #f97316; line-height: 1;">@user.CommentDownvotes</div>
+                    <div style="font-size: 0.8rem; font-weight: 700; color: @fontColor; opacity: 0.85; line-height: 1;">Comment ↓</div>
+                </div>
+            </div>
+        </div>
 
     @if (isAdminOrMod)
     {
@@ -75,13 +154,64 @@
         </div>
     }
 
-    <div class="card">
-        <h3>About Me</h3>
-        <div>@Formatter.Format(user.AboutMe)</div>
+    <div style="background: @bgColor; border: 1px solid @borderColor; padding: 1.5rem; border-radius: 8px; margin-bottom: 1rem;">
+        <h3 style="color: @accentColor; margin-top: 0;">About Me</h3>
+        @if (!string.IsNullOrEmpty(user.AboutMe))
+        {
+            <div>@Formatter.Format(user.AboutMe)</div>
+        }
+        else
+        {
+            <p style="opacity: 0.6;">No information added yet.</p>
+        }
     </div>
 
-    <div class="card">
-        <h3>Contact Info</h3>
+    <div style="background: @bgColor; border: 1px solid @borderColor; padding: 1.5rem; border-radius: 8px; margin-bottom: 1rem;">
+        <h3 style="color: @accentColor; margin-top: 0;">Vendor Profile</h3>
+        <p class="meta" style="color: @fontColor; opacity: 0.7; margin-top: 0;">External references render as plain text; images and embeds are blocked.</p>
+        @if (!string.IsNullOrWhiteSpace(user.VendorShopDescription) || !string.IsNullOrWhiteSpace(user.VendorPolicies) || !string.IsNullOrWhiteSpace(user.VendorPayments) || !string.IsNullOrWhiteSpace(user.VendorExternalReferences))
+        {
+            <div style="display: grid; gap: 0.8rem;">
+                @if (!string.IsNullOrWhiteSpace(user.VendorShopDescription))
+                {
+                    <div>
+                        <strong>Shop</strong>
+                        <p style="margin: 0.25rem 0 0; white-space: pre-wrap;">@Html.Encode(user.VendorShopDescription)</p>
+                    </div>
+                }
+                @if (!string.IsNullOrWhiteSpace(user.VendorPolicies))
+                {
+                    <div>
+                        <strong>Policies</strong>
+                        <p style="margin: 0.25rem 0 0; white-space: pre-wrap;">@Html.Encode(user.VendorPolicies)</p>
+                    </div>
+                }
+                @if (!string.IsNullOrWhiteSpace(user.VendorPayments))
+                {
+                    <div>
+                        <strong>Payments</strong>
+                        <p style="margin: 0.25rem 0 0; white-space: pre-wrap;">@Html.Encode(user.VendorPayments)</p>
+                    </div>
+                }
+                @if (!string.IsNullOrWhiteSpace(user.VendorExternalReferences))
+                {
+                    <div>
+                        <strong>External References</strong>
+                        <p style="margin: 0.25rem 0 0; white-space: pre-wrap;">@Html.Encode(user.VendorExternalReferences)</p>
+                    </div>
+                }
+            </div>
+        }
+        else
+        {
+            <p style="opacity: 0.6;">No vendor details added yet.</p>
+        }
+    </div>
+
+
+
+    <div style="background: @bgColor; border: 1px solid @borderColor; padding: 1.5rem; border-radius: 8px; margin-bottom: 1rem;">
+        <h3 style="color: @accentColor; margin-top: 0;">Contact Info</h3>
         <ul>
             @foreach (var contact in user.Contacts)
             {
@@ -91,11 +221,12 @@
                     {
                         <form asp-action="RemoveContact" method="post" style="display:inline">
                             <input type="hidden" name="id" value="@contact.Id" />
-                            <button type="submit" class="button" style="padding: 0.2rem 0.5rem; font-size: 0.8rem;">Remove</button>
+                            <button type="submit" class="btn-delete" style="padding: 0.2rem 0.5rem; font-size: 0.8rem;">Remove</button>
                         </form>
                     }
                 </li>
             }
+        </ul>
         </ul>
         @if (isSelf)
         {
@@ -103,7 +234,7 @@
             <form asp-action="AddContact" method="post">
                 <input name="ServiceName" placeholder="Service (e.g. XMPP)" class="input" style="width: 30%" />
                 <input name="AccountId" placeholder="Account ID" class="input" style="width: 40%" />
-                <button type="submit" class="button">Add</button>
+                <button type="submit" class="theme-button">Add</button>
             </form>
         }
     </div>
@@ -138,8 +269,8 @@
         }
     </div>
 
-    <div class="card">
-        <h3>🔐 PGP Public Key</h3>
+    <div style="background: @bgColor; border: 1px solid @borderColor; padding: 1.5rem; border-radius: 8px; margin-bottom: 1rem;">
+        <h3 style="color: @accentColor; margin-top: 0;">🔐 PGP Public Key</h3>
         @if (!string.IsNullOrWhiteSpace(user.PgpPublicKey))
         {
             @if (user.PGPVerifications?.Any(v => v.Verified) == true)
@@ -150,40 +281,45 @@
             {
                 <p style="color: #f59e0b; font-weight: 600; margin-bottom: 0.5rem;">⚠ Not Verified</p>
             }
-            <pre style="white-space: pre-wrap; font-size: 0.7rem; max-height: 100px; overflow: auto; padding: 0.5rem; background: #1e293b; border: 1px solid #334155; border-radius: 4px; color: #e2e8f0;">@user.PgpPublicKey</pre>
+            <pre style="white-space: pre-wrap; font-size: 0.7rem; max-height: 100px; overflow: auto; padding: 0.5rem; background: rgba(0,0,0,0.3); border: 1px solid @borderColor; border-radius: 4px; color: @fontColor;">@user.PgpPublicKey</pre>
         }
         else
         {
-            <p class="meta">No PGP key configured</p>
+            <p style="opacity: 0.6;">No PGP key configured</p>
         }
         
         @if (isSelf)
         {
             <div style="margin-top: 1rem;">
-                <a href="/account/pgpsetup" class="button" style="background: #3b82f6;">🔑 Setup/Update PGP Key</a>
+                <a href="/account/pgpsetup" class="button" style="background: @accentColor;">🔑 Setup/Update PGP Key</a>
             </div>
         }
     </div>
 
-    <h3>Recent Posts</h3>
-    @foreach (var post in Model)
-    {
-        <div class="card">
-            <div>@Formatter.Format(post.Content)</div>
-            <p class="meta">@post.CreatedAt.ToString("u") in <a href="@Url.Action("View","Thread", new { id = post.ThreadId })">@post.Thread.Title</a></p>
-            <p><a class="button" href="@Url.Action("View","Thread", new { id = post.ThreadId })#reply">Reply in thread</a></p>
-        </div>
-    }
+    <div style="background: @defaultRecentBg; color: @defaultRecentText; border: 1px solid @defaultRecentBorder; padding: 1.25rem; border-radius: 10px; margin-top: 2rem;">
+        <h3 style="color: @defaultRecentAccent; margin-top: 0;">Recent Posts (Default Styling)</h3>
+        @foreach (var post in Model)
+        {
+            <div style="background: #0f172a; border: 1px solid @defaultRecentBorder; padding: 0.9rem; border-radius: 6px; margin-bottom: 0.75rem; color: @defaultRecentText;">
+                <div style="font-size: 0.95rem;">@Formatter.Format(post.Content)</div>
+                <p style="opacity: 0.8; margin-top: 0.5rem; font-size: 0.85rem; color: @defaultRecentText;">@post.CreatedAt.ToString("u") in <a href="@Url.Action("View","Thread", new { id = post.ThreadId })" style="color: @defaultRecentAccent;">@post.Thread.Title</a></p>
+                <p style="margin-top: 0.5rem;">
+                    <a style="background: @defaultRecentAccent; color: #0b1220; padding: 0.35rem 0.65rem; font-size: 0.85rem; border-radius: 5px; text-decoration: none; font-weight: 700;" href="@Url.Action("View","Thread", new { id = post.ThreadId })#reply">Reply</a>
+                </p>
+            </div>
+        }
 
-    <div class="form-actions">
-        @if (currentPage > 1)
-        {
-            <a class="button" href="@Url.Action("Index", new { username = user.Username, page = currentPage - 1 })">Previous</a>
-        }
-        @if (hasMore)
-        {
-            <a class="button" href="@Url.Action("Index", new { username = user.Username, page = currentPage + 1 })">Next</a>
-        }
-        <span class="meta"> Page @currentPage </span>
+        <div class="form-actions" style="margin-top: 1rem; display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;">
+            @if (currentPage > 1)
+            {
+                <a class="theme-button" style="background: @defaultRecentAccent; border-color: @defaultRecentAccent; color: #0b1220; box-shadow: none;" href="@Url.Action("Index", new { username = user.Username, page = currentPage - 1 })">Previous</a>
+            }
+            @if (hasMore)
+            {
+                <a class="theme-button" style="background: @defaultRecentAccent; border-color: @defaultRecentAccent; color: #0b1220; box-shadow: none;" href="@Url.Action("Index", new { username = user.Username, page = currentPage + 1 })">Next</a>
+            }
+            <span style="opacity: 0.7; color: @defaultRecentText;"> Page @currentPage </span>
+        </div>
+    </div>
     </div>
 </div>

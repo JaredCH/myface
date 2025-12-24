@@ -2,18 +2,35 @@
 @{
     var username = Model?.Username ?? "Anonymous";
     var isVerified = Model?.PGPVerifications?.Any(v => v.Verified) == true;
+    var role = Model?.Role ?? "User";
+    
+    // Color coding based on role and verification
+    var usernameColor = role switch
+    {
+        "Admin" => "#dc2626",        // Red
+        "Moderator" => "#10b981",    // Green
+        _ => isVerified ? "#1e293b" : "#94a3b8"  // Black if verified, Medium Gray otherwise
+    };
 }
 @if (Model != null && !string.IsNullOrEmpty(Model.Username))
 {
     <a href="/user/@username" style="display: inline-flex; align-items: center; gap: 0.25rem;">
-        <span>@username</span>
-        @if (isVerified)
+        <span style="color: @usernameColor; font-weight: @(role == "Admin" || role == "Moderator" ? "700" : "500");">@username</span>
+        @if (isVerified && role == "User")
         {
             <span style="color: #10b981; font-size: 0.85rem;" title="PGP Verified">✓</span>
+        }
+        @if (role == "Moderator")
+        {
+            <span style="color: #10b981; font-size: 0.75rem; font-weight: 600;" title="Moderator">[MOD]</span>
+        }
+        @if (role == "Admin")
+        {
+            <span style="color: #dc2626; font-size: 0.75rem; font-weight: 600;" title="Administrator">[ADMIN]</span>
         }
     </a>
 }
 else
 {
-    <span>Anonymous</span>
+    <span style="color: #94a3b8;">Anonymous</span>
 }

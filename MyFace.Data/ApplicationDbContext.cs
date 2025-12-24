@@ -18,6 +18,10 @@ public class ApplicationDbContext : DbContext
     public DbSet<PGPVerification> PGPVerifications { get; set; }
     public DbSet<UserContact> UserContacts { get; set; }
     public DbSet<UserNews> UserNews { get; set; }
+    public DbSet<PageVisit> PageVisits { get; set; }
+    public DbSet<UsernameChangeLog> UsernameChangeLogs { get; set; }
+    public DbSet<Activity> Activities { get; set; }
+    public DbSet<LoginAttempt> LoginAttempts { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -42,7 +46,7 @@ public class ApplicationDbContext : DbContext
             entity.Property(e => e.UpdatedAt).HasDefaultValueSql("CURRENT_TIMESTAMP");
             
             entity.HasOne(e => e.User)
-                .WithMany()
+                .WithMany(u => u.Threads)
                 .HasForeignKey(e => e.UserId)
                 .OnDelete(DeleteBehavior.SetNull);
         });
@@ -72,14 +76,23 @@ public class ApplicationDbContext : DbContext
             entity.Property(e => e.CreatedAt).HasDefaultValueSql("CURRENT_TIMESTAMP");
             entity.Property(e => e.Value).IsRequired();
             
-            // Ensure one vote per user per post (when userId is not null)
-            entity.HasIndex(e => new { e.UserId, e.PostId }).HasFilter("\"UserId\" IS NOT NULL").IsUnique();
-            // Ensure one vote per session per post (when sessionId is not null)
-            entity.HasIndex(e => new { e.SessionId, e.PostId }).HasFilter("\"SessionId\" IS NOT NULL").IsUnique();
+            // Ensure one vote per user per post (when userId is not null and postId is not null)
+            entity.HasIndex(e => new { e.UserId, e.PostId }).HasFilter("\"UserId\" IS NOT NULL AND \"PostId\" IS NOT NULL").IsUnique();
+            // Ensure one vote per session per post (when sessionId is not null and postId is not null)
+            entity.HasIndex(e => new { e.SessionId, e.PostId }).HasFilter("\"SessionId\" IS NOT NULL AND \"PostId\" IS NOT NULL").IsUnique();
+            // Ensure one vote per user per thread (when userId is not null and threadId is not null)
+            entity.HasIndex(e => new { e.UserId, e.ThreadId }).HasFilter("\"UserId\" IS NOT NULL AND \"ThreadId\" IS NOT NULL").IsUnique();
+            // Ensure one vote per session per thread (when sessionId is not null and threadId is not null)
+            entity.HasIndex(e => new { e.SessionId, e.ThreadId }).HasFilter("\"SessionId\" IS NOT NULL AND \"ThreadId\" IS NOT NULL").IsUnique();
             
             entity.HasOne(e => e.Post)
                 .WithMany(p => p.Votes)
                 .HasForeignKey(e => e.PostId)
+                .OnDelete(DeleteBehavior.Cascade);
+            
+            entity.HasOne(e => e.Thread)
+                .WithMany(t => t.Votes)
+                .HasForeignKey(e => e.ThreadId)
                 .OnDelete(DeleteBehavior.Cascade);
             
             entity.HasOne(e => e.User)
@@ -139,6 +152,30 @@ public class ApplicationDbContext : DbContext
                 .WithMany(u => u.News)
                 .HasForeignKey(e => e.UserId)
                 .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        // Activity configuration
+        modelBuilder.Entity<Activity>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.ActivityType).HasMaxLength(50).IsRequired();
+            entity.Property(e => e.CreatedAt).HasDefaultValueSql("CURRENT_TIMESTAMP");
+            entity.HasIndex(e => e.CreatedAt); // Index for time-based queries
+            
+            entity.HasOne(e => e.User)
+                .WithMany()
+                .HasForeignKey(e => e.UserId)
+                .OnDelete(DeleteBehavior.SetNull);
+        });
+        
+        // LoginAttempt configuration
+        modelBuilder.Entity<LoginAttempt>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.LoginNameHash).HasMaxLength(64).IsRequired();
+            entity.Property(e => e.IpAddressHash).HasMaxLength(64);
+            entity.Property(e => e.AttemptedAt).HasDefaultValueSql("CURRENT_TIMESTAMP");
+            entity.HasIndex(e => new { e.LoginNameHash, e.AttemptedAt }); // Composite index for lookups
         });
     }
 }

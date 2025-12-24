@@ -33,6 +33,8 @@ builder.Services.AddScoped<ForumService>();
 builder.Services.AddScoped<OnionStatusService>();
 builder.Services.AddScoped<RssService>();
 builder.Services.AddScoped<ReputationService>();
+builder.Services.AddScoped<VisitTrackingService>();
+builder.Services.AddScoped<RateLimitService>();
 builder.Services.AddScoped<MyFace.Web.Services.BBCodeFormatter>();
 builder.Services.AddSingleton<MyFace.Web.Services.CaptchaService>();
 builder.Services.AddHostedService<MyFace.Web.Services.OnionMonitorWorker>();
@@ -129,6 +131,7 @@ app.UseStaticFiles();
 app.UseRouting();
 
 app.UseSession();
+app.UseMiddleware<MyFace.Web.Middleware.VisitTrackingMiddleware>();
 app.UseMiddleware<MyFace.Web.Middleware.CaptchaMiddleware>();
 app.UseAuthentication();
 app.UseAuthorization();

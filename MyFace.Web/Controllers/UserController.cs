@@ -1,3 +1,4 @@
+using System.Linq;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -66,6 +67,103 @@ public class UserController : Controller
             FontFamily = user.FontFamily
         };
         return View(model);
+    }
+
+    [Authorize]
+    [HttpGet("/user/editprofile")]
+    public async Task<IActionResult> EditProfile()
+    {
+        var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+        var user = await _userService.GetByIdAsync(userId);
+        if (user == null) return NotFound();
+
+        ViewBag.User = user;
+        return View();
+    }
+
+    [Authorize]
+    [HttpPost("/user/editprofile")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> EditProfile(string aboutMe, string fontColor, string fontFamily,
+        string backgroundColor, string accentColor, string borderColor, string profileLayout,
+        string? backgroundColorHex, string? fontColorHex, string? accentColorHex, string? borderColorHex,
+        string buttonBackgroundColor, string buttonTextColor, string buttonBorderColor,
+        string? buttonBackgroundColorHex, string? buttonTextColorHex, string? buttonBorderColorHex,
+        string vendorShopDescription, string vendorPolicies, string vendorPayments, string vendorExternalReferences)
+    {
+        var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+
+        var resolvedBackground = NormalizeHexOrFallback(backgroundColorHex, backgroundColor, "#0f172a");
+        var resolvedFont = NormalizeHexOrFallback(fontColorHex, fontColor, "#e5e7eb");
+        var resolvedAccent = NormalizeHexOrFallback(accentColorHex, accentColor, "#3b82f6");
+        var resolvedBorder = NormalizeHexOrFallback(borderColorHex, borderColor, "#334155");
+        var resolvedButtonBg = NormalizeHexOrFallback(buttonBackgroundColorHex, buttonBackgroundColor, "#0ea5e9");
+        var resolvedButtonText = NormalizeHexOrFallback(buttonTextColorHex, buttonTextColor, "#ffffff");
+        var resolvedButtonBorder = NormalizeHexOrFallback(buttonBorderColorHex, buttonBorderColor, resolvedButtonBg);
+
+        await _userService.UpdateFullProfileAsync(userId, aboutMe, resolvedFont, fontFamily,
+            resolvedBackground, resolvedAccent, resolvedBorder, profileLayout,
+            resolvedButtonBg, resolvedButtonText, resolvedButtonBorder,
+            vendorShopDescription, vendorPolicies, vendorPayments, vendorExternalReferences);
+        
+        TempData["Success"] = "Your page has been updated!";
+        return RedirectToAction("Index", new { username = User.Identity!.Name });
+    }
+
+    [Authorize]
+    [HttpPost("/user/editprofile/preview")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> PreviewProfile(string aboutMe, string fontColor, string fontFamily,
+        string backgroundColor, string accentColor, string borderColor, string profileLayout,
+        string? backgroundColorHex, string? fontColorHex, string? accentColorHex, string? borderColorHex,
+        string buttonBackgroundColor, string buttonTextColor, string buttonBorderColor,
+        string? buttonBackgroundColorHex, string? buttonTextColorHex, string? buttonBorderColorHex,
+        string vendorShopDescription, string vendorPolicies, string vendorPayments, string vendorExternalReferences)
+    {
+        var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+        var user = await _userService.GetByIdAsync(userId);
+        if (user == null) return NotFound();
+
+        var resolvedBackground = NormalizeHexOrFallback(backgroundColorHex, backgroundColor, user.BackgroundColor ?? "#0f172a");
+        var resolvedFont = NormalizeHexOrFallback(fontColorHex, fontColor, user.FontColor ?? "#e5e7eb");
+        var resolvedAccent = NormalizeHexOrFallback(accentColorHex, accentColor, user.AccentColor ?? "#3b82f6");
+        var resolvedBorder = NormalizeHexOrFallback(borderColorHex, borderColor, user.BorderColor ?? "#334155");
+        var resolvedButtonBg = NormalizeHexOrFallback(buttonBackgroundColorHex, buttonBackgroundColor, user.ButtonBackgroundColor ?? "#0ea5e9");
+        var resolvedButtonText = NormalizeHexOrFallback(buttonTextColorHex, buttonTextColor, user.ButtonTextColor ?? "#ffffff");
+        var resolvedButtonBorder = NormalizeHexOrFallback(buttonBorderColorHex, buttonBorderColor, user.ButtonBorderColor ?? resolvedButtonBg);
+
+        var previewUser = new MyFace.Core.Entities.User
+        {
+            Id = user.Id,
+            Username = user.Username,
+            CreatedAt = user.CreatedAt,
+            AboutMe = aboutMe ?? string.Empty,
+            FontColor = resolvedFont,
+            FontFamily = string.IsNullOrWhiteSpace(fontFamily) ? "system-ui, -apple-system, sans-serif" : fontFamily,
+            FontSize = 14,
+            BackgroundColor = resolvedBackground,
+            AccentColor = resolvedAccent,
+            BorderColor = resolvedBorder,
+            ProfileLayout = string.IsNullOrWhiteSpace(profileLayout) ? user.ProfileLayout : profileLayout,
+            ButtonBackgroundColor = resolvedButtonBg,
+            ButtonTextColor = resolvedButtonText,
+            ButtonBorderColor = resolvedButtonBorder,
+            VendorShopDescription = vendorShopDescription ?? string.Empty,
+            VendorPolicies = vendorPolicies ?? string.Empty,
+            VendorPayments = vendorPayments ?? string.Empty,
+            VendorExternalReferences = vendorExternalReferences ?? string.Empty,
+            PostUpvotes = user.PostUpvotes,
+            PostDownvotes = user.PostDownvotes,
+            CommentUpvotes = user.CommentUpvotes,
+            CommentDownvotes = user.CommentDownvotes,
+            Contacts = user.Contacts,
+            News = user.News,
+            PGPVerifications = user.PGPVerifications
+        };
+
+        ViewBag.User = previewUser;
+        ViewBag.IsPreview = true;
+        return View("EditProfile");
     }
 
     [Authorize]
@@ -223,5 +321,21 @@ public class UserController : Controller
         var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
         await _userService.RemoveNewsAsync(userId, id);
         return RedirectToAction("Index", new { username = User.Identity!.Name });
+    }
+
+    private static string NormalizeHexOrFallback(string? hexValue, string? colorInput, string fallback)
+    {
+        // Prefer the color input (color picker) when valid; fall back to hex textbox, then default
+        var candidates = new[] { colorInput, hexValue, fallback };
+        foreach (var candidate in candidates)
+        {
+            if (string.IsNullOrWhiteSpace(candidate)) continue;
+            var trimmed = candidate.Trim();
+            if (trimmed.Length == 7 && trimmed[0] == '#' && trimmed.Skip(1).All(c => Uri.IsHexDigit(c)))
+            {
+                return trimmed;
+            }
+        }
+        return fallback;
     }
 }

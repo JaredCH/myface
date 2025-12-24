@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using MyFace.Services;
 using MyFace.Web.Services;
 using MyFace.Web.Models;
+using System.Security.Claims;
 
 namespace MyFace.Web.Controllers;
 
@@ -123,5 +124,35 @@ public class ModeratorController : Controller
         // Actually, let's assume the previous code was correct for now.
         await Task.CompletedTask; 
         return RedirectToAction("View", "Thread", new { id = post.ThreadId });
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> ChangeUsername(int userId, string newUsername, string? adminNote)
+    {
+        if (string.IsNullOrWhiteSpace(newUsername))
+        {
+            TempData["Error"] = "Username cannot be empty";
+            return RedirectToAction("Index");
+        }
+
+        var modIdString = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (!int.TryParse(modIdString, out var modId))
+        {
+            return Unauthorized();
+        }
+
+        var success = await _userService.ChangeUsernameByAdminAsync(userId, newUsername, modId, adminNote);
+        
+        if (success)
+        {
+            TempData["Success"] = "Username has been reset. User will be prompted to choose a new username on next login.";
+        }
+        else
+        {
+            TempData["Error"] = "Failed to reset username.";
+        }
+
+        return RedirectToAction("Index");
     }
 }

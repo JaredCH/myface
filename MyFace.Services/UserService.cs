@@ -44,12 +44,32 @@ public class UserService
         return user;
     }
 
+    /// <summary>
+    /// Authenticate user with constant-time response to prevent account enumeration.
+    /// NOTE: LoginName is stored in plaintext because hashing would prevent lookups.
+    /// This is a security trade-off - if DB is compromised, login names are exposed.
+    /// Passwords remain protected with Argon2 hashing.
+    /// </summary>
     public async Task<User?> AuthenticateAsync(string loginName, string password)
     {
+        // Always query to prevent timing attacks that reveal if user exists
         var user = await _context.Users
             .FirstOrDefaultAsync(u => u.LoginName == loginName && u.IsActive);
 
-        if (user == null || !VerifyPassword(password, user.PasswordHash))
+        // Always verify password hash (even if user is null) for constant-time response
+        var isValid = false;
+        if (user != null)
+        {
+            isValid = VerifyPassword(password, user.PasswordHash);
+        }
+        else
+        {
+            // Perform dummy hash verification to maintain constant time
+            // This prevents timing attacks that could enumerate valid usernames
+            VerifyPassword(password, "$argon2id$v=19$m=65536,t=3,p=1$fakesaltfakesalt$fakehashfakehashfakehashfakehash");
+        }
+
+        if (!isValid || user == null)
         {
             return null;
         }
@@ -120,9 +140,37 @@ public class UserService
         var user = await _context.Users.FindAsync(userId);
         if (user != null)
         {
-            user.AboutMe = aboutMe;
-            user.FontColor = fontColor;
-            user.FontFamily = fontFamily;
+            user.AboutMe = aboutMe ?? string.Empty;
+            user.FontColor = fontColor ?? "#e5e7eb";
+            user.FontFamily = fontFamily ?? "system-ui, -apple-system, sans-serif";
+            await _context.SaveChangesAsync();
+        }
+    }
+
+    public async Task UpdateFullProfileAsync(int userId, string aboutMe, string fontColor, string fontFamily,
+        string backgroundColor, string accentColor, string borderColor, string profileLayout,
+        string buttonBackgroundColor, string buttonTextColor, string buttonBorderColor,
+        string vendorShopDescription, string vendorPolicies, string vendorPayments, string vendorExternalReferences)
+    {
+        var user = await _context.Users.FindAsync(userId);
+        if (user != null)
+        {
+            user.AboutMe = aboutMe ?? string.Empty;
+            user.FontColor = fontColor ?? "#e5e7eb";
+            user.FontFamily = fontFamily ?? "system-ui, -apple-system, sans-serif";
+            const int defaultFontSize = 14;
+            user.FontSize = defaultFontSize;
+            user.BackgroundColor = backgroundColor ?? "#0f172a";
+            user.AccentColor = accentColor ?? "#3b82f6";
+            user.BorderColor = borderColor ?? "#334155";
+            user.ProfileLayout = profileLayout ?? "default";
+            user.ButtonBackgroundColor = string.IsNullOrWhiteSpace(buttonBackgroundColor) ? "#0ea5e9" : buttonBackgroundColor;
+            user.ButtonTextColor = string.IsNullOrWhiteSpace(buttonTextColor) ? "#ffffff" : buttonTextColor;
+            user.ButtonBorderColor = string.IsNullOrWhiteSpace(buttonBorderColor) ? "#0ea5e9" : buttonBorderColor;
+            user.VendorShopDescription = vendorShopDescription ?? string.Empty;
+            user.VendorPolicies = vendorPolicies ?? string.Empty;
+            user.VendorPayments = vendorPayments ?? string.Empty;
+            user.VendorExternalReferences = vendorExternalReferences ?? string.Empty;
             await _context.SaveChangesAsync();
         }
     }
@@ -224,6 +272,73 @@ public class UserService
         _context.Users.Remove(user);
         await _context.SaveChangesAsync();
         return true;
+    }
+
+    public async Task<bool> ChangeUsernameByAdminAsync(int userId, string newUsername, int adminId, string? adminNote = null)
+    {
+        var user = await _context.Users.FindAsync(userId);
+        if (user == null || string.IsNullOrWhiteSpace(newUsername))
+        {
+            return false;
+        }
+
+        // Check if new username is already taken
+        if (await _context.Users.AnyAsync(u => u.Username == newUsername && u.Id != userId))
+        {
+            return false;
+        }
+
+        var oldUsername = user.Username;
+        
+        // Reset username to empty so user must choose new one
+        user.Username = string.Empty;
+        user.MustChangeUsername = true;
+        user.UsernameChangedByAdminId = adminId;
+
+        // Log the change
+        var changeLog = new UsernameChangeLog
+        {
+            UserId = userId,
+            OldUsername = oldUsername,
+            NewUsername = newUsername, // This is the suggested/reset username
+            AdminNote = adminNote,
+            ChangedByUserId = adminId,
+            ChangedAt = DateTime.UtcNow,
+            UserNotified = false
+        };
+
+        _context.UsernameChangeLogs.Add(changeLog);
+        await _context.SaveChangesAsync();
+        return true;
+    }
+
+    public async Task<UsernameChangeLog?> GetUnnotifiedUsernameChangeAsync(int userId)
+    {
+        return await _context.UsernameChangeLogs
+            .Include(log => log.ChangedByUser)
+            .Where(log => log.UserId == userId && !log.UserNotified)
+            .OrderByDescending(log => log.ChangedAt)
+            .FirstOrDefaultAsync();
+    }
+
+    public async Task MarkUsernameChangeNotifiedAsync(int logId)
+    {
+        var log = await _context.UsernameChangeLogs.FindAsync(logId);
+        if (log != null)
+        {
+            log.UserNotified = true;
+            await _context.SaveChangesAsync();
+        }
+    }
+
+    public async Task ClearMustChangeUsernameAsync(int userId)
+    {
+        var user = await _context.Users.FindAsync(userId);
+        if (user != null)
+        {
+            user.MustChangeUsername = false;
+            await _context.SaveChangesAsync();
+        }
     }
 
     private static string HashPassword(string password)

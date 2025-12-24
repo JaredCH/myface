@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Http;
+using MyFace.Web.Services;
 using System.Security.Cryptography;
 
 namespace MyFace.Web.Middleware;
@@ -33,11 +34,11 @@ public class CaptchaMiddleware
             var views = context.Session.GetInt32("PageViews") ?? 0;
             views++;
             
-            // Get or generate random captcha threshold (5-15 page loads)
+            // Get or generate random captcha threshold (15-30 page loads)
             var threshold = context.Session.GetInt32("CaptchaThreshold");
-            if (threshold == null)
+            if (threshold == null || threshold < CaptchaSettings.MinPageViewsBeforeCaptcha || threshold > CaptchaSettings.MaxPageViewsBeforeCaptcha)
             {
-                threshold = RandomNumberGenerator.GetInt32(5, 16); // 5 to 15 inclusive
+                threshold = CaptchaSettings.NextThreshold();
                 context.Session.SetInt32("CaptchaThreshold", threshold.Value);
             }
             

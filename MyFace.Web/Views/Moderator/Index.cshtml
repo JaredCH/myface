@@ -87,6 +87,15 @@
     <h2>🔒 User Suspension Management</h2>
     <p>Manage user suspensions and access control:</p>
 
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert-success">@TempData["Success"]</div>
+    }
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert-error">@TempData["Error"]</div>
+    }
+
     <form method="get" class="mb-3">
         <input name="search" placeholder="Search by username..." class="input" value="@(ViewBag.SearchQuery ?? "")" />
         <button type="submit" class="button">Search</button>
@@ -99,15 +108,15 @@
                 <th>Username</th>
                 <th>Role</th>
                 <th>Suspended Until</th>
-                <th>Action</th>
+                <th>Actions</th>
             </tr>
         </thead>
         <tbody>
             @foreach (var user in Model.Users)
             {
                 <tr>
-                    <td>@user.Username</td>
-                    <td>@user.Role</td>
+                    <td><strong>@user.Username</strong></td>
+                    <td><span class="role-badge role-@user.Role.ToLower()">@user.Role</span></td>
                     <td>
                         @if (user.SuspendedUntil.HasValue)
                         {
@@ -130,26 +139,37 @@
                             var isSelf = string.Equals(user.Username, username, StringComparison.OrdinalIgnoreCase);
                             var canSuspend = !isSelf && (viewerIsAdmin || user.Role == "User");
                         }
-                        @if (canSuspend)
-                        {
-                            <form asp-action="SuspendUser" method="post" class="d-inline">
-                                <input type="hidden" name="userId" value="@user.Id" />
-                                <select name="duration" class="form-select d-inline w-auto">
-                                    <option value="24h">24 Hours</option>
-                                    <option value="72h">72 Hours</option>
-                                    <option value="1w">1 Week</option>
-                                    <option value="2w">2 Weeks</option>
-                                    <option value="1m">1 Month</option>
-                                    <option value="forever">Forever</option>
-                                    <option value="unsuspend">Unsuspend</option>
-                                </select>
-                                <button type="submit" class="btn btn-warning btn-sm">Apply</button>
-                            </form>
-                        }
-                        else
-                        {
-                            <span class="text-muted">Not permitted</span>
-                        }
+                        <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                            @if (canSuspend)
+                            {
+                                <form asp-action="SuspendUser" method="post" class="d-inline">
+                                    <input type="hidden" name="userId" value="@user.Id" />
+                                    <select name="duration" class="form-select d-inline w-auto">
+                                        <option value="24h">24 Hours</option>
+                                        <option value="72h">72 Hours</option>
+                                        <option value="1w">1 Week</option>
+                                        <option value="2w">2 Weeks</option>
+                                        <option value="1m">1 Month</option>
+                                        <option value="forever">Forever</option>
+                                        <option value="unsuspend">Unsuspend</option>
+                                    </select>
+                                    <button type="submit" class="btn btn-warning btn-sm">Apply</button>
+                                    @Html.AntiForgeryToken()
+                                </form>
+                                
+                                <form asp-action="ChangeUsername" method="post" class="d-inline" style="display: flex; gap: 0.25rem; align-items: center;">
+                                    <input type="hidden" name="userId" value="@user.Id" />
+                                    <input type="text" name="newUsername" placeholder="Reset to..." class="input" style="width: 120px; padding: 0.3rem 0.5rem;" title="Temporary reset name" />
+                                    <input type="text" name="adminNote" placeholder="Reason (optional)" class="input" style="width: 180px; padding: 0.3rem 0.5rem;" title="Note to user" />
+                                    <button type="submit" class="btn btn-warning btn-sm">Reset Username</button>
+                                    @Html.AntiForgeryToken()
+                                </form>
+                            }
+                            else
+                            {
+                                <span class="text-muted">Not permitted</span>
+                            }
+                        </div>
                     </td>
                 </tr>
             }

@@ -30,6 +30,44 @@ public class PostController : Controller
     }
 
     [HttpGet]
+    public async Task<IActionResult> Edit(int id)
+    {
+        var post = await _forumService.GetPostByIdAsync(id);
+        if (post == null)
+        {
+            return NotFound();
+        }
+
+        var userId = GetCurrentUserId();
+        if (userId == null || post.UserId != userId)
+        {
+            return Forbid();
+        }
+
+        return View(post);
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> Edit(int id, string content)
+    {
+        var userId = GetCurrentUserId();
+        if (userId == null)
+        {
+            return Forbid();
+        }
+
+        var success = await _forumService.UpdatePostAsync(id, userId.Value, content);
+        if (!success)
+        {
+            return NotFound();
+        }
+
+        var post = await _forumService.GetPostByIdAsync(id);
+        return RedirectToAction("View", "Thread", new { id = post?.ThreadId });
+    }
+
+    [HttpGet]
     public async Task<IActionResult> List(int threadId)
     {
         var thread = await _forumService.GetThreadByIdAsync(threadId);

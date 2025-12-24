@@ -1,37 +1,213 @@
 @model IEnumerable<MyFace.Core.Entities.User>
-
+@using MyFace.Services
 @{
     ViewData["Title"] = "Admin Panel";
+    var stats = ViewBag.Statistics as MyFace.Services.SiteStatistics;
 }
 
-<h1>Admin Panel - User Management</h1>
+<h1>Admin Panel</h1>
 
-<table class="table">
-    <thead>
-        <tr>
-            <th>Username</th>
-            <th>Current Role</th>
-            <th>Action</th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var user in Model)
-        {
+@if (TempData["Success"] != null)
+{
+    <div class="alert-success">@TempData["Success"]</div>
+}
+@if (TempData["Error"] != null)
+{
+    <div class="alert-error">@TempData["Error"]</div>
+}
+
+@if (stats != null)
+{
+    <div class="panel-section">
+        <h2>📊 Site Statistics</h2>
+        
+        <div class="stats-compact-grid">
+            <div class="stat-compact stat-highlight">
+                <span class="stat-icon-sm">🟢</span>
+                <div>
+                    <div class="stat-value-sm">@stats.LiveUserCount</div>
+                    <div class="stat-label-sm">Online Now</div>
+                </div>
+            </div>
+            
+            <div class="stat-compact">
+                <span class="stat-icon-sm">⏱️</span>
+                <div>
+                    <div class="stat-value-sm">@stats.FourHourCount</div>
+                    <div class="stat-label-sm">4 Hours</div>
+                </div>
+            </div>
+            
+            <div class="stat-compact">
+                <span class="stat-icon-sm">📅</span>
+                <div>
+                    <div class="stat-value-sm">@stats.TodayCount</div>
+                    <div class="stat-label-sm">Today</div>
+                </div>
+            </div>
+            
+            <div class="stat-compact">
+                <span class="stat-icon-sm">📆</span>
+                <div>
+                    <div class="stat-value-sm">@stats.WeekCount</div>
+                    <div class="stat-label-sm">This Week</div>
+                </div>
+            </div>
+            
+            <div class="stat-compact">
+                <span class="stat-icon-sm">🗓️</span>
+                <div>
+                    <div class="stat-value-sm">@stats.MonthCount</div>
+                    <div class="stat-label-sm">This Month</div>
+                </div>
+            </div>
+            
+            <div class="stat-compact">
+                <span class="stat-icon-sm">📈</span>
+                <div>
+                    <div class="stat-value-sm">@stats.QuarterCount</div>
+                    <div class="stat-label-sm">Quarter</div>
+                </div>
+            </div>
+            
+            <div class="stat-compact">
+                <span class="stat-icon-sm">🎯</span>
+                <div>
+                    <div class="stat-value-sm">@stats.YearCount</div>
+                    <div class="stat-label-sm">This Year</div>
+                </div>
+            </div>
+            
+            <div class="stat-compact stat-highlight">
+                <span class="stat-icon-sm">🌟</span>
+                <div>
+                    <div class="stat-value-sm">@stats.TotalCount</div>
+                    <div class="stat-label-sm">All-Time</div>
+                </div>
+            </div>
+        </div>
+        
+        <h3 style="margin: 1.5rem 0 0.75rem 0; font-size: 1rem; color: var(--text-muted);">👥 User & Activity Metrics</h3>
+        <div class="stats-compact-grid">
+            <div class="stat-compact">
+                <span class="stat-icon-sm">👤</span>
+                <div>
+                    <div class="stat-value-sm">@stats.TotalUsers</div>
+                    <div class="stat-label-sm">Total Users</div>
+                </div>
+            </div>
+            
+            <div class="stat-compact">
+                <span class="stat-icon-sm">⚡</span>
+                <div>
+                    <div class="stat-value-sm">@stats.ActionsPerMinute.ToString("F1")</div>
+                    <div class="stat-label-sm">Act/Min</div>
+                </div>
+            </div>
+            
+            <div class="stat-compact">
+                <span class="stat-icon-sm">🕐</span>
+                <div>
+                    <div class="stat-value-sm">@stats.ActionsPerHour.ToString("F0")</div>
+                    <div class="stat-label-sm">Act/Hour</div>
+                </div>
+            </div>
+            
+            <div class="stat-compact">
+                <span class="stat-icon-sm">📊</span>
+                <div>
+                    <div class="stat-value-sm">@stats.ActionsPerDay.ToString("F0")</div>
+                    <div class="stat-label-sm">Act/Day</div>
+                </div>
+            </div>
+            
+            <div class="stat-compact">
+                <span class="stat-icon-sm">📈</span>
+                <div>
+                    <div class="stat-value-sm">@stats.ActionsPerWeek.ToString("F0")</div>
+                    <div class="stat-label-sm">Act/Week</div>
+                </div>
+            </div>
+            
+            <div class="stat-compact">
+                <span class="stat-icon-sm">📉</span>
+                <div>
+                    <div class="stat-value-sm">@stats.ActionsPerMonth.ToString("F0")</div>
+                    <div class="stat-label-sm">Act/Month</div>
+                </div>
+            </div>
+            
+            <div class="stat-compact">
+                <span class="stat-icon-sm">🗓️</span>
+                <div>
+                    <div class="stat-value-sm">@stats.ActionsPerYear.ToString("F0")</div>
+                    <div class="stat-label-sm">Act/Year</div>
+                </div>
+            </div>
+        </div>
+        
+        <details style="margin-top: 1rem;">
+            <summary style="cursor: pointer; color: var(--accent); font-size: 0.9rem;">Show Peak Statistics</summary>
+            <div class="stats-peaks" style="margin-top: 0.5rem; padding: 0.75rem; background: var(--card-bg); border-radius: 4px; font-size: 0.85rem;">
+                @if (stats.PeakFourHours > 0) { <div>4h Peak: @stats.PeakFourHours</div> }
+                @if (stats.PeakDay > 0) { <div>Day Peak: @stats.PeakDay</div> }
+                @if (stats.PeakWeek > 0) { <div>Week Peak: @stats.PeakWeek</div> }
+                @if (stats.PeakMonth > 0) { <div>Month Peak: @stats.PeakMonth</div> }
+                @if (stats.PeakQuarter > 0) { <div>Quarter Peak: @stats.PeakQuarter</div> }
+                @if (stats.PeakYear > 0) { <div>Year Peak: @stats.PeakYear</div> }
+            </div>
+        </details>
+    </div>
+}
+
+<div class="panel-section">
+    <h2>👥 User Management</h2>
+    <table class="table">
+        <thead>
             <tr>
-                <td>@user.Username</td>
-                <td>@user.Role</td>
-                <td>
-                    <form asp-action="SetRole" method="post" class="d-inline">
-                        <input type="hidden" name="userId" value="@user.Id" />
-                        <select name="role" class="form-select d-inline w-auto">
-                            <option value="User" selected="@(user.Role == "User")">User</option>
-                            <option value="Moderator" selected="@(user.Role == "Moderator")">Moderator</option>
-                            <option value="Admin" selected="@(user.Role == "Admin")">Admin</option>
-                        </select>
-                        <button type="submit" class="btn btn-primary btn-sm">Update</button>
-                    </form>
-                </td>
+                <th>Username</th>
+                <th>Role</th>
+                <th>Actions</th>
             </tr>
-        }
-    </tbody>
-</table>
+        </thead>
+        <tbody>
+            @foreach (var user in Model)
+            {
+                <tr>
+                    <td>
+                        <strong>@user.Username</strong>
+                        @if (!string.IsNullOrEmpty(user.LoginName))
+                        {
+                            <span class="text-muted" style="font-size: 0.85rem;">(Login: @user.LoginName)</span>
+                        }
+                    </td>
+                    <td>
+                        <span class="role-badge role-@user.Role.ToLower()">@user.Role</span>
+                    </td>
+                    <td>
+                        <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                            <form asp-action="SetRole" method="post" class="d-inline">
+                                <input type="hidden" name="userId" value="@user.Id" />
+                                <select name="role" class="form-select d-inline w-auto">
+                                    <option value="User" selected="@(user.Role == "User")">User</option>
+                                    <option value="Moderator" selected="@(user.Role == "Moderator")">Moderator</option>
+                                    <option value="Admin" selected="@(user.Role == "Admin")">Admin</option>
+                                </select>
+                                <button type="submit" class="btn btn-sm">Update Role</button>
+                                @Html.AntiForgeryToken()
+                            </form>
+                            
+                            <form asp-action="ChangeUsername" method="post" class="d-inline" style="display: flex; gap: 0.25rem; align-items: center;">
+                                <input type="hidden" name="userId" value="@user.Id" />
+                                <input type="text" name="newUsername" placeholder="Reset to..." class="input" style="width: 120px; padding: 0.3rem 0.5rem;" title="Temporary reset name" />
+                                <input type="text" name="adminNote" placeholder="Reason (optional)" class="input" style="width: 180px; padding: 0.3rem 0.5rem;" title="Note to user explaining why" />
+                                <button type="submit" class="btn btn-warning btn-sm">Reset Username</button>
+                                @Html.AntiForgeryToken()
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>

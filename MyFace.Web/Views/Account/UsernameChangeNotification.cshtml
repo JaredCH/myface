@@ -1,0 +1,65 @@
+@model MyFace.Core.Entities.UsernameChangeLog
+@{
+    ViewData["Title"] = "Username Reset";
+}
+
+<div class="username-change-notification">
+    <div class="notification-card">
+        <div class="notification-icon">⚠️</div>
+        <h1>Your Display Name Has Been Reset</h1>
+        
+        <div class="notification-content">
+            <div class="admin-note-box">
+                <div class="admin-note-label">📝 Administrator's Note:</div>
+                <div class="admin-note-text">@(Model.AdminNote ?? "Your username was reset by a moderator or administrator.")</div>
+            </div>
+            
+            <div class="change-details">
+                <div class="detail-row">
+                    <span class="detail-label">Previous Username:</span>
+                    <span class="detail-value old-username">@Model.OldUsername</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Reset By:</span>
+                    <span class="detail-value">@(Model.ChangedByUser?.Username ?? "Administrator")</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Date:</span>
+                    <span class="detail-value">@Model.ChangedAt.ToString("u")</span>
+                </div>
+            </div>
+            
+            <div class="notification-message">
+                <p><strong>What happens next?</strong></p>
+                <p>You must choose a new display name to continue. Your login credentials remain the same.</p>
+            </div>
+        </div>
+        
+        <div class="notification-actions">
+            <form action="@Url.Action("SetUsername", "Account")" method="get" style="width: 100%;">
+                <button type="submit" class="button button-primary" style="width: 100%;">Continue to Choose New Display Name</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<style>
+    .username-change-notification { max-width: 700px; margin: 2rem auto; padding: 0 1rem; }
+    .notification-card { background: var(--card-bg); border: 2px solid #f59e0b; border-radius: .75rem; padding: 2rem; box-shadow: 0 4px 12px rgba(245, 158, 11, 0.15); }
+    .notification-icon { font-size: 4rem; text-align: center; margin-bottom: 1rem; }
+    .notification-card h1 { text-align: center; color: var(--fg); margin-bottom: 1.5rem; font-size: 1.75rem; }
+    .notification-content { margin-bottom: 2rem; }
+    .admin-note-box { background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%); border: 2px solid #f59e0b; border-radius: .5rem; padding: 1.25rem; margin-bottom: 1.5rem; }
+    .admin-note-label { color: #92400e; font-weight: 700; font-size: 0.95rem; margin-bottom: 0.5rem; }
+    .admin-note-text { color: #78350f; font-size: 1.05rem; line-height: 1.6; font-weight: 500; }
+    .change-details { background: var(--sidebar-bg); border: 1px solid var(--border); border-radius: .5rem; padding: 1.25rem; margin: 1.5rem 0; }
+    .detail-row { display: flex; justify-content: space-between; align-items: center; padding: 0.5rem 0; border-bottom: 1px solid var(--border); }
+    .detail-row:last-child { border-bottom: none; }
+    .detail-label { color: var(--muted); font-weight: 500; }
+    .detail-value { color: var(--fg); font-weight: 600; }
+    .old-username { text-decoration: line-through; color: #dc2626; }
+    .notification-message { background: rgba(37, 99, 235, 0.05); border-left: 4px solid var(--accent); padding: 1rem; border-radius: .375rem; margin: 1.5rem 0; }
+    .notification-message p { margin: 0.5rem 0; color: var(--fg); }
+    .notification-message strong { color: var(--accent); }
+    .notification-actions { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; }
+</style>

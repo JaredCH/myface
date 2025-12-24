@@ -22,6 +22,69 @@ namespace MyFace.Data.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
+            modelBuilder.Entity("MyFace.Core.Entities.Activity", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("ActivityType")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+                    b.Property<int?>("UserId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CreatedAt");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("Activities");
+                });
+
+            modelBuilder.Entity("MyFace.Core.Entities.LoginAttempt", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("AttemptedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+                    b.Property<string>("IpAddressHash")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)");
+
+                    b.Property<string>("LoginNameHash")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)");
+
+                    b.Property<bool>("Success")
+                        .HasColumnType("boolean");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("LoginNameHash", "AttemptedAt");
+
+                    b.ToTable("LoginAttempts");
+                });
+
             modelBuilder.Entity("MyFace.Core.Entities.OnionStatus", b =>
                 {
                     b.Property<int>("Id")
@@ -109,6 +172,32 @@ namespace MyFace.Data.Migrations
                     b.HasIndex("UserId");
 
                     b.ToTable("PGPVerifications");
+                });
+
+            modelBuilder.Entity("MyFace.Core.Entities.PageVisit", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("IpHash")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Path")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("UserAgent")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("VisitedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("PageVisits");
                 });
 
             modelBuilder.Entity("MyFace.Core.Entities.Post", b =>
@@ -213,10 +302,44 @@ namespace MyFace.Data.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
+                    b.Property<string>("AccentColor")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("ButtonBackgroundColor")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("ButtonBorderColor")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("ButtonTextColor")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("BackgroundColor")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("BorderColor")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<int>("CommentDownvotes")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("CommentUpvotes")
+                        .HasColumnType("integer");
+
                     b.Property<DateTime>("CreatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
                         .HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+                    b.Property<string>("CustomCSS")
+                        .IsRequired()
+                        .HasColumnType("text");
 
                     b.Property<string>("FontColor")
                         .IsRequired()
@@ -225,6 +348,9 @@ namespace MyFace.Data.Migrations
                     b.Property<string>("FontFamily")
                         .IsRequired()
                         .HasColumnType("text");
+
+                    b.Property<int>("FontSize")
+                        .HasColumnType("integer");
 
                     b.Property<bool>("IsActive")
                         .HasColumnType("boolean");
@@ -236,11 +362,24 @@ namespace MyFace.Data.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
+                    b.Property<bool>("MustChangeUsername")
+                        .HasColumnType("boolean");
+
                     b.Property<string>("PasswordHash")
                         .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<string>("PgpPublicKey")
+                        .HasColumnType("text");
+
+                    b.Property<int>("PostDownvotes")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("PostUpvotes")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("ProfileLayout")
+                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<string>("Role")
@@ -250,10 +389,29 @@ namespace MyFace.Data.Migrations
                     b.Property<DateTime?>("SuspendedUntil")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<string>("VendorExternalReferences")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("VendorPayments")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("VendorPolicies")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("VendorShopDescription")
+                        .IsRequired()
+                        .HasColumnType("text");
+
                     b.Property<string>("Username")
                         .IsRequired()
                         .HasMaxLength(50)
                         .HasColumnType("character varying(50)");
+
+                    b.Property<int?>("UsernameChangedByAdminId")
+                        .HasColumnType("integer");
 
                     b.HasKey("Id");
 
@@ -323,6 +481,46 @@ namespace MyFace.Data.Migrations
                     b.ToTable("UserNews");
                 });
 
+            modelBuilder.Entity("MyFace.Core.Entities.UsernameChangeLog", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("AdminNote")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("ChangedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int?>("ChangedByUserId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("NewUsername")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("OldUsername")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("integer");
+
+                    b.Property<bool>("UserNotified")
+                        .HasColumnType("boolean");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ChangedByUserId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("UsernameChangeLogs");
+                });
+
             modelBuilder.Entity("MyFace.Core.Entities.Vote", b =>
                 {
                     b.Property<int>("Id")
@@ -336,11 +534,14 @@ namespace MyFace.Data.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
-                    b.Property<int>("PostId")
+                    b.Property<int?>("PostId")
                         .HasColumnType("integer");
 
                     b.Property<string>("SessionId")
                         .HasColumnType("text");
+
+                    b.Property<int?>("ThreadId")
+                        .HasColumnType("integer");
 
                     b.Property<int?>("UserId")
                         .HasColumnType("integer");
@@ -352,15 +553,35 @@ namespace MyFace.Data.Migrations
 
                     b.HasIndex("PostId");
 
+                    b.HasIndex("ThreadId");
+
                     b.HasIndex("SessionId", "PostId")
                         .IsUnique()
-                        .HasFilter("\"SessionId\" IS NOT NULL");
+                        .HasFilter("\"SessionId\" IS NOT NULL AND \"PostId\" IS NOT NULL");
+
+                    b.HasIndex("SessionId", "ThreadId")
+                        .IsUnique()
+                        .HasFilter("\"SessionId\" IS NOT NULL AND \"ThreadId\" IS NOT NULL");
 
                     b.HasIndex("UserId", "PostId")
                         .IsUnique()
-                        .HasFilter("\"UserId\" IS NOT NULL");
+                        .HasFilter("\"UserId\" IS NOT NULL AND \"PostId\" IS NOT NULL");
+
+                    b.HasIndex("UserId", "ThreadId")
+                        .IsUnique()
+                        .HasFilter("\"UserId\" IS NOT NULL AND \"ThreadId\" IS NOT NULL");
 
                     b.ToTable("Votes");
+                });
+
+            modelBuilder.Entity("MyFace.Core.Entities.Activity", b =>
+                {
+                    b.HasOne("MyFace.Core.Entities.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("MyFace.Core.Entities.PGPVerification", b =>
@@ -395,7 +616,7 @@ namespace MyFace.Data.Migrations
             modelBuilder.Entity("MyFace.Core.Entities.Thread", b =>
                 {
                     b.HasOne("MyFace.Core.Entities.User", "User")
-                        .WithMany()
+                        .WithMany("Threads")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.SetNull);
 
@@ -424,13 +645,34 @@ namespace MyFace.Data.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("MyFace.Core.Entities.UsernameChangeLog", b =>
+                {
+                    b.HasOne("MyFace.Core.Entities.User", "ChangedByUser")
+                        .WithMany()
+                        .HasForeignKey("ChangedByUserId");
+
+                    b.HasOne("MyFace.Core.Entities.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("ChangedByUser");
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("MyFace.Core.Entities.Vote", b =>
                 {
                     b.HasOne("MyFace.Core.Entities.Post", "Post")
                         .WithMany("Votes")
                         .HasForeignKey("PostId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    b.HasOne("MyFace.Core.Entities.Thread", "Thread")
+                        .WithMany("Votes")
+                        .HasForeignKey("ThreadId")
+                        .OnDelete(DeleteBehavior.Cascade);
 
                     b.HasOne("MyFace.Core.Entities.User", "User")
                         .WithMany("Votes")
@@ -438,6 +680,8 @@ namespace MyFace.Data.Migrations
                         .OnDelete(DeleteBehavior.Cascade);
 
                     b.Navigation("Post");
+
+                    b.Navigation("Thread");
 
                     b.Navigation("User");
                 });
@@ -450,6 +694,8 @@ namespace MyFace.Data.Migrations
             modelBuilder.Entity("MyFace.Core.Entities.Thread", b =>
                 {
                     b.Navigation("Posts");
+
+                    b.Navigation("Votes");
                 });
 
             modelBuilder.Entity("MyFace.Core.Entities.User", b =>
@@ -461,6 +707,8 @@ namespace MyFace.Data.Migrations
                     b.Navigation("PGPVerifications");
 
                     b.Navigation("Posts");
+
+                    b.Navigation("Threads");
 
                     b.Navigation("Votes");
                 });

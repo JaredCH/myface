@@ -12,6 +12,8 @@
     <textarea asp-for="Content" rows="8"></textarea>
     <span asp-validation-for="Content"></span>
 
+    @await Html.PartialAsync("_BBCodeHelp")
+
     <label>
         <input type="checkbox" asp-for="PostAsAnonymous" /> Post as Anonymous
     </label>

@@ -9,8 +9,21 @@ public class CaptchaChallenge
     public string Answer { get; set; } = string.Empty;
 }
 
+public static class CaptchaSettings
+{
+    public const int MinPageViewsBeforeCaptcha = 15;
+    public const int MaxPageViewsBeforeCaptcha = 30;
+
+    public static int NextThreshold()
+    {
+        return RandomNumberGenerator.GetInt32(MinPageViewsBeforeCaptcha, MaxPageViewsBeforeCaptcha + 1);
+    }
+}
+
 public class CaptchaService
 {
+    private const int MathChallengeChancePercent = 5;
+
     private static readonly string[] Adjectives = new[]
     {
         "Red", "Blue", "Green", "Dark", "Bright", "Silent", "Hidden", "Lost", "Found", "Broken",
@@ -74,8 +87,8 @@ public class CaptchaService
 
     public CaptchaChallenge GenerateChallenge()
     {
-        // 50% chance for Math Captcha
-        if (RandomNumberGenerator.GetInt32(100) < 50)
+        // 5% chance for Math Captcha
+        if (RandomNumberGenerator.GetInt32(100) < MathChallengeChancePercent)
         {
             return GenerateMathChallenge();
         }

@@ -1,0 +1,24 @@
+nohup: ignoring input
+Building...
+/home/server/myface/MyFace.Services/MyFace.Services.csproj : warning NU1603: MyFace.Services depends on Isopoh.Cryptography.Argon2 (>= 1.4.2) but Isopoh.Cryptography.Argon2 1.4.2 was not found. An approximate best match of Isopoh.Cryptography.Argon2 2.0.0 was resolved. [/home/server/myface/MyFace.Web/MyFace.Web.csproj]
+/home/server/myface/MyFace.Web/MyFace.Web.csproj : warning NU1603: MyFace.Services depends on Isopoh.Cryptography.Argon2 (>= 1.4.2) but Isopoh.Cryptography.Argon2 1.4.2 was not found. An approximate best match of Isopoh.Cryptography.Argon2 2.0.0 was resolved.
+/home/server/myface/MyFace.Web/MyFace.Web.csproj : warning NU1603: MyFace.Services depends on Isopoh.Cryptography.Argon2 (>= 1.4.2) but Isopoh.Cryptography.Argon2 1.4.2 was not found. An approximate best match of Isopoh.Cryptography.Argon2 2.0.0 was resolved.
+/home/server/myface/MyFace.Services/MyFace.Services.csproj : warning NU1603: MyFace.Services depends on Isopoh.Cryptography.Argon2 (>= 1.4.2) but Isopoh.Cryptography.Argon2 1.4.2 was not found. An approximate best match of Isopoh.Cryptography.Argon2 2.0.0 was resolved.
+/home/server/myface/MyFace.Services/ReputationService.cs(18,48): warning CS8602: Dereference of a possibly null reference. [/home/server/myface/MyFace.Services/MyFace.Services.csproj]
+/home/server/myface/MyFace.Services/ReputationService.cs(21,33): warning CS8602: Dereference of a possibly null reference. [/home/server/myface/MyFace.Services/MyFace.Services.csproj]
+/home/server/myface/MyFace.Services/ForumService.cs(52,35): warning CS8602: Dereference of a possibly null reference. [/home/server/myface/MyFace.Services/MyFace.Services.csproj]
+/home/server/myface/MyFace.Services/ForumService.cs(65,35): warning CS8602: Dereference of a possibly null reference. [/home/server/myface/MyFace.Services/MyFace.Services.csproj]
+/home/server/myface/MyFace.Services/ForumService.cs(68,39): warning CS8602: Dereference of a possibly null reference. [/home/server/myface/MyFace.Services/MyFace.Services.csproj]
+/home/server/myface/MyFace.Services/RssService.cs(22,35): warning CS8602: Dereference of a possibly null reference. [/home/server/myface/MyFace.Services/MyFace.Services.csproj]
+/home/server/myface/MyFace.Services/ForumService.cs(372,35): warning CS8602: Dereference of a possibly null reference. [/home/server/myface/MyFace.Services/MyFace.Services.csproj]
+/home/server/myface/MyFace.Services/ForumService.cs(426,35): warning CS8602: Dereference of a possibly null reference. [/home/server/myface/MyFace.Services/MyFace.Services.csproj]
+/home/server/myface/MyFace.Web/Controllers/VoteController.cs(49,69): warning CS8604: Possible null reference argument for parameter 'expected' in 'bool CaptchaService.Validate(string expected, string actual)'. [/home/server/myface/MyFace.Web/MyFace.Web.csproj]
+/home/server/myface/MyFace.Web/Controllers/VoteController.cs(116,73): warning CS8604: Possible null reference argument for parameter 'expected' in 'bool CaptchaService.Validate(string expected, string actual)'. [/home/server/myface/MyFace.Web/MyFace.Web.csproj]
+/home/server/myface/MyFace.Web/Controllers/CaptchaController.cs(31,38): warning CS8604: Possible null reference argument for parameter 'expected' in 'bool CaptchaService.Validate(string expected, string actual)'. [/home/server/myface/MyFace.Web/MyFace.Web.csproj]
+/home/server/myface/MyFace.Web/Controllers/ThreadController.cs(59,39): warning CS8604: Possible null reference argument for parameter 'expected' in 'bool CaptchaService.Validate(string expected, string actual)'. [/home/server/myface/MyFace.Web/MyFace.Web.csproj]
+/home/server/myface/MyFace.Web/Controllers/ThreadController.cs(123,39): warning CS8604: Possible null reference argument for parameter 'expected' in 'bool CaptchaService.Validate(string expected, string actual)'. [/home/server/myface/MyFace.Web/MyFace.Web.csproj]
+/home/server/myface/MyFace.Web/Views/Thread/Create.cshtml(25,56): warning CS8602: Dereference of a possibly null reference. [/home/server/myface/MyFace.Web/MyFace.Web.csproj]
+/home/server/myface/MyFace.Web/Views/Thread/Create.cshtml(27,39): warning CS8602: Dereference of a possibly null reference. [/home/server/myface/MyFace.Web/MyFace.Web.csproj]
+/home/server/myface/MyFace.Web/Controllers/AccountController.cs(305,27): warning CS8601: Possible null reference assignment. [/home/server/myface/MyFace.Web/MyFace.Web.csproj]
+/home/server/myface/MyFace.Web/Views/User/Edit.cshtml(40,25): warning CS8602: Dereference of a possibly null reference. [/home/server/myface/MyFace.Web/MyFace.Web.csproj]
+/home/server/myface/MyFace.Web/Views/User/EditProfile.cshtml(57,84): warning CS8602: Dereference of a possibly null reference. [/home/server/myface/MyFace.Web/MyFace.Web.csproj]

@@ -1,0 +1,367 @@
+@model MyFace.Web.Models.EditProfileViewModel
+@using System
+@{
+    ViewData["Title"] = "Customize My Profile";
+    var user = ViewBag.User as MyFace.Core.Entities.User;
+    string AdjustColor(string hex, double factor)
+    {
+        if (string.IsNullOrWhiteSpace(hex) || !hex.StartsWith("#") || (hex.Length != 7 && hex.Length != 4)) return hex ?? string.Empty;
+        string Expand(string h) => h.Length == 4 ? $"#{h[1]}{h[1]}{h[2]}{h[2]}{h[3]}{h[3]}" : h;
+        var full = Expand(hex);
+        try
+        {
+            int r = Convert.ToInt32(full.Substring(1, 2), 16);
+            int g = Convert.ToInt32(full.Substring(3, 2), 16);
+            int b = Convert.ToInt32(full.Substring(5, 2), 16);
+            r = Math.Clamp((int)(r * factor), 0, 255);
+            g = Math.Clamp((int)(g * factor), 0, 255);
+            b = Math.Clamp((int)(b * factor), 0, 255);
+            return $"#{r:X2}{g:X2}{b:X2}";
+        }
+        catch
+        {
+            return hex;
+        }
+    }
+
+    var btnBg = string.IsNullOrWhiteSpace(user.ButtonBackgroundColor) ? "#0ea5e9" : user.ButtonBackgroundColor;
+    var btnText = string.IsNullOrWhiteSpace(user.ButtonTextColor) ? "#ffffff" : user.ButtonTextColor;
+    var btnBorder = string.IsNullOrWhiteSpace(user.ButtonBorderColor) ? "#0ea5e9" : user.ButtonBorderColor;
+    var btnHover = AdjustColor(btnBg, 0.9);
+    var btnActive = AdjustColor(btnBg, 0.8);
+}
+
+<style>
+    .customize-container { max-width: 1200px; margin: 0 auto; }
+    .customize-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-top: 2rem; }
+    .customize-section { background: var(--card-bg); padding: 1.5rem; border-radius: 8px; border: 1px solid var(--border); }
+    .customize-section h3 { margin-top: 0; color: var(--accent); font-size: 1.1rem; }
+    .form-group { margin-bottom: 1.25rem; }
+    .form-group label { display: block; color: var(--text-muted); font-weight: 600; margin-bottom: 0.5rem; font-size: 0.9rem; }
+    .color-input-group { display: flex; gap: 0.75rem; align-items: center; }
+    .color-preview { width: 50px; height: 38px; border-radius: 6px; border: 2px solid var(--border-light); }
+    .preview-box { background: var(--preview-bg, #0f172a); color: var(--preview-color, #e5e7eb); padding: 2rem; border-radius: 8px; border: 2px solid var(--preview-border, #334155); min-height: 300px; font-family: var(--preview-font, system-ui); font-size: var(--preview-size, 14px); }
+    .preview-box h4 { color: var(--preview-accent, #3b82f6); margin-top: 0; }
+    .preview-box a { color: var(--preview-accent, #3b82f6); text-decoration: none; }
+    .preview-box a:hover { text-decoration: underline; }
+    .preview-btn { background: var(--btn-bg, #0ea5e9); color: var(--btn-text, #ffffff); border: 1px solid var(--btn-border, #0ea5e9); padding: 0.55rem 1.1rem; border-radius: 6px; font-weight: 700; letter-spacing: 0.01em; box-shadow: 0 6px 18px rgba(0,0,0,0.15); transition: transform 120ms ease, background 120ms ease, box-shadow 120ms ease; cursor: default; }
+    .preview-btn:hover { background: var(--btn-hover, #0d97d3); transform: translateY(-1px); box-shadow: 0 10px 24px rgba(0,0,0,0.2); }
+    .preview-btn:active { background: var(--btn-active, #0c86bb); transform: translateY(0); box-shadow: 0 4px 12px rgba(0,0,0,0.18); }
+    .preview-btn.ghost { background: transparent; color: var(--btn-bg, #0ea5e9); border-color: var(--btn-border, #0ea5e9); box-shadow: none; }
+    .preview-btn.ghost:hover { background: rgba(255,255,255,0.04); }
+    .font-size-slider { width: 100%; }
+    .select-input { width: 100%; padding: 0.5rem; background: var(--input-bg); color: var(--text); border: 1px solid var(--border-light); border-radius: 6px; }
+    
+    /* CSS-only tabs using :target */
+    .tabs { display: flex; gap: 0.5rem; margin-bottom: 1.5rem; border-bottom: 2px solid var(--border); }
+    .tab { padding: 0.75rem 1.5rem; color: var(--text-muted); text-decoration: none; font-weight: 600; border-bottom: 3px solid transparent; display: inline-block; }
+    .tab:hover { color: var(--text); }
+    
+    /* Hide all content sections by default */
+    [data-section] { display: none; }
+    
+    /* Show colors section by default (when no hash or #colors) */
+    [data-section="colors"] { display: block; }
+    .tabs a[href="#colors"] { color: var(--accent); border-bottom-color: var(--accent); }
+    
+    /* Show typography when #typography is targeted */
+    #typography:target ~ div [data-section="colors"] { display: none; }
+    #typography:target ~ div [data-section="typography"] { display: block; }
+    #typography:target ~ .tabs a[href="#colors"] { color: var(--text-muted); border-bottom-color: transparent; }
+    #typography:target ~ .tabs a[href="#typography"] { color: var(--accent); border-bottom-color: var(--accent); }
+    
+    /* Show content when #content is targeted */
+    #content:target ~ div [data-section="colors"] { display: none; }
+    #content:target ~ div [data-section="content"] { display: block; }
+    #content:target ~ .tabs a[href="#colors"] { color: var(--text-muted); border-bottom-color: transparent; }
+    #content:target ~ .tabs a[href="#content"] { color: var(--accent); border-bottom-color: var(--accent); }
+    
+    /* Show advanced when #advanced is targeted */
+    #advanced:target ~ div [data-section="colors"] { display: none; }
+    #advanced:target ~ div [data-section="advanced"] { display: block; }
+    #advanced:target ~ .tabs a[href="#colors"] { color: var(--text-muted); border-bottom-color: transparent; }
+    #advanced:target ~ .tabs a[href="#advanced"] { color: var(--accent); border-bottom-color: var(--accent); }
+
+    /* Show vendor when #vendor is targeted */
+    #vendor:target ~ div [data-section="colors"] { display: none; }
+    #vendor:target ~ div [data-section="vendor"] { display: block; }
+    #vendor:target ~ .tabs a[href="#colors"] { color: var(--text-muted); border-bottom-color: transparent; }
+    #vendor:target ~ .tabs a[href="#vendor"] { color: var(--accent); border-bottom-color: var(--accent); }
+</style>
+
+<style>
+    @@media (max-width: 768px) { .customize-grid { grid-template-columns: 1fr; } }
+</style>
+
+<div class="customize-container">
+    <h1>🎨 Customize My Profile</h1>
+    <p class="meta">Make your profile unique! Use Preview to see your changes with no JavaScript.</p>
+
+    <div class="customize-grid">
+        <!-- Left Column: Settings -->
+        <div>
+            <form action="/user/editprofile" method="post">
+                @Html.AntiForgeryToken()
+                <!-- Hidden anchor targets for CSS-only tabs -->
+                <div id="colors"></div>
+                <div id="typography"></div>
+                <div id="content"></div>
+                <div id="advanced"></div>
+                <div id="vendor"></div>
+                
+                <div class="tabs">
+                    <a href="#colors" class="tab">Colors & Theme</a>
+                    <a href="#typography" class="tab">Typography</a>
+                    <a href="#content" class="tab">Content & About</a>
+                    <a href="#vendor" class="tab">Vendor</a>
+                    <a href="#advanced" class="tab">Advanced</a>
+                </div>
+
+                <!-- Colors Tab -->
+                <div data-section="colors">
+                    <div class="customize-section">
+                        <h3>🎨 Color Scheme</h3>
+                        
+                        <div class="form-group">
+                            <label>Background Color</label>
+                            <div class="color-input-group">
+                                <input type="color" name="BackgroundColor" value="@user.BackgroundColor" class="color-preview" />
+                                <input type="text" name="BackgroundColorHex" value="@user.BackgroundColor" class="input" style="flex: 1;" pattern="#[0-9a-fA-F]{6}" placeholder="#0f172a" />
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Text Color</label>
+                            <div class="color-input-group">
+                                <input type="color" name="FontColor" value="@user.FontColor" class="color-preview" />
+                                <input type="text" name="FontColorHex" value="@user.FontColor" class="input" style="flex: 1;" pattern="#[0-9a-fA-F]{6}" placeholder="#e5e7eb" />
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Accent Color (Links & Highlights)</label>
+                            <div class="color-input-group">
+                                <input type="color" name="AccentColor" value="@user.AccentColor" class="color-preview" />
+                                <input type="text" name="AccentColorHex" value="@user.AccentColor" class="input" style="flex: 1;" pattern="#[0-9a-fA-F]{6}" placeholder="#3b82f6" />
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Border Color</label>
+                            <div class="color-input-group">
+                                <input type="color" name="BorderColor" value="@user.BorderColor" class="color-preview" />
+                                <input type="text" name="BorderColorHex" value="@user.BorderColor" class="input" style="flex: 1;" pattern="#[0-9a-fA-F]{6}" placeholder="#334155" />
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Button Background</label>
+                            <div class="color-input-group">
+                                <input type="color" name="ButtonBackgroundColor" value="@user.ButtonBackgroundColor" class="color-preview" />
+                                <input type="text" name="ButtonBackgroundColorHex" value="@user.ButtonBackgroundColor" class="input" style="flex: 1;" pattern="#[0-9a-fA-F]{6}" placeholder="#0ea5e9" />
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Button Text</label>
+                            <div class="color-input-group">
+                                <input type="color" name="ButtonTextColor" value="@user.ButtonTextColor" class="color-preview" />
+                                <input type="text" name="ButtonTextColorHex" value="@user.ButtonTextColor" class="input" style="flex: 1;" pattern="#[0-9a-fA-F]{6}" placeholder="#ffffff" />
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Button Border</label>
+                            <div class="color-input-group">
+                                <input type="color" name="ButtonBorderColor" value="@user.ButtonBorderColor" class="color-preview" />
+                                <input type="text" name="ButtonBorderColorHex" value="@user.ButtonBorderColor" class="input" style="flex: 1;" pattern="#[0-9a-fA-F]{6}" placeholder="#0ea5e9" />
+                            </div>
+                            <p class="meta" style="margin: 0.25rem 0 0; color: var(--text-muted);">Hover and active states are auto-derived for contrast.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Typography Tab -->
+                <div data-section="typography">
+                    <div class="customize-section">
+                        <h3>✏️ Typography</h3>
+                        
+                        <div class="form-group">
+                            <label>Font Family</label>
+                            <select name="FontFamily" class="select-input">
+                                <option value="system-ui, -apple-system, sans-serif" selected="@(user.FontFamily == "system-ui, -apple-system, sans-serif")">System Default (Sans-Serif)</option>
+                                <option value="'Georgia', serif" selected="@(user.FontFamily == "'Georgia', serif")">Georgia (Serif)</option>
+                                <option value="'Courier New', monospace" selected="@(user.FontFamily == "'Courier New', monospace")">Courier New (Monospace)</option>
+                                <option value="'Comic Sans MS', cursive" selected="@(user.FontFamily == "'Comic Sans MS', cursive")">Comic Sans (Fun)</option>
+                                <option value="'Times New Roman', serif" selected="@(user.FontFamily == "'Times New Roman', serif")">Times New Roman</option>
+                                <option value="'Arial', sans-serif" selected="@(user.FontFamily == "'Arial', sans-serif")">Arial</option>
+                                <option value="'Verdana', sans-serif" selected="@(user.FontFamily == "'Verdana', sans-serif")">Verdana</option>
+                                <option value="'Trebuchet MS', sans-serif" selected="@(user.FontFamily == "'Trebuchet MS', sans-serif")">Trebuchet MS</option>
+                            </select>
+                        </div>
+
+                        <p class="meta" style="font-size: 0.9rem; margin: 0; color: var(--text-muted);">Page font size is fixed at 14px. Use BBCode to scale specific text.</p>
+                    </div>
+                </div>
+
+                <!-- Content Tab -->
+                <div data-section="content">
+                    <div class="customize-section">
+                        <h3>📝 About Me</h3>
+                        
+                        <div class="form-group">
+                            <label>About Me (Supports BBCode)</label>
+                            <textarea name="AboutMe" rows="8" class="input">@user.AboutMe</textarea>
+                        </div>
+                        
+                        @await Html.PartialAsync("_BBCodeHelp")
+                        <p class="meta" style="font-size: 0.9rem; margin-top: 0.5rem; color: var(--text-muted);">External links show as plain text; only internal site links stay clickable.</p>
+                    </div>
+                </div>
+
+                <!-- Vendor Tab -->
+                <div data-section="vendor">
+                    <div class="customize-section">
+                        <h3>🛍️ Vendor Details</h3>
+                        <p class="meta" style="margin-top: 0; color: var(--text-muted);">No images or external embeds. External URLs will render as plain text.</p>
+
+                        <div class="form-group">
+                            <label>Shop Description</label>
+                            <textarea name="VendorShopDescription" rows="4" class="input">@user.VendorShopDescription</textarea>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Policies</label>
+                            <textarea name="VendorPolicies" rows="4" class="input">@user.VendorPolicies</textarea>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Payments</label>
+                            <textarea name="VendorPayments" rows="3" class="input">@user.VendorPayments</textarea>
+                        </div>
+
+                        <div class="form-group">
+                            <label>External References (plain text only)</label>
+                            <textarea name="VendorExternalReferences" rows="3" class="input" placeholder="Example: storefront.onion / support email">@user.VendorExternalReferences</textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Advanced Tab -->
+                <div data-section="advanced">
+                    <div class="customize-section">
+                        <h3>⚙️ Advanced Options</h3>
+                        
+                        <div class="form-group">
+                            <label>Profile Layout</label>
+                            <select name="ProfileLayout" class="select-input">
+                                <option value="default" selected="@(user.ProfileLayout == "default")">Default</option>
+                                <option value="compact" selected="@(user.ProfileLayout == "compact")">Compact</option>
+                                <option value="expanded" selected="@(user.ProfileLayout == "expanded")">Expanded</option>
+                            </select>
+                        </div>
+
+                        <div style="background: #fef2f2; border-left: 4px solid #dc2626; padding: 1rem; border-radius: 6px; margin-top: 1rem;">
+                            <p style="color: #991b1b; font-size: 0.85rem; margin: 0;">
+                                <strong>⚠️ Custom CSS Coming Soon</strong><br>
+                                Advanced CSS customization will be available in a future update, allowing even more control over your page design.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-actions" style="margin-top: 1.5rem;">
+                    <button type="submit" class="button" style="background: #10b981; font-size: 1rem; padding: 0.75rem 2rem;">💾 Save Changes</button>
+                    <button type="submit" formaction="/user/editprofile/preview" class="button" style="background: #0ea5e9; font-size: 1rem; padding: 0.75rem 2rem;">🔄 Preview</button>
+                    <a href="/user/@user.Username" class="button" style="background: #64748b;">Cancel</a>
+                </div>
+            </form>
+        </div>
+
+        <!-- Right Column: Live Preview (server-rendered, no JS). Posts to /user/editprofile/preview -->
+        <div>
+            <div class="customize-section">
+                <h3>👁️ Preview</h3>
+                <p class="meta" style="margin-top: 0;">How your profile will look to others. Uses server render, not JavaScript.</p>
+
+                <div class="preview-box"
+                     style="--preview-bg: @user.BackgroundColor; --preview-color: @user.FontColor; --preview-accent: @user.AccentColor; --preview-border: @user.BorderColor; --preview-font: @user.FontFamily; --preview-size: 14px; --btn-bg: @btnBg; --btn-text: @btnText; --btn-border: @btnBorder; --btn-hover: @btnHover; --btn-active: @btnActive;">
+                    <h4>@user.Username's Page</h4>
+                    <p class="meta">Joined @user.CreatedAt.ToString("MMMM yyyy")</p>
+
+                    @if (!string.IsNullOrEmpty(user.AboutMe))
+                    {
+                        <div style="margin: 1rem 0;">
+                            @Html.Raw(new MyFace.Web.Services.BBCodeFormatter().Format(user.AboutMe))
+                        </div>
+                    }
+                    else
+                    {
+                        <p>This is where your About Me section will appear. Add some text to see it here!</p>
+                    }
+
+                    <div style="margin-top: 1rem; display: flex; gap: 0.75rem; flex-wrap: wrap; align-items: center;">
+                        <button type="button" class="preview-btn">Primary Action</button>
+                        <button type="button" class="preview-btn ghost">Secondary</button>
+                    </div>
+
+                    <div style="margin-top: 1.25rem; padding-top: 1.25rem; border-top: 1px solid var(--preview-border);">
+                        <h4>Vendor Snapshot</h4>
+                        @if (!string.IsNullOrWhiteSpace(user.VendorShopDescription) || !string.IsNullOrWhiteSpace(user.VendorPolicies) || !string.IsNullOrWhiteSpace(user.VendorPayments))
+                        {
+                            <div style="display: grid; gap: 0.75rem;">
+                                @if (!string.IsNullOrWhiteSpace(user.VendorShopDescription))
+                                {
+                                    <div>
+                                        <strong>Shop</strong>
+                                        <p style="margin: 0.25rem 0 0;">@Html.Encode(user.VendorShopDescription)</p>
+                                    </div>
+                                }
+                                @if (!string.IsNullOrWhiteSpace(user.VendorPolicies))
+                                {
+                                    <div>
+                                        <strong>Policies</strong>
+                                        <p style="margin: 0.25rem 0 0;">@Html.Encode(user.VendorPolicies)</p>
+                                    </div>
+                                }
+                                @if (!string.IsNullOrWhiteSpace(user.VendorPayments))
+                                {
+                                    <div>
+                                        <strong>Payments</strong>
+                                        <p style="margin: 0.25rem 0 0;">@Html.Encode(user.VendorPayments)</p>
+                                    </div>
+                                }
+                                @if (!string.IsNullOrWhiteSpace(user.VendorExternalReferences))
+                                {
+                                    <div>
+                                        <strong>External References (plain text)</strong>
+                                        <p style="margin: 0.25rem 0 0; white-space: pre-wrap;">@Html.Encode(user.VendorExternalReferences)</p>
+                                    </div>
+                                }
+                            </div>
+                        }
+                        else
+                        {
+                            <p style="margin: 0; color: var(--text-muted);">Add shop details, policies, and payment info to preview them here.</p>
+                        }
+                    </div>
+
+                    <div style="margin-top: 1.25rem; padding: 1rem; border: 1px solid #334155; background: #0b1220; color: #e5e7eb; border-radius: 6px;">
+                        <h4 style="color: #3b82f6; margin-top: 0;">Recent Posts (Site Default)</h4>
+                        <p style="margin: 0 0 0.25rem; color: #e5e7eb;">Sample post content would appear here...</p>
+                        <p style="font-size: 0.9rem; color: #cbd5e1; margin: 0;">Posted 2 hours ago in Example Thread</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="customize-section" style="margin-top: 1rem;">
+                <h3>💡 Tips</h3>
+                <ul style="color: #94a3b8; font-size: 0.9rem; line-height: 1.6;">
+                    <li>Choose colors that contrast well for readability</li>
+                    <li>Use BBCode in your About Me to add formatting and adjust specific font sizes</li>
+                    <li>Use the Preview button (below) to see changes without saving (no JavaScript)</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>

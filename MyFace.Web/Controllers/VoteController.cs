@@ -85,6 +85,69 @@ public class VoteController : Controller
         return RedirectToAction("View", "Thread", new { id = post?.ThreadId ?? 1 });
     }
 
+    // Thread voting
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> ThreadUp(int threadId, string captchaAnswer)
+    {
+        // 25% chance to trigger captcha (same as post upvotes)
+        if (string.IsNullOrEmpty(captchaAnswer))
+        {
+            var rnd = new Random();
+            if (rnd.Next(0, 4) == 0) // 25% chance
+            {
+                var challenge = _captchaService.GenerateChallenge();
+                HttpContext.Session.SetString("ThreadVoteCaptchaAnswer", challenge.Answer);
+                HttpContext.Session.SetInt32("VoteThreadId", threadId);
+                
+                ViewBag.CaptchaContext = challenge.Context;
+                ViewBag.CaptchaQuestion = challenge.Question;
+                ViewBag.ThreadId = threadId;
+                ViewBag.IsUpvote = true;
+                ViewBag.IsThreadVote = true;
+                return View("VoteCaptcha");
+            }
+        }
+        else
+        {
+            var expected = HttpContext.Session.GetString("ThreadVoteCaptchaAnswer");
+            var storedThreadId = HttpContext.Session.GetInt32("VoteThreadId");
+            
+            if (storedThreadId != threadId || !_captchaService.Validate(expected, captchaAnswer))
+            {
+                var challenge = _captchaService.GenerateChallenge();
+                HttpContext.Session.SetString("ThreadVoteCaptchaAnswer", challenge.Answer);
+                HttpContext.Session.SetInt32("VoteThreadId", threadId);
+                
+                ViewBag.CaptchaContext = challenge.Context;
+                ViewBag.CaptchaQuestion = challenge.Question;
+                ViewBag.ThreadId = threadId;
+                ViewBag.IsUpvote = true;
+                ViewBag.IsThreadVote = true;
+                ModelState.AddModelError("", "Incorrect answer.");
+                return View("VoteCaptcha");
+            }
+            
+            HttpContext.Session.Remove("ThreadVoteCaptchaAnswer");
+            HttpContext.Session.Remove("VoteThreadId");
+        }
+
+        var userId = GetCurrentUserId();
+        var sessionId = HttpContext.Session.Id;
+        await _forumService.VoteOnThreadAsync(threadId, userId, sessionId, +1);
+        return RedirectToAction("View", "Thread", new { id = threadId });
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> ThreadDown(int threadId)
+    {
+        var userId = GetCurrentUserId();
+        var sessionId = HttpContext.Session.Id;
+        await _forumService.VoteOnThreadAsync(threadId, userId, sessionId, -1);
+        return RedirectToAction("View", "Thread", new { id = threadId });
+    }
+
     private int? GetCurrentUserId()
     {
         var claim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier);

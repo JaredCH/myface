@@ -95,6 +95,9 @@ public class ThreadController : Controller
         var currentUserId = GetCurrentUserId();
         ViewBag.CurrentUserId = currentUserId;
 
+        // Calculate thread score
+        ViewBag.ThreadScore = await _forumService.GetThreadScoreAsync(id);
+
         // Calculate scores for posts
         var postScores = new Dictionary<int, int>();
         foreach (var post in thread.Posts)

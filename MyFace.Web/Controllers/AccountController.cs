@@ -1,6 +1,7 @@
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using MyFace.Services;
 using MyFace.Web.Models;
@@ -14,12 +15,18 @@ public class AccountController : Controller
     private readonly UserService _userService;
     private readonly ApplicationDbContext _db;
     private readonly MyFace.Web.Services.CaptchaService _captchaService;
+    private readonly RateLimitService _rateLimitService;
 
-    public AccountController(UserService userService, ApplicationDbContext db, MyFace.Web.Services.CaptchaService captchaService)
+    public AccountController(
+        UserService userService, 
+        ApplicationDbContext db, 
+        MyFace.Web.Services.CaptchaService captchaService,
+        RateLimitService rateLimitService)
     {
         _userService = userService;
         _db = db;
         _captchaService = captchaService;
+        _rateLimitService = rateLimitService;
     }
 
     [HttpGet]
@@ -63,11 +70,33 @@ public class AccountController : Controller
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Login(LoginViewModel model, string captchaAnswer)
     {
-        // Verify captcha first
+        // Check rate limit FIRST (before captcha or authentication)
+        var rateLimitDelay = await _rateLimitService.CheckLoginRateLimitAsync(model.Username);
+        if (rateLimitDelay > 0)
+        {
+            var minutes = rateLimitDelay / 60;
+            var seconds = rateLimitDelay % 60;
+            var timeMessage = minutes > 0 
+                ? $"{minutes} minute{(minutes > 1 ? "s" : "")} and {seconds} second{(seconds > 1 ? "s" : "")}"
+                : $"{seconds} second{(seconds > 1 ? "s" : "")}";
+            
+            ModelState.AddModelError("", $"Too many failed login attempts. Please wait {timeMessage} before trying again.");
+            
+            // Regenerate captcha
+            var challenge = _captchaService.GenerateChallenge();
+            HttpContext.Session.SetString("LoginCaptchaAnswer", challenge.Answer);
+            ViewBag.CaptchaContext = challenge.Context;
+            ViewBag.CaptchaQuestion = challenge.Question;
+            return View(model);
+        }
+        
+        // Verify captcha
         var correctAnswer = HttpContext.Session.GetString("LoginCaptchaAnswer");
         if (string.IsNullOrEmpty(captchaAnswer) || captchaAnswer != correctAnswer)
         {
             ModelState.AddModelError("", "Incorrect security check answer.");
+            await _rateLimitService.RecordLoginAttemptAsync(model.Username, false);
+            
             // Regenerate captcha
             var challenge = _captchaService.GenerateChallenge();
             HttpContext.Session.SetString("LoginCaptchaAnswer", challenge.Answer);
@@ -85,7 +114,12 @@ public class AccountController : Controller
         
         if (user == null)
         {
-            ModelState.AddModelError("", "Invalid login credentials.");
+            // Record failed attempt
+            await _rateLimitService.RecordLoginAttemptAsync(model.Username, false);
+            
+            // Generic error message to prevent account enumeration
+            ModelState.AddModelError("", "Invalid login credentials. Please check your login name and password.");
+            
             // Regenerate captcha
             var challenge = _captchaService.GenerateChallenge();
             HttpContext.Session.SetString("LoginCaptchaAnswer", challenge.Answer);
@@ -93,6 +127,9 @@ public class AccountController : Controller
             ViewBag.CaptchaQuestion = challenge.Question;
             return View(model);
         }
+        
+        // Record successful attempt
+        await _rateLimitService.RecordLoginAttemptAsync(model.Username, true);
 
         // If user hasn't set a username yet, redirect to SetUsername
         if (string.IsNullOrEmpty(user.Username))
@@ -101,7 +138,22 @@ public class AccountController : Controller
             return RedirectToAction("SetUsername");
         }
 
+        // Check if user has unnotified username change
+        var usernameChangeLog = await _userService.GetUnnotifiedUsernameChangeAsync(user.Id);
+        
         await SignInUserAsync(user.Id, user.LoginName, user.Username);
+        
+        // If username was changed by admin/mod, redirect to notification page
+        if (usernameChangeLog != null || user.MustChangeUsername)
+        {
+            if (usernameChangeLog != null)
+            {
+                return RedirectToAction("UsernameChangeNotification", new { logId = usernameChangeLog.Id });
+            }
+            // If flag is set but no log, just redirect to SetUsername
+            return RedirectToAction("SetUsername");
+        }
+
         return RedirectToAction("Index", "Home");
     }
 
@@ -137,6 +189,25 @@ public class AccountController : Controller
             CookieAuthenticationDefaults.AuthenticationScheme,
             new ClaimsPrincipal(claimsIdentity),
             authProperties);
+    }
+
+    [Authorize]
+    public async Task<IActionResult> UsernameChangeNotification(int logId)
+    {
+        var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (!int.TryParse(userIdClaim, out var userId))
+        {
+            return Unauthorized();
+        }
+
+        var changeLog = await _userService.GetUnnotifiedUsernameChangeAsync(userId);
+        if (changeLog == null || changeLog.Id != logId)
+        {
+            return RedirectToAction("Index", "Home");
+        }
+
+        await _userService.MarkUsernameChangeNotifiedAsync(logId);
+        return View(changeLog);
     }
 
     [HttpGet]
@@ -182,6 +253,9 @@ public class AccountController : Controller
             TempData["Error"] = "Username is already taken. Please choose a different one.";
             return View();
         }
+
+        // Clear the MustChangeUsername flag if it was set
+        await _userService.ClearMustChangeUsernameAsync(int.Parse(userId));
 
         // Update the claims with the new username
         var user = await _userService.GetByIdAsync(int.Parse(userId));

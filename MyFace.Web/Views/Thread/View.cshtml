@@ -18,30 +18,46 @@
     var hasPrev = currPage > 1;
     var hasNext = skip + pagePosts.Count < total;
 }
-<h1>@Model.Title</h1>
-<p class="meta">Started @Model.CreatedAt.ToString("u") by 
-    @if (Model.IsAnonymous)
-    {
-        <span>Anonymous</span>
-    }
-    else
-    {
-        @await Html.PartialAsync("_UserName", Model.User)
-    }
-    @if (Model.IsLocked)
-    {
-        <span style="margin-left: 1rem; color: #f39c12;">🔒 LOCKED</span>
-    }
-    @if (!string.IsNullOrEmpty(Model.Category) && Model.Category != "Hot")
-    {
-        <span style="margin-left: 1rem; background: #2563eb; color: white; padding: 0.25rem 0.75rem; border-radius: 4px; font-size: 0.9rem;">@Model.Category</span>
-    }
-</p>
+
+<div class="thread-header">
+    <h1 style="margin: 0 0 0.5rem 0;">@Model.Title</h1>
+    <div style="display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap;">
+        <span class="meta">@Model.CreatedAt.ToString("u") by 
+            @if (Model.IsAnonymous)
+            {
+                <span>Anonymous</span>
+            }
+            else
+            {
+                @await Html.PartialAsync("_UserName", Model.User)
+            }
+        </span>
+        @if (Model.IsLocked)
+        {
+            <span class="thread-badge locked">🔒 LOCKED</span>
+        }
+        @if (!string.IsNullOrEmpty(Model.Category) && Model.Category != "Hot")
+        {
+            <span class="thread-badge category">@Model.Category</span>
+        }
+        <span class="thread-score">⭐ @ViewBag.ThreadScore</span>
+    </div>
+    <div class="thread-vote-actions">
+        <form asp-controller="Vote" asp-action="ThreadUp" method="post" style="display: inline;">
+            <input type="hidden" name="threadId" value="@Model.Id" />
+            <button class="btn-vote btn-upvote" type="submit">👍 Thread</button>
+        </form>
+        <form asp-controller="Vote" asp-action="ThreadDown" method="post" style="display: inline;">
+            <input type="hidden" name="threadId" value="@Model.Id" />
+            <button class="btn-vote btn-downvote" type="submit">👎 Thread</button>
+        </form>
+    </div>
+</div>
 
 @if (isAdminOrMod)
 {
-    <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 0.5rem 1rem; margin-bottom: 1rem; border-radius: 8px; display: flex; align-items: center; gap: 0.75rem; box-shadow: 0 2px 8px rgba(102, 126, 234, 0.2);">
-        <span style="color: white; font-weight: 600; font-size: 0.9rem;">📁 Category:</span>
+    <div class="admin-toolbar">
+        <span style="color: white; font-weight: 600; font-size: 0.85rem;">📁</span>
         <form method="post" action="/thread/setcategory/@Model.Id" style="display: inline;">
             <button type="submit" name="category" value="Hot" class="category-btn">🔥 Hot</button>
             @Html.AntiForgeryToken()
@@ -65,89 +81,112 @@
 
 @foreach (var post in pagePosts)
 {
-    <div class="card" id="post-@post.Id">
+    var isOP = post == pagePosts.FirstOrDefault() && post.UserId == Model.UserId;
+    <div class="post-card @(isOP ? "post-op" : "")" id="post-@post.Id">
         @if (post.IsSticky)
         {
-            <div style="background: #27ae60; color: white; padding: 0.5rem; margin-bottom: 0.5rem; border-radius: 4px;">📌 Pinned Reply</div>
+            <div class="post-pinned">📌 Pinned Reply</div>
         }
-        <div>@Formatter.Format(post.Content)</div>
-        <p class="meta">@post.CreatedAt.ToString("u") by 
-            @if (post.IsAnonymous)
-            {
-                <span>Anonymous</span>
-            }
-            else
-            {
-                @await Html.PartialAsync("_UserName", post.User)
-            }
-            @if (post.EditedAt.HasValue)
-            {
-                <span>(edited @post.EditedAt.Value.ToString("u"))</span>
-            }
-        </p>
-        <p class="score">Score: @postScores[post.Id]</p>
-        <form asp-controller="Vote" asp-action="Up" method="post" style="display:inline">
-            <input type="hidden" name="postId" value="@post.Id" />
-            <button class="button" type="submit">👍 Upvote</button>
-        </form>
-        <form asp-controller="Vote" asp-action="Down" method="post" style="display:inline">
-            <input type="hidden" name="postId" value="@post.Id" />
-            <button class="button" type="submit">👎 Downvote</button>
-        </form>
-
-        @if (isAdminOrMod)
+        @if (isOP)
         {
-            <div class="post-controls" style="margin-top: 0.5rem;">
-                <form method="post" style="display:inline;">
-                    <button formaction="@Url.Action("AdminDeletePost", "Thread", new { postId = post.Id })" type="submit" class="button" style="padding: 0.2rem 0.4rem; font-size: 0.8rem; background: #c0392b;">🗑️ Delete</button>
-                    
-                    @if (post.IsSticky)
+            <div class="post-op-badge">🎯 Original Poster</div>
+        }
+        <div class="post-content">@Formatter.Format(post.Content)</div>
+        <div class="post-footer">
+            <div class="post-meta">
+                <span class="meta">@post.CreatedAt.ToString("u") by 
+                    @if (post.IsAnonymous)
                     {
-                        <button formaction="@Url.Action("SetSticky", "Thread", new { postId = post.Id, isSticky = false })" type="submit" class="button" style="padding: 0.2rem 0.4rem; font-size: 0.8rem;">📌 Unpin</button>
+                        <span>Anonymous</span>
                     }
                     else
                     {
-                        <button formaction="@Url.Action("SetSticky", "Thread", new { postId = post.Id, isSticky = true })" type="submit" class="button" style="padding: 0.2rem 0.4rem; font-size: 0.8rem;">📌 Pin</button>
+                        @await Html.PartialAsync("_UserName", post.User)
                     }
-                </form>
+                    @if (post.EditedAt.HasValue)
+                    {
+                        <span style="color: var(--text-muted); font-size: 0.9em;">
+                            (modified @post.EditCount time@(post.EditCount != 1 ? "s" : "")
+                            @if (post.EditedByUser != null)
+                            {
+                                <text> by </text>
+                                @await Html.PartialAsync("_UserName", post.EditedByUser)
+                            }
+                            on @post.EditedAt.Value.ToString("u"))
+                        </span>
+                    }
+                </span>
+                <span class="post-score">⭐ @postScores[post.Id]</span>
             </div>
-        }
+            <div class="post-actions">
+                <form asp-controller="Vote" asp-action="Up" method="post">
+                    <input type="hidden" name="postId" value="@post.Id" />
+                    <button class="btn-vote btn-upvote" type="submit">👍</button>
+                </form>
+                <form asp-controller="Vote" asp-action="Down" method="post">
+                    <input type="hidden" name="postId" value="@post.Id" />
+                    <button class="btn-vote btn-downvote" type="submit">👎</button>
+                </form>
+                @if (currentUserId.HasValue && post.UserId == currentUserId && !post.IsDeleted)
+                {
+                    <a href="@Url.Action("Edit", "Post", new { id = post.Id })" class="btn-mod btn-edit">✏️ Edit</a>
+                }
+                @if (isAdminOrMod)
+                {
+                    <form method="post">
+                        <button formaction="@Url.Action("AdminDeletePost", "Thread", new { postId = post.Id })" type="submit" class="btn-mod btn-delete">🗑️</button>
+                        @if (post.IsSticky)
+                        {
+                            <button formaction="@Url.Action("SetSticky", "Thread", new { postId = post.Id, isSticky = false })" type="submit" class="btn-mod">📌</button>
+                        }
+                        else
+                        {
+                            <button formaction="@Url.Action("SetSticky", "Thread", new { postId = post.Id, isSticky = true })" type="submit" class="btn-mod">📌</button>
+                        }
+                    </form>
+                }
+            </div>
+        </div>
     </div>
 }
 
-<div class="form-actions">
+<div class="pagination">
     @if (hasPrev)
     {
-        <a class="button" href="@Url.Action("View", new { id = Model.Id, page = currPage - 1 })">Previous</a>
+        <a class="btn-pagination" href="@Url.Action("View", new { id = Model.Id, page = currPage - 1 })">← Previous</a>
     }
+    <span class="pagination-info">Page @currPage · @pagePosts.Count of @total posts</span>
     @if (hasNext)
     {
-        <a class="button" href="@Url.Action("View", new { id = Model.Id, page = currPage + 1 })">Next</a>
+        <a class="btn-pagination" href="@Url.Action("View", new { id = Model.Id, page = currPage + 1 })">Next →</a>
     }
-    <span class="meta"> Page @currPage </span>
-    <span class="meta"> Showing @pagePosts.Count of @total posts </span>
-}</div>
+</div>
 
-<h2 id="reply">Reply</h2>
-@if (Context.Request.Query["error"] == "CaptchaFailed")
-{
-    <div style="color: red; margin-bottom: 1rem;">Incorrect security check answer. Please try again.</div>
-}
-<form asp-action="Reply" method="post">
-    <input type="hidden" name="threadId" value="@Model.Id" />
-    <label for="content">Content</label>
-    <textarea id="content" name="content" rows="6"></textarea>
-    <label><input type="checkbox" name="postAsAnonymous" /> Post as Anonymous</label>
-    
-    <div style="background: #e0f2fe; padding: 1rem; border-left: 4px solid #2563eb; margin: 1rem 0; color: #1e293b;">
-        <strong>@Html.Raw(ViewBag.CaptchaContext)</strong>
-    </div>
-    <div class="form-group">
-        <label for="captchaAnswer">@ViewBag.CaptchaQuestion</label>
-        <input name="captchaAnswer" id="captchaAnswer" class="input" required autocomplete="off" />
-    </div>
+<div class="reply-section">
+    <h2 id="reply">💬 Reply</h2>
+    @if (Context.Request.Query["error"] == "CaptchaFailed")
+    {
+        <div class="error-message">Incorrect security check answer. Please try again.</div>
+    }
+    <form asp-action="Reply" method="post">
+        <input type="hidden" name="threadId" value="@Model.Id" />
+        <label for="content">Content</label>
+        <textarea id="content" name="content" rows="6"></textarea>
+        
+        @await Html.PartialAsync("_BBCodeHelp")
+        
+        <label class="checkbox-label"><input type="checkbox" name="postAsAnonymous" /> Post as Anonymous</label>
+        
+        <div class="captcha-box">
+            <strong>@Html.Raw(ViewBag.CaptchaContext)</strong>
+        </div>
+        <div class="form-group">
+            <label for="captchaAnswer">@ViewBag.CaptchaQuestion</label>
+            <input name="captchaAnswer" id="captchaAnswer" class="input" required autocomplete="off" />
+        </div>
 
-    <div class="form-actions">
-        <button class="button" type="submit">Reply</button>
-    </div>
-</form>
+        <div class="form-actions">
+            <button class="button button-primary" type="submit">Post Reply</button>
+        </div>
+    </form>
+</div>
