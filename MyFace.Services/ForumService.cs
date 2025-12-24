@@ -98,10 +98,15 @@ public class ForumService
         return post;
     }
 
-    public async Task<bool> UpdatePostAsync(int postId, int userId, string content)
+    public async Task<bool> UpdatePostAsync(int postId, int userId, string content, bool allowOverride = false)
     {
         var post = await _context.Posts.FindAsync(postId);
-        if (post == null || post.UserId != userId || post.IsDeleted)
+        if (post == null || post.IsDeleted)
+        {
+            return false;
+        }
+
+        if (!allowOverride && post.UserId != userId)
         {
             return false;
         }
@@ -143,7 +148,7 @@ public class ForumService
         return true;
     }
 
-    public async Task<bool> AdminEditPostAsync(int postId, string content)
+    public async Task<bool> AdminEditPostAsync(int postId, string content, int? editedByUserId = null)
     {
         var post = await _context.Posts.FindAsync(postId);
         if (post == null)
@@ -153,6 +158,7 @@ public class ForumService
 
         post.Content = content;
         post.EditedAt = DateTime.UtcNow;
+        post.EditedByUserId = editedByUserId;
         post.EditCount++;
         await _context.SaveChangesAsync();
         return true;

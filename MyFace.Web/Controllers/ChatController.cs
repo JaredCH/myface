@@ -13,12 +13,14 @@ public class ChatController : Controller
     private readonly ChatService _chatService;
     private readonly ChatSnapshotService _snapshotService;
     private readonly MyFace.Data.ApplicationDbContext _db;
+    private readonly MyFace.Web.Services.CaptchaService _captchaService;
 
-    public ChatController(ChatService chatService, ChatSnapshotService snapshotService, MyFace.Data.ApplicationDbContext db)
+    public ChatController(ChatService chatService, ChatSnapshotService snapshotService, MyFace.Data.ApplicationDbContext db, MyFace.Web.Services.CaptchaService captchaService)
     {
         _chatService = chatService;
         _snapshotService = snapshotService;
         _db = db;
+        _captchaService = captchaService;
     }
 
     [HttpGet]
@@ -69,6 +71,86 @@ public class ChatController : Controller
             TempData["ChatError"] = "Login required to post.";
             return RedirectToAction("Index");
         }
+
+        var captchaState = EvaluateChatCaptcha(user);
+        if (captchaState.Required)
+        {
+            var challenge = _captchaService.GenerateChallenge();
+            HttpContext.Session.SetString(captchaState.ExpectedKey, challenge.Answer);
+            HttpContext.Session.SetInt32(captchaState.AttemptsKey, 0);
+
+            return View("ChatCaptcha", new ChatCaptchaViewModel
+            {
+                Room = room,
+                Content = content,
+                ContextHtml = challenge.Context,
+                Question = challenge.Question,
+                AttemptsRemaining = 5
+            });
+        }
+
+        var result = await _chatService.PostMessageAsync(user, room, content);
+        if (!result.Ok)
+        {
+            TempData[$"ChatError_{room}"] = result.Error;
+        }
+        else
+        {
+            TempData[$"ChatInfo_{room}"] = "Message sent.";
+        }
+
+        return RedirectToAction("Index");
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> SolveCaptcha(string room, string content, string answer)
+    {
+        var user = await GetCurrentUserAsync();
+        if (user == null)
+        {
+            TempData["ChatError"] = "Login required to post.";
+            return RedirectToAction("Index");
+        }
+
+        var state = EvaluateChatCaptcha(user);
+        var expected = HttpContext.Session.GetString(state.ExpectedKey);
+        var attempts = HttpContext.Session.GetInt32(state.AttemptsKey) ?? 0;
+
+        if (string.IsNullOrEmpty(expected))
+        {
+            return RedirectToAction("Index");
+        }
+
+        if (!_captchaService.Validate(expected, answer))
+        {
+            attempts++;
+            HttpContext.Session.SetInt32(state.AttemptsKey, attempts);
+
+            if (attempts >= 5)
+            {
+                TempData[$"ChatError_{room}"] = "Too many failed captcha attempts. Please wait and try again.";
+                HttpContext.Session.Remove(state.ExpectedKey);
+                return RedirectToAction("Index");
+            }
+
+            var challenge = _captchaService.GenerateChallenge();
+            HttpContext.Session.SetString(state.ExpectedKey, challenge.Answer);
+
+            return View("ChatCaptcha", new ChatCaptchaViewModel
+            {
+                Room = room,
+                Content = content,
+                ContextHtml = challenge.Context,
+                Question = challenge.Question,
+                AttemptsRemaining = Math.Max(0, 5 - attempts),
+                Error = "Captcha incorrect. Try again."
+            });
+        }
+
+        // success
+        HttpContext.Session.Remove(state.ExpectedKey);
+        HttpContext.Session.Remove(state.AttemptsKey);
 
         var result = await _chatService.PostMessageAsync(user, room, content);
         if (!result.Ok)
@@ -165,5 +247,37 @@ public class ChatController : Controller
     {
         var r = role.ToLowerInvariant();
         return r == "admin" || r == "moderator";
+    }
+
+    private (bool Required, string ExpectedKey, string AttemptsKey) EvaluateChatCaptcha(User user)
+    {
+        var isModOrAdmin = _chatService.IsModeratorOrAdmin(user);
+        if (isModOrAdmin)
+        {
+            return (false, string.Empty, string.Empty);
+        }
+
+        var userId = user.Id;
+        var expectedKey = $"chat:captcha:expected:{userId}";
+        var attemptsKey = $"chat:captcha:attempts:{userId}";
+
+        var isVerified = _chatService.IsVerified(user);
+        if (!isVerified)
+        {
+            return (true, expectedKey, attemptsKey); // every message
+        }
+
+        var counterKey = $"chat:captcha:counter:{userId}";
+        var counter = HttpContext.Session.GetInt32(counterKey) ?? 0;
+        counter++;
+        var require = false;
+        if (counter >= 10)
+        {
+            require = true;
+            counter = 0;
+        }
+        HttpContext.Session.SetInt32(counterKey, counter);
+
+        return (require, expectedKey, attemptsKey);
     }
 }

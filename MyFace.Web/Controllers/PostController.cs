@@ -39,7 +39,9 @@ public class PostController : Controller
         }
 
         var userId = GetCurrentUserId();
-        if (userId == null || post.UserId != userId)
+        var role = User.FindFirstValue(ClaimTypes.Role);
+        var isAdminOrMod = role == "Admin" || role == "Moderator";
+        if (userId == null || (post.UserId != userId && !isAdminOrMod))
         {
             return Forbid();
         }
@@ -52,12 +54,15 @@ public class PostController : Controller
     public async Task<IActionResult> Edit(int id, string content)
     {
         var userId = GetCurrentUserId();
-        if (userId == null)
+        var role = User.FindFirstValue(ClaimTypes.Role);
+        var isAdminOrMod = role == "Admin" || role == "Moderator";
+        if (userId == null && !isAdminOrMod)
         {
             return Forbid();
         }
 
-        var success = await _forumService.UpdatePostAsync(id, userId.Value, content);
+        var actingUserId = userId ?? 0;
+        var success = await _forumService.UpdatePostAsync(id, actingUserId, content, isAdminOrMod);
         if (!success)
         {
             return NotFound();

@@ -1,0 +1,28 @@
+@model MyFace.Web.Models.MailViewMessageModel
+@{
+    ViewData["Title"] = "Message";
+}
+<div class="container mt-3">
+    <a href="@Url.Action("Index", "Mail")" class="btn btn-link">Back to Mail</a>
+    <div class="card">
+        <div class="card-header">
+            <strong>@Model.Subject</strong>
+        </div>
+        <div class="card-body">
+            <p><strong>From:</strong> @Model.From</p>
+            <p><strong>To:</strong> @Model.To</p>
+            <p><strong>Sent:</strong> @(Model.SentAt?.ToLocalTime().ToString("g") ?? "-")</p>
+            <p><strong>Read:</strong> @(Model.ReadAt?.ToLocalTime().ToString("g") ?? "-")</p>
+            <hr />
+            <pre style="white-space: pre-wrap; word-break: break-word;">@Model.Body</pre>
+            @if (Model.IsDraft && Model.CanSendDraft)
+            {
+                <form asp-action="SendDraft" asp-controller="Mail" method="post" class="mt-3">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="id" value="@Model.Id" />
+                    <button type="submit" class="btn btn-primary">Send Draft</button>
+                </form>
+            }
+        </div>
+    </div>
+</div>

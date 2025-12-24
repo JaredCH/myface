@@ -10,8 +10,10 @@
     var newsThreads = ViewBag.NewsThreads as List<MyFace.Core.Entities.Thread> ?? new List<MyFace.Core.Entities.Thread>();
     var announcementsThreads = ViewBag.AnnouncementsThreads as List<MyFace.Core.Entities.Thread> ?? new List<MyFace.Core.Entities.Thread>();
 }
-<h1>Threads</h1>
-<p><a href="@Url.Action("Create")" class="button">New Thread</a> | <a href="@Url.Action("Threads","Rss")">RSS</a></p>
+<div class="thread-actions">
+    <a href="@Url.Action("Create")" class="thread-action primary">New Thread</a>
+    <a href="@Url.Action("Threads","Rss")" class="thread-action">RSS</a>
+</div>
 
 <div class="tabs">
     <input type="radio" name="tabset" id="tab-hot" checked />

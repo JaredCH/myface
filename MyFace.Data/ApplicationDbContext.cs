@@ -23,6 +23,7 @@ public class ApplicationDbContext : DbContext
     public DbSet<Activity> Activities { get; set; }
     public DbSet<LoginAttempt> LoginAttempts { get; set; }
     public DbSet<ChatMessage> ChatMessages { get; set; }
+    public DbSet<PrivateMessage> PrivateMessages { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -190,6 +191,31 @@ public class ApplicationDbContext : DbContext
             entity.Property(e => e.Content).HasMaxLength(2000).IsRequired();
             entity.Property(e => e.CreatedAt).HasDefaultValueSql("CURRENT_TIMESTAMP");
             entity.HasIndex(e => new { e.Room, e.CreatedAt });
+        });
+
+        // PrivateMessage configuration
+        modelBuilder.Entity<PrivateMessage>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Subject).HasMaxLength(200).IsRequired();
+            entity.Property(e => e.Body).IsRequired();
+            entity.Property(e => e.SenderUsernameSnapshot).HasMaxLength(50).IsRequired();
+            entity.Property(e => e.RecipientUsernameSnapshot).HasMaxLength(50).IsRequired();
+            entity.Property(e => e.CreatedAt).HasDefaultValueSql("CURRENT_TIMESTAMP");
+            entity.Property(e => e.IsDraft).HasDefaultValue(false);
+
+            entity.HasIndex(e => new { e.RecipientId, e.CreatedAt });
+            entity.HasIndex(e => new { e.SenderId, e.CreatedAt });
+
+            entity.HasOne(e => e.Sender)
+                .WithMany()
+                .HasForeignKey(e => e.SenderId)
+                .OnDelete(DeleteBehavior.SetNull);
+
+            entity.HasOne(e => e.Recipient)
+                .WithMany()
+                .HasForeignKey(e => e.RecipientId)
+                .OnDelete(DeleteBehavior.Cascade);
         });
     }
 }

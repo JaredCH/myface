@@ -1,3 +1,19 @@
+@using Microsoft.AspNetCore.Html
+@inject MyFace.Services.MailService MailService
+@{
+    var unreadCount = 0;
+    if (User.Identity?.IsAuthenticated == true)
+    {
+        var idClaim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+        if (int.TryParse(idClaim, out var uid))
+        {
+            unreadCount = await MailService.GetUnreadCountAsync(uid);
+        }
+    }
+    Func<IHtmlContent> MailBadge = () => unreadCount > 0
+        ? new HtmlString("<span style=\"color:#e11d48; font-weight:700; margin-left:2px; position:relative; top:-1px;\">!" + "</span>")
+        : HtmlString.Empty;
+}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -16,6 +32,8 @@
                 <ul class="nav-menu">
                     <li><a href="@Url.Action("Index", "Thread")">Threads</a></li>
                     <li><a href="@Url.Action("Index", "Monitor")">Monitor</a></li>
+                    <li><a href="@Url.Action("Index", "Chat")">Chat</a></li>
+                    <li><a href="@Url.Action("Index", "Mail")">Mail @MailBadge()</a></li>
                     @if (User.Identity?.IsAuthenticated == true)
                     {
                         @if (User.IsInRole("Admin"))
@@ -45,6 +63,8 @@
                 <ul>
                     <li><a href="@Url.Action("Index", "Thread")">Threads</a></li>
                     <li><a href="@Url.Action("Index", "Monitor")">Monitor</a></li>
+                    <li><a href="@Url.Action("Index", "Chat")">Chat</a></li>
+                    <li><a href="@Url.Action("Index", "Mail")">Mail @MailBadge()</a></li>
                     @if (User.Identity?.IsAuthenticated == true)
                     {
                         @if (User.IsInRole("Admin"))

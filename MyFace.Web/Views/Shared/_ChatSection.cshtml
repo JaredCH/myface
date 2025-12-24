@@ -32,7 +32,7 @@
             @Html.AntiForgeryToken()
             <input type="hidden" name="room" value="@Model.Room" />
             <label for="msg-@Model.Room">Message</label>
-            <textarea name="content" id="msg-@Model.Room" maxlength="500" placeholder="Type your message. Emojis and @mentions are ok. No HTML."></textarea>
+            <input type="text" name="content" id="msg-@Model.Room" maxlength="199" placeholder="Type a single line. Emojis and @@mentions are ok. No HTML." />
             <button type="submit" class="button">Send</button>
         </form>
     }

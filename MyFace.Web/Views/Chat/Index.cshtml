@@ -7,24 +7,50 @@
 }
 
 <style>
-.chat-section { border: 1px solid var(--border); padding: 0.75rem; margin-bottom: 1rem; background: var(--card-bg, #0f172a); }
-.chat-header { font-family: monospace; font-size: 1rem; margin-bottom: 0.35rem; }
+.chat-section { border: 1px solid var(--border); padding: 0.75rem; margin-bottom: 1rem; background: #f8fafc; color: #0f172a; }
+.chat-header { font-family: monospace; font-size: 1rem; margin-bottom: 0.35rem; color: #0f172a; }
 .chat-form { margin: 0.35rem 0; }
-.chat-form textarea { width: 100%; height: 80px; font-family: monospace; font-size: 0.95rem; background: #0b1224; color: #e5e7eb; border: 1px solid var(--border); padding: 0.4rem; }
+.chat-form input[type="text"] { width: 100%; height: 44px; font-family: monospace; font-size: 0.86rem; background: #ffffff; color: #0f172a; border: 1px solid var(--border); padding: 0.35rem; }
 .chat-form button { margin-top: 0.35rem; }
-.chat-iframe { width: 100%; height: 280px; border: 1px solid var(--border); background: #0b1224; }
-.chat-note { color: var(--text-muted, #94a3b8); font-size: 0.9rem; }
-.chat-badge { display: inline-block; padding: 0.1rem 0.4rem; border-radius: 4px; font-size: 0.8rem; margin-left: 0.25rem; }
-.chat-badge.mod { background: #1d4ed8; color: #f8fafc; }
-.chat-badge.admin { background: #b91c1c; color: #f8fafc; }
-.chat-badge.verified { background: #15803d; color: #f8fafc; }
+.chat-iframe { width: 100%; height: 520px; border: 1px solid var(--border); background: #ffffff; }
+.chat-note { color: #475569; font-size: 0.9rem; }
 .flash { padding: 0.4rem 0.6rem; margin: 0.35rem 0; border-radius: 4px; }
-.flash.error { background: #331111; color: #fef2f2; border: 1px solid #7f1d1d; }
-.flash.info { background: #112233; color: #e0f2fe; border: 1px solid #1d4ed8; }
+.flash.error { background: #fdecec; color: #7f1d1d; border: 1px solid #f5c2c7; }
+.flash.info { background: #e0f2fe; color: #0f172a; border: 1px solid #bae6fd; }
+
+.chat-tabs { border: 1px solid var(--border); background: #f8fafc; }
+.chat-tab-input { display: none; }
+.chat-tab-labels { display: flex; gap: 0.25rem; padding: 0.35rem 0.5rem 0; flex-wrap: wrap; }
+.chat-tab-label { padding: 0.4rem 0.8rem; border: 1px solid var(--border); border-bottom: none; background: #e2e8f0; color: #0f172a; font-weight: 600; cursor: pointer; }
+.chat-tab-label:hover { background: #cbd5e1; }
+.chat-tab-label.active { background: #ffffff; border-bottom: 1px solid #ffffff; }
+.chat-panels { border-top: 1px solid var(--border); padding: 0.5rem; }
+.chat-panel { display: none; }
+.chat-panel.active { display: block; }
+
+/* Toggle panels without JS */
+#tab-public:checked ~ .chat-tab-labels label[for="tab-public"],
+#tab-verified:checked ~ .chat-tab-labels label[for="tab-verified"],
+#tab-shorts:checked ~ .chat-tab-labels label[for="tab-shorts"] {
+    border-bottom: 1px solid #ffffff;
+    background: #ffffff;
+}
+
+#tab-public:checked ~ .chat-panels .panel-public,
+#tab-verified:checked ~ .chat-panels .panel-verified,
+#tab-shorts:checked ~ .chat-panels .panel-shorts {
+    display: block;
+}
+
+@@media (max-width: 720px) {
+    .chat-iframe { height: 440px; }
+    .chat-tab-labels { padding: 0.25rem 0.35rem 0; }
+    .chat-tab-label { flex: 1 1 30%; text-align: center; }
+}
 </style>
 
 <h1>Live Chat</h1>
-<p class="chat-note">No JavaScript. Messages update via meta-refresh inside the chat panes. Chat styling is intentionally IRC-like.</p>
+<p class="chat-note">No JavaScript. Messages update via meta-refresh inside the chat pane. Choose a tab to switch rooms.</p>
 
 @if (isMod)
 {
@@ -34,44 +60,64 @@
     if (!string.IsNullOrEmpty(adminErr)) { <div class="flash error">@adminErr</div>; }
 }
 
-@await Html.PartialAsync("_ChatSection", new MyFace.Web.Models.ChatSectionModel
-{
-    Title = "Public",
-    Room = MyFace.Services.ChatService.RoomPublic,
-    Description = "Open room. Anyone can read and logged-in users can post.",
-    CanPost = Model.PublicCanPost,
-    Paused = Model.PublicPaused,
-    FlashInfo = flash($"ChatInfo_{MyFace.Services.ChatService.RoomPublic}"),
-    FlashError = flash($"ChatError_{MyFace.Services.ChatService.RoomPublic}"),
-    IsModerator = isMod,
-    UserCanView = true
-})
+<div class="chat-tabs">
+    <input class="chat-tab-input" type="radio" name="chat-tab" id="tab-public" checked />
+    <input class="chat-tab-input" type="radio" name="chat-tab" id="tab-verified" />
+    <input class="chat-tab-input" type="radio" name="chat-tab" id="tab-shorts" />
 
-@await Html.PartialAsync("_ChatSection", new MyFace.Web.Models.ChatSectionModel
-{
-    Title = "Verified Members",
-    Room = MyFace.Services.ChatService.RoomVerified,
-    Description = "Only PGP-verified users and staff can read and post.",
-    CanPost = Model.VerifiedCanPost,
-    Paused = Model.VerifiedPaused,
-    FlashInfo = flash($"ChatInfo_{MyFace.Services.ChatService.RoomVerified}"),
-    FlashError = flash($"ChatError_{MyFace.Services.ChatService.RoomVerified}"),
-    IsModerator = isMod,
-    UserCanView = MyFace.Services.ChatService.RoomVerified == null ? false : (Model.CurrentUser != null && (Model.CurrentUser.PGPVerifications.Any(v => v.Verified) || isMod))
-})
+    <div class="chat-tab-labels">
+        <label class="chat-tab-label" for="tab-public">Public</label>
+        <label class="chat-tab-label" for="tab-verified">Verified</label>
+        <label class="chat-tab-label" for="tab-shorts">Sigil Shorts</label>
+    </div>
 
-@await Html.PartialAsync("_ChatSection", new MyFace.Web.Models.ChatSectionModel
-{
-    Title = "Sigil Shorts",
-    Room = MyFace.Services.ChatService.RoomSigilShorts,
-    Description = "Read-only for everyone; only staff may post.",
-    CanPost = Model.SigilShortsCanPost,
-    Paused = Model.SigilShortsPaused,
-    FlashInfo = flash($"ChatInfo_{MyFace.Services.ChatService.RoomSigilShorts}"),
-    FlashError = flash($"ChatError_{MyFace.Services.ChatService.RoomSigilShorts}"),
-    IsModerator = isMod,
-    UserCanView = true
-})
+    <div class="chat-panels">
+        <div class="chat-panel panel-public">
+            @await Html.PartialAsync("_ChatSection", new MyFace.Web.Models.ChatSectionModel
+            {
+                Title = "Public",
+                Room = MyFace.Services.ChatService.RoomPublic,
+                Description = "Open room. Anyone can read and logged-in users can post.",
+                CanPost = Model.PublicCanPost,
+                Paused = Model.PublicPaused,
+                FlashInfo = flash($"ChatInfo_{MyFace.Services.ChatService.RoomPublic}"),
+                FlashError = flash($"ChatError_{MyFace.Services.ChatService.RoomPublic}"),
+                IsModerator = isMod,
+                UserCanView = true
+            })
+        </div>
+
+        <div class="chat-panel panel-verified">
+            @await Html.PartialAsync("_ChatSection", new MyFace.Web.Models.ChatSectionModel
+            {
+                Title = "Verified Members",
+                Room = MyFace.Services.ChatService.RoomVerified,
+                Description = "Only PGP-verified users and staff can read and post.",
+                CanPost = Model.VerifiedCanPost,
+                Paused = Model.VerifiedPaused,
+                FlashInfo = flash($"ChatInfo_{MyFace.Services.ChatService.RoomVerified}"),
+                FlashError = flash($"ChatError_{MyFace.Services.ChatService.RoomVerified}"),
+                IsModerator = isMod,
+                UserCanView = MyFace.Services.ChatService.RoomVerified == null ? false : (Model.CurrentUser != null && (Model.CurrentUser.PGPVerifications.Any(v => v.Verified) || isMod))
+            })
+        </div>
+
+        <div class="chat-panel panel-shorts">
+            @await Html.PartialAsync("_ChatSection", new MyFace.Web.Models.ChatSectionModel
+            {
+                Title = "Sigil Shorts",
+                Room = MyFace.Services.ChatService.RoomSigilShorts,
+                Description = "Read-only for everyone; only staff may post.",
+                CanPost = Model.SigilShortsCanPost,
+                Paused = Model.SigilShortsPaused,
+                FlashInfo = flash($"ChatInfo_{MyFace.Services.ChatService.RoomSigilShorts}"),
+                FlashError = flash($"ChatError_{MyFace.Services.ChatService.RoomSigilShorts}"),
+                IsModerator = isMod,
+                UserCanView = true
+            })
+        </div>
+    </div>
+</div>
 
 @if (!isAuthed)
 {

@@ -35,6 +35,7 @@ builder.Services.AddScoped<RssService>();
 builder.Services.AddScoped<ReputationService>();
 builder.Services.AddScoped<VisitTrackingService>();
 builder.Services.AddScoped<RateLimitService>();
+builder.Services.AddScoped<MailService>();
 builder.Services.AddScoped<MyFace.Web.Services.BBCodeFormatter>();
 builder.Services.AddSingleton<MyFace.Web.Services.CaptchaService>();
 builder.Services.AddHostedService<MyFace.Web.Services.OnionMonitorWorker>();
@@ -121,7 +122,7 @@ app.Use(async (context, next) =>
     context.Response.Headers.Remove("Server");
     context.Response.Headers.Remove("X-Powered-By");
     context.Response.Headers.Append("X-Content-Type-Options", "nosniff");
-    context.Response.Headers.Append("X-Frame-Options", "DENY");
+    context.Response.Headers.Append("X-Frame-Options", "SAMEORIGIN");
     context.Response.Headers.Append("X-XSS-Protection", "1; mode=block");
     context.Response.Headers.Append("Referrer-Policy", "no-referrer");
     await next();
@@ -149,9 +150,11 @@ if (app.Environment.IsDevelopment())
 {
     using var scope = app.Services.CreateScope();
     var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+    var mailService = scope.ServiceProvider.GetRequiredService<MailService>();
     try
     {
         db.Database.EnsureCreated();
+        mailService.EnsureSchemaAsync().GetAwaiter().GetResult();
     }
     catch (Exception ex)
     {

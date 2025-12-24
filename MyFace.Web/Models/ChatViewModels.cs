@@ -32,3 +32,13 @@ public class ChatSectionModel
     public bool IsModerator { get; set; }
     public bool UserCanView { get; set; }
 }
+
+public class ChatCaptchaViewModel
+{
+    public string Room { get; set; } = string.Empty;
+    public string Content { get; set; } = string.Empty;
+    public string ContextHtml { get; set; } = string.Empty;
+    public string Question { get; set; } = string.Empty;
+    public int AttemptsRemaining { get; set; }
+    public string? Error { get; set; }
+}

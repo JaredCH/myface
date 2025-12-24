@@ -1,7 +1,6 @@
 @model MyFace.Web.Models.ChatMessagesViewModel
 @{
     Layout = null;
-    Response.Headers["X-Frame-Options"] = "DENY"; // already set globally but keep
 }
 <!DOCTYPE html>
 <html>
@@ -9,19 +8,19 @@
     <meta charset="utf-8" />
     <meta http-equiv="refresh" content="5" />
     <style>
-        body { margin: 0.35rem; background: #0b1224; color: #e5e7eb; font-family: monospace; font-size: 14px; }
-        .chat-lines { display: flex; flex-direction: column; gap: 4px; }
-        .line { white-space: pre-wrap; }
-        .ts { color: #94a3b8; margin-right: 4px; }
+        body { margin: 0.5rem; background: #f6f7fb; color: #1f2933; font-family: monospace; font-size: 12.6px; }
+        .chat-lines { display: flex; flex-direction: column; gap: 6px; }
+        .line { white-space: pre-wrap; word-break: break-word; overflow-wrap: anywhere; }
+        .ts { color: #64748b; margin-right: 4px; }
         .user { margin-right: 4px; }
-        .user.role-admin { color: #ef4444; }
-        .user.role-mod { color: #38bdf8; }
-        .user.role-verified { color: #22c55e; }
-        .user.role-user { color: #e5e7eb; }
-        .mention { color: #f59e0b; }
-        .msg { color: #e5e7eb; }
+        .user.role-admin { color: #b91c1c; }
+        .user.role-mod { color: #2f6fe4; }
+        .user.role-verified { color: #15803d; }
+        .user.role-user { color: #0f172a; }
+        .mention { color: #c2410c; }
+        .msg { color: #0f172a; }
         .meta { color: #475569; margin-left: 6px; font-size: 12px; }
-        .paused { color: #fef9c3; margin-bottom: 6px; }
+        .paused { color: #b45309; margin-bottom: 6px; background: #fef3c7; padding: 4px 6px; border: 1px solid #fcd34d; border-radius: 4px; }
     </style>
 </head>
 <body>

@@ -18,8 +18,8 @@ public class ChatService
     private readonly IMemoryCache _cache;
     private readonly ChatSnapshotService _snapshotService;
 
-    private const int MessageMaxLength = 500;
-    private static readonly TimeSpan RateLimitWindow = TimeSpan.FromSeconds(3);
+    private const int MessageMaxLength = 199;
+    private static readonly TimeSpan RateLimitWindow = TimeSpan.FromSeconds(7);
 
     public ChatService(ApplicationDbContext db, IMemoryCache cache, ChatSnapshotService snapshotService)
     {
@@ -56,19 +56,19 @@ public class ChatService
 
     public async Task EnsureSchemaAsync(CancellationToken ct = default)
     {
-        var sql = @"
-        CREATE TABLE IF NOT EXISTS \"ChatMessages\" (
-            \"Id\" SERIAL PRIMARY KEY,
-            \"Room\" varchar(32) NOT NULL,
-            \"UserId\" integer NULL,
-            \"UsernameSnapshot\" varchar(50) NOT NULL,
-            \"RoleSnapshot\" varchar(16) NOT NULL DEFAULT 'User',
-            \"IsVerifiedSnapshot\" boolean NOT NULL DEFAULT false,
-            \"Content\" text NOT NULL,
-            \"CreatedAt\" timestamptz NOT NULL DEFAULT NOW()
+        var sql = """
+        CREATE TABLE IF NOT EXISTS "ChatMessages" (
+            "Id" SERIAL PRIMARY KEY,
+            "Room" varchar(32) NOT NULL,
+            "UserId" integer NULL,
+            "UsernameSnapshot" varchar(50) NOT NULL,
+            "RoleSnapshot" varchar(16) NOT NULL DEFAULT 'User',
+            "IsVerifiedSnapshot" boolean NOT NULL DEFAULT false,
+            "Content" text NOT NULL,
+            "CreatedAt" timestamptz NOT NULL DEFAULT NOW()
         );
-        CREATE INDEX IF NOT EXISTS \"IX_ChatMessages_Room_CreatedAt\" ON \"ChatMessages\" (\"Room\", \"CreatedAt\");
-        ";
+        CREATE INDEX IF NOT EXISTS "IX_ChatMessages_Room_CreatedAt" ON "ChatMessages" ("Room", "CreatedAt");
+        """;
 
         await _db.Database.ExecuteSqlRawAsync(sql, ct);
     }
@@ -111,14 +111,13 @@ public class ChatService
             }
         }
 
-        var content = rawContent.Trim();
+        var content = rawContent.Replace("\r", " ").Replace("\n", " ").Trim();
         if (content.Length > MessageMaxLength)
         {
             content = content.Substring(0, MessageMaxLength);
         }
 
         var encoded = System.Web.HttpUtility.HtmlEncode(content);
-        encoded = encoded.Replace("\r\n", "<br />").Replace("\n", "<br />");
 
         var isVerified = sender.PGPVerifications.Any(v => v.Verified);
         var entity = new ChatMessage

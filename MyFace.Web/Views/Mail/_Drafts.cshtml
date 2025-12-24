@@ -1,0 +1,35 @@
+@model IEnumerable<MyFace.Web.Models.MailItemViewModel>
+@if (!Model.Any())
+{
+    <div class="text-muted">No drafts.</div>
+}
+else
+{
+    <table class="table table-sm">
+        <thead>
+            <tr>
+                <th>Subject</th>
+                <th>To</th>
+                <th>Created</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td><a href="@Url.Action("View", "Mail", new { id = item.Id })">@item.Subject</a></td>
+                <td>@item.To</td>
+                <td>@item.SentAt?.ToLocalTime().ToString("g")</td>
+                <td>
+                    <form asp-action="SendDraft" asp-controller="Mail" method="post" class="d-inline">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="id" value="@item.Id" />
+                        <button type="submit" class="btn btn-sm btn-primary">Send</button>
+                    </form>
+                </td>
+            </tr>
+        }
+        </tbody>
+    </table>
+}

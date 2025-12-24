@@ -77,6 +77,12 @@
                         <a href="/user/edit" class="theme-button ghost">📝 Quick Edit</a>
                     </div>
                 }
+                else if (User.Identity?.IsAuthenticated == true)
+                {
+                    <div style="margin-top: 0.75rem; display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                        <a href="@Url.Action("Index", "Mail", new { tab = "new", to = user.Username })" class="theme-button">✉️ Message</a>
+                    </div>
+                }
             </div>
             
             <!-- Trophy Display for Votes -->

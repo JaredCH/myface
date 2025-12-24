@@ -46,6 +46,10 @@ build_metadata.AdditionalFiles.CssScope =
 build_metadata.AdditionalFiles.TargetPath = Vmlld3MvQ2FwdGNoYS9JbmRleC5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
+[/home/server/myface/MyFace.Web/Views/Chat/ChatCaptcha.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvQ2hhdC9DaGF0Q2FwdGNoYS5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
 [/home/server/myface/MyFace.Web/Views/Chat/Index.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3MvQ2hhdC9JbmRleC5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
@@ -60,6 +64,26 @@ build_metadata.AdditionalFiles.CssScope =
 
 [/home/server/myface/MyFace.Web/Views/Home/Privacy.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3MvSG9tZS9Qcml2YWN5LmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[/home/server/myface/MyFace.Web/Views/Mail/Index.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvTWFpbC9JbmRleC5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[/home/server/myface/MyFace.Web/Views/Mail/Message.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvTWFpbC9NZXNzYWdlLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[/home/server/myface/MyFace.Web/Views/Mail/_Compose.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvTWFpbC9fQ29tcG9zZS5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[/home/server/myface/MyFace.Web/Views/Mail/_Drafts.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvTWFpbC9fRHJhZnRzLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[/home/server/myface/MyFace.Web/Views/Mail/_MailList.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvTWFpbC9fTWFpbExpc3QuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
 [/home/server/myface/MyFace.Web/Views/Moderator/Index.cshtml]

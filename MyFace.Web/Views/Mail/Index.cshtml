@@ -1,0 +1,43 @@
+@model MyFace.Web.Models.MailIndexViewModel
+@{
+    ViewData["Title"] = "Mail";
+    var error = TempData["MailError"] as string;
+    var info = TempData["MailInfo"] as string;
+    string TabClass(string key) => Model.ActiveTab?.Equals(key, StringComparison.OrdinalIgnoreCase) == true ? "active" : string.Empty;
+}
+
+<div class="container mt-3">
+    <h2>Mail</h2>
+
+    @if (!string.IsNullOrEmpty(error))
+    {
+        <div class="alert alert-danger">@error</div>
+    }
+    @if (!string.IsNullOrEmpty(info))
+    {
+        <div class="alert alert-success">@info</div>
+    }
+
+    <ul class="nav nav-tabs mb-3">
+        <li class="nav-item"><a class="nav-link @TabClass("inbox")" href="@Url.Action("Index", new { tab = "inbox" })">Inbox</a></li>
+        <li class="nav-item"><a class="nav-link @TabClass("outbox")" href="@Url.Action("Index", new { tab = "outbox" })">Outbox</a></li>
+        <li class="nav-item"><a class="nav-link @TabClass("drafts")" href="@Url.Action("Index", new { tab = "drafts" })">Drafts</a></li>
+        <li class="nav-item"><a class="nav-link @TabClass("new")" href="@Url.Action("Index", new { tab = "new" })">New</a></li>
+    </ul>
+
+    @switch(Model.ActiveTab?.ToLowerInvariant())
+    {
+        case "outbox":
+            <partial name="_MailList" model="Model.Outbox" />
+            break;
+        case "drafts":
+            <partial name="_Drafts" model="Model.Drafts" />
+            break;
+        case "new":
+            <partial name="_Compose" model="Model" />
+            break;
+        default:
+            <partial name="_MailList" model="Model.Inbox" />
+            break;
+    }
+</div>

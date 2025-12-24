@@ -18,7 +18,8 @@ public class CaptchaMiddleware
         // Skip for static files, captcha controller itself, and login/register pages if needed
         var path = context.Request.Path.Value?.ToLower();
         if (path != null && 
-            (path.StartsWith("/captcha") || 
+            (path.StartsWith("/captcha") ||
+             path.StartsWith("/chat") ||
              path.Contains(".") || // Static files usually have extensions
              path.StartsWith("/css") || 
              path.StartsWith("/js") || 

@@ -1,0 +1,31 @@
+@model IEnumerable<MyFace.Web.Models.MailItemViewModel>
+@if (!Model.Any())
+{
+    <div class="text-muted">No messages.</div>
+}
+else
+{
+    <table class="table table-sm">
+        <thead>
+            <tr>
+                <th>Subject</th>
+                <th>From</th>
+                <th>To</th>
+                <th>Sent</th>
+                <th>Read</th>
+            </tr>
+        </thead>
+        <tbody>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td><a href="@Url.Action("View", "Mail", new { id = item.Id })">@item.Subject</a></td>
+                <td>@item.From</td>
+                <td>@item.To</td>
+                <td>@item.SentAt?.ToLocalTime().ToString("g")</td>
+                <td>@(item.ReadAt.HasValue ? item.ReadAt.Value.ToLocalTime().ToString("g") : "-")</td>
+            </tr>
+        }
+        </tbody>
+    </table>
+}

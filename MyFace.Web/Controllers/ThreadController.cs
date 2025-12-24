@@ -241,7 +241,7 @@ public class ThreadController : Controller
         var post = await _forumService.GetPostByIdAsync(postId);
         if (post == null) return NotFound();
 
-        await _forumService.AdminEditPostAsync(postId, content);
+        await _forumService.AdminEditPostAsync(postId, content, GetCurrentUserId());
         return RedirectToAction("View", new { id = post.ThreadId });
     }
 
