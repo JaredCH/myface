@@ -1,0 +1,79 @@
+@model MyFace.Web.Models.ChatIndexViewModel
+@{
+    ViewData["Title"] = "Live Chat";
+    var isAuthed = Model.CurrentUser != null;
+    bool isMod = Model.CurrentUser?.Role?.ToLowerInvariant() == "admin" || Model.CurrentUser?.Role?.ToLowerInvariant() == "moderator";
+    Func<string, string> flash = key => TempData.ContainsKey(key) ? TempData[key]?.ToString() ?? string.Empty : string.Empty;
+}
+
+<style>
+.chat-section { border: 1px solid var(--border); padding: 0.75rem; margin-bottom: 1rem; background: var(--card-bg, #0f172a); }
+.chat-header { font-family: monospace; font-size: 1rem; margin-bottom: 0.35rem; }
+.chat-form { margin: 0.35rem 0; }
+.chat-form textarea { width: 100%; height: 80px; font-family: monospace; font-size: 0.95rem; background: #0b1224; color: #e5e7eb; border: 1px solid var(--border); padding: 0.4rem; }
+.chat-form button { margin-top: 0.35rem; }
+.chat-iframe { width: 100%; height: 280px; border: 1px solid var(--border); background: #0b1224; }
+.chat-note { color: var(--text-muted, #94a3b8); font-size: 0.9rem; }
+.chat-badge { display: inline-block; padding: 0.1rem 0.4rem; border-radius: 4px; font-size: 0.8rem; margin-left: 0.25rem; }
+.chat-badge.mod { background: #1d4ed8; color: #f8fafc; }
+.chat-badge.admin { background: #b91c1c; color: #f8fafc; }
+.chat-badge.verified { background: #15803d; color: #f8fafc; }
+.flash { padding: 0.4rem 0.6rem; margin: 0.35rem 0; border-radius: 4px; }
+.flash.error { background: #331111; color: #fef2f2; border: 1px solid #7f1d1d; }
+.flash.info { background: #112233; color: #e0f2fe; border: 1px solid #1d4ed8; }
+</style>
+
+<h1>Live Chat</h1>
+<p class="chat-note">No JavaScript. Messages update via meta-refresh inside the chat panes. Chat styling is intentionally IRC-like.</p>
+
+@if (isMod)
+{
+    var adminMsg = flash("ChatInfo_Admin");
+    var adminErr = flash("ChatError_Admin");
+    if (!string.IsNullOrEmpty(adminMsg)) { <div class="flash info">@adminMsg</div>; }
+    if (!string.IsNullOrEmpty(adminErr)) { <div class="flash error">@adminErr</div>; }
+}
+
+@await Html.PartialAsync("_ChatSection", new MyFace.Web.Models.ChatSectionModel
+{
+    Title = "Public",
+    Room = MyFace.Services.ChatService.RoomPublic,
+    Description = "Open room. Anyone can read and logged-in users can post.",
+    CanPost = Model.PublicCanPost,
+    Paused = Model.PublicPaused,
+    FlashInfo = flash($"ChatInfo_{MyFace.Services.ChatService.RoomPublic}"),
+    FlashError = flash($"ChatError_{MyFace.Services.ChatService.RoomPublic}"),
+    IsModerator = isMod,
+    UserCanView = true
+})
+
+@await Html.PartialAsync("_ChatSection", new MyFace.Web.Models.ChatSectionModel
+{
+    Title = "Verified Members",
+    Room = MyFace.Services.ChatService.RoomVerified,
+    Description = "Only PGP-verified users and staff can read and post.",
+    CanPost = Model.VerifiedCanPost,
+    Paused = Model.VerifiedPaused,
+    FlashInfo = flash($"ChatInfo_{MyFace.Services.ChatService.RoomVerified}"),
+    FlashError = flash($"ChatError_{MyFace.Services.ChatService.RoomVerified}"),
+    IsModerator = isMod,
+    UserCanView = MyFace.Services.ChatService.RoomVerified == null ? false : (Model.CurrentUser != null && (Model.CurrentUser.PGPVerifications.Any(v => v.Verified) || isMod))
+})
+
+@await Html.PartialAsync("_ChatSection", new MyFace.Web.Models.ChatSectionModel
+{
+    Title = "Sigil Shorts",
+    Room = MyFace.Services.ChatService.RoomSigilShorts,
+    Description = "Read-only for everyone; only staff may post.",
+    CanPost = Model.SigilShortsCanPost,
+    Paused = Model.SigilShortsPaused,
+    FlashInfo = flash($"ChatInfo_{MyFace.Services.ChatService.RoomSigilShorts}"),
+    FlashError = flash($"ChatError_{MyFace.Services.ChatService.RoomSigilShorts}"),
+    IsModerator = isMod,
+    UserCanView = true
+})
+
+@if (!isAuthed)
+{
+    <p class="chat-note">Login is required to post. You can still read Public and Sigil Shorts.</p>
+}

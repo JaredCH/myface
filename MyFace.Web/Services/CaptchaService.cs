@@ -161,7 +161,44 @@ public class CaptchaService
     {
         if (string.IsNullOrWhiteSpace(expected) || string.IsNullOrWhiteSpace(actual))
             return false;
-            
-        return string.Equals(expected.Trim(), actual.Trim(), StringComparison.OrdinalIgnoreCase);
+
+        var normalizedExpected = NormalizeAnswer(expected);
+        var normalizedActual = NormalizeAnswer(actual);
+
+        if (normalizedExpected == normalizedActual)
+            return true;
+
+        // Numeric fallback: tolerate formats like "12" vs "012" vs "12.0"
+        if (int.TryParse(normalizedExpected, out var expectedNum) && int.TryParse(normalizedActual, out var actualNum))
+            return expectedNum == actualNum;
+
+        return false;
+    }
+
+    private static string NormalizeAnswer(string input)
+    {
+        // Lowercase, strip punctuation, collapse whitespace; keep letters/digits only.
+        var sb = new System.Text.StringBuilder();
+        var lastWasSpace = false;
+
+        foreach (var ch in input.Trim().ToLowerInvariant())
+        {
+            if (char.IsLetterOrDigit(ch))
+            {
+                sb.Append(ch);
+                lastWasSpace = false;
+            }
+            else if (char.IsWhiteSpace(ch))
+            {
+                if (!lastWasSpace && sb.Length > 0)
+                {
+                    sb.Append(' ');
+                    lastWasSpace = true;
+                }
+            }
+            // Punctuation and symbols are dropped to be forgiving.
+        }
+
+        return sb.ToString().Trim();
     }
 }

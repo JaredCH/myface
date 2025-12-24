@@ -39,22 +39,22 @@ public class BBCodeFormatter
         // 2. Apply BBCode replacements (order matters!)
         
         // Headers (map to h3/h4 for safety) - do these early before newlines become <br>
-        encoded = Regex.Replace(encoded, @"\[h1\](.*?)\[/h1\]", "<h3>$1</h3>", RegexOptions.IgnoreCase | RegexOptions.Singleline);
-        encoded = Regex.Replace(encoded, @"\[h2\](.*?)\[/h2\]", "<h4>$1</h4>", RegexOptions.IgnoreCase | RegexOptions.Singleline);
+        encoded = Regex.Replace(encoded, @"\[h1\](.*?)\[/h1\]", "<h3 style=\"margin:0.29rem 0 0.23rem;line-height:1.2\">$1</h3>", RegexOptions.IgnoreCase | RegexOptions.Singleline);
+        encoded = Regex.Replace(encoded, @"\[h2\](.*?)\[/h2\]", "<h4 style=\"margin:0.23rem 0 0.18rem;line-height:1.18\">$1</h4>", RegexOptions.IgnoreCase | RegexOptions.Singleline);
         
         // HR (horizontal rule)
-        encoded = Regex.Replace(encoded, @"\[hr\]", "<hr style=\"border:none;border-top:1px solid var(--border);margin:1rem 0\" />", RegexOptions.IgnoreCase);
+        encoded = Regex.Replace(encoded, @"\[hr\]", "<hr style=\"border:none;border-top:1px solid var(--border);margin:0.35rem 0\" />", RegexOptions.IgnoreCase);
         
         // Center text
         encoded = Regex.Replace(encoded, @"\[center\](.*?)\[/center\]", "<div style=\"text-align:center\">$1</div>", RegexOptions.IgnoreCase | RegexOptions.Singleline);
         
         // Quote
-        encoded = Regex.Replace(encoded, @"\[quote\](.*?)\[/quote\]", "<blockquote style=\"border-left:3px solid var(--border);padding-left:1rem;margin:0.5rem 0;font-style:italic;color:var(--text-muted)\">$1</blockquote>", RegexOptions.IgnoreCase | RegexOptions.Singleline);
+        encoded = Regex.Replace(encoded, @"\[quote\](.*?)\[/quote\]", "<blockquote style=\"border-left:3px solid var(--border);padding-left:0.6rem;margin:0.22rem 0;font-style:italic;color:var(--text-muted);line-height:1.08\">$1</blockquote>", RegexOptions.IgnoreCase | RegexOptions.Singleline);
         
         // Lists
-        encoded = Regex.Replace(encoded, @"\[list\]", "<ul>", RegexOptions.IgnoreCase);
+        encoded = Regex.Replace(encoded, @"\[list\]", "<ul style=\"margin:0.2rem 0 0.2rem 1rem;padding-left:1rem;list-style-position:outside\">", RegexOptions.IgnoreCase);
         encoded = Regex.Replace(encoded, @"\[/list\]", "</ul>", RegexOptions.IgnoreCase);
-        encoded = Regex.Replace(encoded, @"\[\*\](.*?)(?=(\[\*\]|\[/list\]|&lt;br /&gt;|\r?\n|$))", "<li>$1</li>", RegexOptions.IgnoreCase | RegexOptions.Singleline);
+        encoded = Regex.Replace(encoded, @"\[\*\](.*?)(?=(\[\*\]|\[/list\]|&lt;br /&gt;|\r?\n|$))", "<li style=\"margin:0.1rem 0;line-height:1.2\">$1</li>", RegexOptions.IgnoreCase | RegexOptions.Singleline);
         
         // Bold
         encoded = Regex.Replace(encoded, @"\[b\](.*?)\[/b\]", "<strong>$1</strong>", RegexOptions.IgnoreCase | RegexOptions.Singleline);
@@ -103,6 +103,23 @@ public class BBCodeFormatter
 
         // 4. Newlines to <br> (do this last!)
         encoded = encoded.Replace("\r\n", "<br />").Replace("\n", "<br />");
+
+        // 5. Tidy spacing: aggressively trim breaks around block elements and collapse multiples
+        encoded = Regex.Replace(encoded, "(<br \\s*/?>\\s*){2,}", "<br />", RegexOptions.IgnoreCase); // collapse runs of <br>
+        encoded = Regex.Replace(encoded, "</(div|p|h3|h4|blockquote)>\\s*<br \\s*/?>", "</$1>", RegexOptions.IgnoreCase);
+        encoded = Regex.Replace(encoded, "<br \\s*/?>\\s*<(div|p|h3|h4|blockquote)", "<$1", RegexOptions.IgnoreCase);
+        encoded = Regex.Replace(encoded, "<ul[^>]*>\\s*<br \\s*/?>", string.Empty, RegexOptions.IgnoreCase);
+        encoded = Regex.Replace(encoded, "<ol[^>]*>\\s*<br \\s*/?>", string.Empty, RegexOptions.IgnoreCase);
+        encoded = Regex.Replace(encoded, "<br \\s*/?>\\s*</ul>", "</ul>", RegexOptions.IgnoreCase);
+        encoded = Regex.Replace(encoded, "<br \\s*/?>\\s*</ol>", "</ol>", RegexOptions.IgnoreCase);
+        encoded = Regex.Replace(encoded, "</li>\\s*<br \\s*/?>", "</li>", RegexOptions.IgnoreCase);
+        encoded = Regex.Replace(encoded, "<br \\s*/?>\\s*<li", "<li", RegexOptions.IgnoreCase);
+        encoded = Regex.Replace(encoded, "<blockquote([^>]*)>\\s*<br \\s*/?>", "<blockquote$1>", RegexOptions.IgnoreCase);
+        encoded = Regex.Replace(encoded, "<br \\s*/?>\\s*</blockquote>", "</blockquote>", RegexOptions.IgnoreCase);
+        encoded = Regex.Replace(encoded, "</h3>\\s*<br \\s*/?>", "</h3>", RegexOptions.IgnoreCase);
+        encoded = Regex.Replace(encoded, "</h4>\\s*<br \\s*/?>", "</h4>", RegexOptions.IgnoreCase);
+        encoded = Regex.Replace(encoded, "<hr([^>]*)>\\s*<br \\s*/?>", "<hr$1>", RegexOptions.IgnoreCase);
+        encoded = Regex.Replace(encoded, "<br \\s*/?>\\s*<hr", "<hr", RegexOptions.IgnoreCase);
 
         return new HtmlString(encoded);
     }

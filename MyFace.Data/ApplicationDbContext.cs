@@ -22,6 +22,7 @@ public class ApplicationDbContext : DbContext
     public DbSet<UsernameChangeLog> UsernameChangeLogs { get; set; }
     public DbSet<Activity> Activities { get; set; }
     public DbSet<LoginAttempt> LoginAttempts { get; set; }
+    public DbSet<ChatMessage> ChatMessages { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -176,6 +177,19 @@ public class ApplicationDbContext : DbContext
             entity.Property(e => e.IpAddressHash).HasMaxLength(64);
             entity.Property(e => e.AttemptedAt).HasDefaultValueSql("CURRENT_TIMESTAMP");
             entity.HasIndex(e => new { e.LoginNameHash, e.AttemptedAt }); // Composite index for lookups
+        });
+
+        // ChatMessage configuration
+        modelBuilder.Entity<ChatMessage>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Room).HasMaxLength(32).IsRequired();
+            entity.Property(e => e.UsernameSnapshot).HasMaxLength(50).IsRequired();
+            entity.Property(e => e.RoleSnapshot).HasMaxLength(16).HasDefaultValue("User");
+            entity.Property(e => e.IsVerifiedSnapshot).HasDefaultValue(false);
+            entity.Property(e => e.Content).HasMaxLength(2000).IsRequired();
+            entity.Property(e => e.CreatedAt).HasDefaultValueSql("CURRENT_TIMESTAMP");
+            entity.HasIndex(e => new { e.Room, e.CreatedAt });
         });
     }
 }

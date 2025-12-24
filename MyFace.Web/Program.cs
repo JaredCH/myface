@@ -38,6 +38,9 @@ builder.Services.AddScoped<RateLimitService>();
 builder.Services.AddScoped<MyFace.Web.Services.BBCodeFormatter>();
 builder.Services.AddSingleton<MyFace.Web.Services.CaptchaService>();
 builder.Services.AddHostedService<MyFace.Web.Services.OnionMonitorWorker>();
+builder.Services.AddMemoryCache();
+builder.Services.AddScoped<MyFace.Services.ChatService>();
+builder.Services.AddSingleton<MyFace.Services.ChatSnapshotService>();
 
 // HttpClient for Tor/Onion monitoring
 builder.Services.AddHttpClient("TorClient")
