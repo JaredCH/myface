@@ -131,9 +131,22 @@ public class UserController : Controller
         string? backgroundColorHex, string? fontColorHex, string? accentColorHex, string? borderColorHex,
         string buttonBackgroundColor, string buttonTextColor, string buttonBorderColor,
         string? buttonBackgroundColorHex, string? buttonTextColorHex, string? buttonBorderColorHex,
-        string vendorShopDescription, string vendorPolicies, string vendorPayments, string vendorExternalReferences)
+        string vendorShopDescription, string vendorPolicies, string vendorPayments, string vendorExternalReferences,
+        string? pathChoice, string? themePreset, string? applyTheme)
     {
         var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+
+        var preset = GetThemePreset(themePreset);
+        if (applyTheme == "load" && preset.HasValue)
+        {
+            backgroundColor = preset.Value.Background;
+            fontColor = preset.Value.Font;
+            accentColor = preset.Value.Accent;
+            borderColor = preset.Value.Border;
+            buttonBackgroundColor = preset.Value.ButtonBg;
+            buttonTextColor = preset.Value.ButtonText;
+            buttonBorderColor = preset.Value.ButtonBorder;
+        }
 
         var resolvedBackground = NormalizeHexOrFallback(backgroundColorHex, backgroundColor, "#0f172a");
         var resolvedFont = NormalizeHexOrFallback(fontColorHex, fontColor, "#e5e7eb");
@@ -160,11 +173,24 @@ public class UserController : Controller
         string? backgroundColorHex, string? fontColorHex, string? accentColorHex, string? borderColorHex,
         string buttonBackgroundColor, string buttonTextColor, string buttonBorderColor,
         string? buttonBackgroundColorHex, string? buttonTextColorHex, string? buttonBorderColorHex,
-        string vendorShopDescription, string vendorPolicies, string vendorPayments, string vendorExternalReferences)
+        string vendorShopDescription, string vendorPolicies, string vendorPayments, string vendorExternalReferences,
+        string? pathChoice, string? themePreset, string? applyTheme)
     {
         var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
         var user = await _userService.GetByIdAsync(userId);
         if (user == null) return NotFound();
+
+        var preset = GetThemePreset(themePreset);
+        if (applyTheme == "load" && preset.HasValue)
+        {
+            backgroundColor = preset.Value.Background;
+            fontColor = preset.Value.Font;
+            accentColor = preset.Value.Accent;
+            borderColor = preset.Value.Border;
+            buttonBackgroundColor = preset.Value.ButtonBg;
+            buttonTextColor = preset.Value.ButtonText;
+            buttonBorderColor = preset.Value.ButtonBorder;
+        }
 
         var resolvedBackground = NormalizeHexOrFallback(backgroundColorHex, backgroundColor, user.BackgroundColor ?? "#0f172a");
         var resolvedFont = NormalizeHexOrFallback(fontColorHex, fontColor, user.FontColor ?? "#e5e7eb");
@@ -206,6 +232,25 @@ public class UserController : Controller
         ViewBag.User = previewUser;
         ViewBag.IsPreview = true;
         return View("EditProfile");
+    }
+
+    private static (string Background, string Font, string Accent, string Border, string ButtonBg, string ButtonText, string ButtonBorder)? GetThemePreset(string? key)
+    {
+        if (string.IsNullOrWhiteSpace(key)) return null;
+
+        return key.ToLowerInvariant() switch
+        {
+            "classic-light" => ("#f6f7fb", "#1f2933", "#2f6fe4", "#d9dee7", "#2f6fe4", "#ffffff", "#2f6fe4"),
+            "midnight" => ("#0f172a", "#e5e7eb", "#8b5cf6", "#1f2937", "#8b5cf6", "#ffffff", "#8b5cf6"),
+            "forest" => ("#0f2214", "#e3f4e3", "#34d399", "#14532d", "#22c55e", "#0b1f12", "#22c55e"),
+            "sunrise" => ("#2b1b12", "#fef3c7", "#f59e0b", "#7c2d12", "#f59e0b", "#2b1b12", "#f59e0b"),
+            "ocean" => ("#0b1f2a", "#e0f2fe", "#06b6d4", "#0c4a6e", "#06b6d4", "#082f49", "#06b6d4"),
+            "ember" => ("#111827", "#e5e7eb", "#f97316", "#1f2937", "#f97316", "#0b0f19", "#f97316"),
+            "pastel" => ("#f5f3ff", "#312e81", "#a5b4fc", "#cbd5e1", "#a5b4fc", "#0b1220", "#a5b4fc"),
+            "slate" => ("#0f172a", "#e2e8f0", "#38bdf8", "#1f2937", "#38bdf8", "#0b1220", "#38bdf8"),
+            "mono" => ("#0b0b0f", "#f8fafc", "#ffffff", "#1f1f24", "#ffffff", "#0b0b0f", "#ffffff"),
+            _ => null
+        };
     }
 
     [Authorize]
@@ -388,11 +433,13 @@ public class UserController : Controller
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> AddNews(AddNewsViewModel model)
     {
-        if (ModelState.IsValid)
+        if (!ModelState.IsValid)
         {
-            var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
-            await _userService.AddNewsAsync(userId, model.Title, model.Content);
+            return View("CreateNews", model);
         }
+
+        var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+        await _userService.AddNewsAsync(userId, model.Title, model.Content, model.ApplyTheme);
         return RedirectToAction("Index", new { username = User.Identity!.Name });
     }
 
@@ -404,6 +451,13 @@ public class UserController : Controller
         var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
         await _userService.RemoveNewsAsync(userId, id);
         return RedirectToAction("Index", new { username = User.Identity!.Name });
+    }
+
+    [Authorize]
+    [HttpGet("/user/news/new")]
+    public IActionResult NewNews()
+    {
+        return View("CreateNews", new AddNewsViewModel());
     }
 
     [HttpPost]

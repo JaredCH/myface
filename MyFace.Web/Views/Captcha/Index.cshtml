@@ -11,6 +11,16 @@
         <strong>@Html.Raw(ViewBag.Context)</strong>
     </div>
 
+    <details style="background: #0f172a08; border: 1px solid #cbd5e1; border-radius: 6px; padding: 0.75rem 1rem; margin: 0.5rem 0 1rem;">
+        <summary style="cursor: pointer; font-weight: 600;">How to complete this captcha</summary>
+        <ul style="margin: 0.5rem 0 0 1.25rem; padding: 0; list-style: disc;">
+            <li>Read the prompt above; it contains the answer.</li>
+            <li>Type the exact phrase or number you see (spacing matters for phrases, numbers can be plain digits).</li>
+            <li>If it is a math expression, solve it and enter the result.</li>
+            <li>Answers are not case-sensitive; avoid extra punctuation.</li>
+        </ul>
+    </details>
+
     <form asp-action="Verify" method="post">
         <input type="hidden" name="returnUrl" value="@ViewBag.ReturnUrl" />
         

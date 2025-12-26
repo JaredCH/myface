@@ -52,6 +52,56 @@ namespace MyFace.Data.Migrations
                     b.ToTable("Activities");
                 });
 
+            modelBuilder.Entity("MyFace.Core.Entities.ChatMessage", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Content")
+                        .IsRequired()
+                        .HasMaxLength(2000)
+                        .HasColumnType("character varying(2000)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+                    b.Property<bool>("IsVerifiedSnapshot")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(false);
+
+                    b.Property<string>("RoleSnapshot")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(16)
+                        .HasColumnType("character varying(16)")
+                        .HasDefaultValue("User");
+
+                    b.Property<string>("Room")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)");
+
+                    b.Property<int?>("UserId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("UsernameSnapshot")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Room", "CreatedAt");
+
+                    b.ToTable("ChatMessages");
+                });
+
             modelBuilder.Entity("MyFace.Core.Entities.LoginAttempt", b =>
                 {
                     b.Property<int>("Id")
@@ -96,6 +146,11 @@ namespace MyFace.Data.Migrations
                     b.Property<double?>("AverageLatency")
                         .HasColumnType("double precision");
 
+                    b.Property<int>("ClickCount")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(0);
+
                     b.Property<string>("Description")
                         .IsRequired()
                         .HasColumnType("text");
@@ -119,11 +174,6 @@ namespace MyFace.Data.Migrations
 
                     b.Property<double?>("ResponseTime")
                         .HasColumnType("double precision");
-
-                    b.Property<int>("ClickCount")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer")
-                        .HasDefaultValue(0);
 
                     b.Property<string>("Status")
                         .IsRequired()
@@ -222,8 +272,14 @@ namespace MyFace.Data.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
+                    b.Property<int>("EditCount")
+                        .HasColumnType("integer");
+
                     b.Property<DateTime?>("EditedAt")
                         .HasColumnType("timestamp with time zone");
+
+                    b.Property<int?>("EditedByUserId")
+                        .HasColumnType("integer");
 
                     b.Property<bool>("IsAnonymous")
                         .HasColumnType("boolean");
@@ -231,8 +287,18 @@ namespace MyFace.Data.Migrations
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("boolean");
 
+                    b.Property<bool>("IsReportHidden")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(false);
+
                     b.Property<bool>("IsSticky")
                         .HasColumnType("boolean");
+
+                    b.Property<int>("ReportCount")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(0);
 
                     b.Property<int>("ThreadId")
                         .HasColumnType("integer");
@@ -240,13 +306,78 @@ namespace MyFace.Data.Migrations
                     b.Property<int?>("UserId")
                         .HasColumnType("integer");
 
+                    b.Property<bool>("WasModerated")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(false);
+
                     b.HasKey("Id");
+
+                    b.HasIndex("EditedByUserId");
 
                     b.HasIndex("ThreadId");
 
                     b.HasIndex("UserId");
 
                     b.ToTable("Posts");
+                });
+
+            modelBuilder.Entity("MyFace.Core.Entities.PrivateMessage", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Body")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+                    b.Property<bool>("IsDraft")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(false);
+
+                    b.Property<DateTime?>("ReadAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int?>("RecipientId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("RecipientUsernameSnapshot")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<int?>("SenderId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("SenderUsernameSnapshot")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<DateTime?>("SentAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Subject")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("RecipientId", "CreatedAt");
+
+                    b.HasIndex("SenderId", "CreatedAt");
+
+                    b.ToTable("PrivateMessages");
                 });
 
             modelBuilder.Entity("MyFace.Core.Entities.Thread", b =>
@@ -311,6 +442,14 @@ namespace MyFace.Data.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
+                    b.Property<string>("BackgroundColor")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("BorderColor")
+                        .IsRequired()
+                        .HasColumnType("text");
+
                     b.Property<string>("ButtonBackgroundColor")
                         .IsRequired()
                         .HasColumnType("text");
@@ -320,14 +459,6 @@ namespace MyFace.Data.Migrations
                         .HasColumnType("text");
 
                     b.Property<string>("ButtonTextColor")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("BackgroundColor")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("BorderColor")
                         .IsRequired()
                         .HasColumnType("text");
 
@@ -394,6 +525,14 @@ namespace MyFace.Data.Migrations
                     b.Property<DateTime?>("SuspendedUntil")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<string>("Username")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<int?>("UsernameChangedByAdminId")
+                        .HasColumnType("integer");
+
                     b.Property<string>("VendorExternalReferences")
                         .IsRequired()
                         .HasColumnType("text");
@@ -409,14 +548,6 @@ namespace MyFace.Data.Migrations
                     b.Property<string>("VendorShopDescription")
                         .IsRequired()
                         .HasColumnType("text");
-
-                    b.Property<string>("Username")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("character varying(50)");
-
-                    b.Property<int?>("UsernameChangedByAdminId")
-                        .HasColumnType("integer");
 
                     b.HasKey("Id");
 
@@ -461,6 +592,9 @@ namespace MyFace.Data.Migrations
                         .HasColumnType("integer");
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<bool>("ApplyTheme")
+                        .HasColumnType("boolean");
 
                     b.Property<string>("Content")
                         .IsRequired()
@@ -602,6 +736,10 @@ namespace MyFace.Data.Migrations
 
             modelBuilder.Entity("MyFace.Core.Entities.Post", b =>
                 {
+                    b.HasOne("MyFace.Core.Entities.User", "EditedByUser")
+                        .WithMany()
+                        .HasForeignKey("EditedByUserId");
+
                     b.HasOne("MyFace.Core.Entities.Thread", "Thread")
                         .WithMany("Posts")
                         .HasForeignKey("ThreadId")
@@ -613,9 +751,28 @@ namespace MyFace.Data.Migrations
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.SetNull);
 
+                    b.Navigation("EditedByUser");
+
                     b.Navigation("Thread");
 
                     b.Navigation("User");
+                });
+
+            modelBuilder.Entity("MyFace.Core.Entities.PrivateMessage", b =>
+                {
+                    b.HasOne("MyFace.Core.Entities.User", "Recipient")
+                        .WithMany()
+                        .HasForeignKey("RecipientId")
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    b.HasOne("MyFace.Core.Entities.User", "Sender")
+                        .WithMany()
+                        .HasForeignKey("SenderId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.Navigation("Recipient");
+
+                    b.Navigation("Sender");
                 });
 
             modelBuilder.Entity("MyFace.Core.Entities.Thread", b =>

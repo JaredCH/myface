@@ -29,6 +29,40 @@ public class AccountController : Controller
         _rateLimitService = rateLimitService;
     }
 
+    [Authorize]
+    [HttpGet]
+    public IActionResult ChangePassword()
+    {
+        return View(new ChangePasswordViewModel());
+    }
+
+    [Authorize]
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> ChangePassword(ChangePasswordViewModel model)
+    {
+        if (!ModelState.IsValid)
+        {
+            return View(model);
+        }
+
+        var userIdString = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (!int.TryParse(userIdString, out var userId))
+        {
+            return Unauthorized();
+        }
+
+        var success = await _userService.ChangePasswordAsync(userId, model.CurrentPassword, model.NewPassword);
+        if (!success)
+        {
+            TempData["Error"] = "Current password is incorrect.";
+            return View(model);
+        }
+
+        TempData["Success"] = "Password updated. Use your new password next time you log in.";
+        return RedirectToAction("ChangePassword");
+    }
+
     [HttpGet]
     public IActionResult Register()
     {

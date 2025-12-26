@@ -58,7 +58,7 @@ public class MonitorController : Controller
     [MyFace.Web.Services.AdminAuthorization]
     public async Task<IActionResult> Check(int id)
     {
-        await _statusService.CheckAsync(id);
+        await _statusService.CheckAsync(id, HttpContext.RequestAborted);
         return RedirectToAction("Index");
     }
 
@@ -67,7 +67,7 @@ public class MonitorController : Controller
     [MyFace.Web.Services.AdminAuthorization]
     public async Task<IActionResult> CheckAll()
     {
-        await _statusService.CheckAllAsync();
+        await _statusService.CheckAllAsync(HttpContext.RequestAborted);
         return RedirectToAction("Index");
     }
 

@@ -3,6 +3,8 @@ using MyFace.Core.Entities;
 using MyFace.Data;
 using System.Net;
 using System.Net.Http;
+using System.Net.Http.Headers;
+using System.Diagnostics;
 
 namespace MyFace.Services;
 
@@ -13,13 +15,17 @@ public class OnionStatusService
     private const int AttemptsPerCheck = 3;
     private const int MaxConcurrentChecks = 6;
     private static readonly TimeSpan AttemptTimeout = TimeSpan.FromSeconds(25);
+    private static readonly string[] AllowedOnionSuffixes = new[] { ".onion", ".i2p" };
+
+    private record struct ProbeOutcome(int Id, int Reachable, int Attempts, double? AverageLatency, string Status, DateTime CheckedAt);
+    private record struct ProbeAttemptResult(bool Success, double LatencyMs);
 
     public OnionStatusService(ApplicationDbContext context, IHttpClientFactory httpClientFactory)
     {
         _context = context;
         _httpClient = httpClientFactory.CreateClient("TorClient");
-        // Longer timeout for slow onion sites
-        _httpClient.Timeout = TimeSpan.FromSeconds(30);
+        // Rely on per-attempt cancellation instead of HttpClient timeout
+        _httpClient.Timeout = Timeout.InfiniteTimeSpan;
         _httpClient.DefaultRequestVersion = HttpVersion.Version11;
         _httpClient.DefaultVersionPolicy = HttpVersionPolicy.RequestVersionOrLower;
     }
@@ -121,16 +127,25 @@ public class OnionStatusService
         return fallback.Any() ? fallback : top;
     }
 
-    public async Task CheckAllAsync()
+    public async Task CheckAllAsync(CancellationToken cancellationToken = default)
     {
-        var items = await _context.OnionStatuses.ToListAsync();
+        var items = await _context.OnionStatuses.AsNoTracking().ToListAsync(cancellationToken);
         var throttle = new SemaphoreSlim(MaxConcurrentChecks);
+        var results = new List<ProbeOutcome>(items.Count);
+
         var tasks = items.Select(async item =>
         {
-            await throttle.WaitAsync();
+            await throttle.WaitAsync(cancellationToken);
             try
             {
-                await CheckAsync(item.Id);
+                var outcome = await ProbeAsync(item, cancellationToken);
+                if (outcome.HasValue)
+                {
+                    lock (results)
+                    {
+                        results.Add(outcome.Value);
+                    }
+                }
             }
             finally
             {
@@ -139,72 +154,50 @@ public class OnionStatusService
         });
 
         await Task.WhenAll(tasks);
+
+        if (results.Count == 0)
+        {
+            return;
+        }
+
+        var ids = results.Select(r => r.Id).ToList();
+        var tracked = await _context.OnionStatuses.Where(o => ids.Contains(o.Id)).ToListAsync(cancellationToken);
+        var byId = results.ToDictionary(r => r.Id);
+
+        foreach (var entity in tracked)
+        {
+            if (!byId.TryGetValue(entity.Id, out var outcome)) continue;
+
+            entity.ReachableAttempts = outcome.Reachable;
+            entity.TotalAttempts = outcome.Attempts;
+            entity.Status = outcome.Status;
+            entity.AverageLatency = outcome.AverageLatency;
+            entity.ResponseTime = outcome.AverageLatency;
+            entity.LastChecked = outcome.CheckedAt;
+        }
+
+        await _context.SaveChangesAsync(cancellationToken);
     }
 
-    public async Task<bool> CheckAsync(int id)
+    public async Task<bool> CheckAsync(int id, CancellationToken cancellationToken = default)
     {
-        var item = await _context.OnionStatuses.FindAsync(id);
-        if (item == null) return false;
+        var snapshot = await _context.OnionStatuses.AsNoTracking().FirstOrDefaultAsync(o => o.Id == id, cancellationToken);
+        if (snapshot == null) return false;
 
-        int successes = 0;
-        int attempts = AttemptsPerCheck;
-        double totalLatency = 0;
+        var outcome = await ProbeAsync(snapshot, cancellationToken);
+        if (!outcome.HasValue) return false;
 
-        for (int i = 0; i < attempts; i++)
-        {
-            var sw = System.Diagnostics.Stopwatch.StartNew();
-            try
-            {
-                using var cts = new CancellationTokenSource(AttemptTimeout);
-                using var request = new HttpRequestMessage(HttpMethod.Get, item.OnionUrl)
-                {
-                    Version = HttpVersion.Version11,
-                    VersionPolicy = HttpVersionPolicy.RequestVersionOrLower
-                };
-                // We treat reachable redirect targets (3xx) as success so long as we connect.
-                var response = await _httpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, cts.Token);
-                sw.Stop();
-                var status = (int)response.StatusCode;
-                if (response.IsSuccessStatusCode || (status >= 300 && status < 400))
-                {
-                    successes++;
-                    totalLatency += sw.Elapsed.TotalMilliseconds;
-                }
-            }
-            catch
-            {
-                sw.Stop();
-                // Failed attempt
-            }
-            // Small delay between attempts? Maybe not needed for this simple check
-        }
+        var entity = await _context.OnionStatuses.FindAsync(new object?[] { id }, cancellationToken);
+        if (entity == null) return false;
 
-        item.ReachableAttempts = successes;
-        item.TotalAttempts = attempts;
-        
-        if (successes == 0)
-        {
-            item.Status = "Offline";
-            item.AverageLatency = null;
-            item.ResponseTime = null;
-        }
-        else
-        {
-            item.AverageLatency = totalLatency / successes;
-            item.ResponseTime = item.AverageLatency; // Keep backward compatibility if needed
-            
-            if (successes == attempts)
-            {
-                item.Status = "Online";
-            }
-            else
-            {
-                item.Status = "DEGRADED";
-            }
-        }
+        entity.ReachableAttempts = outcome.Value.Reachable;
+        entity.TotalAttempts = outcome.Value.Attempts;
+        entity.Status = outcome.Value.Status;
+        entity.AverageLatency = outcome.Value.AverageLatency;
+        entity.ResponseTime = outcome.Value.AverageLatency;
+        entity.LastChecked = outcome.Value.CheckedAt;
 
-        item.LastChecked = DateTime.UtcNow;
-        await _context.SaveChangesAsync();
+        await _context.SaveChangesAsync(cancellationToken);
         return true;
     }
 
@@ -234,6 +227,112 @@ public class OnionStatusService
     public async Task<OnionStatus?> GetByIdAsync(int id)
     {
         return await _context.OnionStatuses.FindAsync(id);
+    }
+
+    private async Task<ProbeOutcome?> ProbeAsync(OnionStatus item, CancellationToken cancellationToken)
+    {
+        var normalized = NormalizeOnionUrl(item.OnionUrl);
+        var checkedAt = DateTime.UtcNow;
+
+        if (normalized == null)
+        {
+            return new ProbeOutcome(item.Id, 0, AttemptsPerCheck, null, "Offline", checkedAt);
+        }
+
+        int successes = 0;
+        double totalLatency = 0;
+
+        for (int i = 0; i < AttemptsPerCheck; i++)
+        {
+            var attempt = await SendProbeAsync(normalized, cancellationToken);
+            if (attempt.Success)
+            {
+                successes++;
+                totalLatency += attempt.LatencyMs;
+            }
+        }
+
+        double? averageLatency = successes > 0 ? totalLatency / successes : null;
+        var status = successes == 0 ? "Offline" : (successes == AttemptsPerCheck ? "Online" : "DEGRADED");
+
+        return new ProbeOutcome(item.Id, successes, AttemptsPerCheck, averageLatency, status, checkedAt);
+    }
+
+    private async Task<ProbeAttemptResult> SendProbeAsync(Uri uri, CancellationToken cancellationToken)
+    {
+        return await SendOnceAsync(uri, cancellationToken);
+    }
+
+    private async Task<ProbeAttemptResult> SendOnceAsync(Uri uri, CancellationToken cancellationToken)
+    {
+        var sw = Stopwatch.StartNew();
+        using var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+        cts.CancelAfter(AttemptTimeout);
+        try
+        {
+            using var request = new HttpRequestMessage(HttpMethod.Get, uri)
+            {
+                Version = HttpVersion.Version11,
+                VersionPolicy = HttpVersionPolicy.RequestVersionOrLower
+            };
+
+            request.Headers.Accept.Clear();
+            request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("text/html"));
+            request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/xhtml+xml"));
+            request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/xml", 0.9));
+            request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("*/*", 0.8));
+            request.Headers.UserAgent.ParseAdd("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0 Safari/537.36");
+            request.Headers.AcceptLanguage.ParseAdd("en-US,en;q=0.8");
+            request.Headers.CacheControl = new CacheControlHeaderValue { NoCache = true };
+            request.Headers.Pragma.ParseAdd("no-cache");
+
+            using var response = await _httpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, cts.Token);
+            sw.Stop();
+
+            return new ProbeAttemptResult(true, sw.Elapsed.TotalMilliseconds);
+        }
+        catch (OperationCanceledException) when (cts.IsCancellationRequested && !cancellationToken.IsCancellationRequested)
+        {
+            sw.Stop();
+            return new ProbeAttemptResult(false, sw.Elapsed.TotalMilliseconds);
+        }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
+            sw.Stop();
+            return new ProbeAttemptResult(false, sw.Elapsed.TotalMilliseconds);
+        }
+        catch (Exception) when (!cancellationToken.IsCancellationRequested)
+        {
+            sw.Stop();
+            return new ProbeAttemptResult(false, sw.Elapsed.TotalMilliseconds);
+        }
+    }
+
+    private static Uri? NormalizeOnionUrl(string? url)
+    {
+        if (string.IsNullOrWhiteSpace(url)) return null;
+
+        var trimmed = url.Trim();
+        if (!trimmed.StartsWith("http://", StringComparison.OrdinalIgnoreCase) && !trimmed.StartsWith("https://", StringComparison.OrdinalIgnoreCase))
+        {
+            trimmed = "http://" + trimmed;
+        }
+
+        if (!Uri.TryCreate(trimmed, UriKind.Absolute, out var uri)) return null;
+        if (uri.Scheme != Uri.UriSchemeHttp && uri.Scheme != Uri.UriSchemeHttps) return null;
+
+        var host = uri.IdnHost?.TrimEnd('.');
+        if (string.IsNullOrWhiteSpace(host)) return null;
+
+        var allowed = AllowedOnionSuffixes.Any(suffix => host.EndsWith(suffix, StringComparison.OrdinalIgnoreCase));
+        if (!allowed) return null;
+
+        var builder = new UriBuilder(uri)
+        {
+            Path = string.IsNullOrWhiteSpace(uri.PathAndQuery) ? "/" : uri.PathAndQuery
+        };
+
+        return builder.Uri;
     }
 
     private static IEnumerable<(string Name, string Category, string Url)> GetSeedData()

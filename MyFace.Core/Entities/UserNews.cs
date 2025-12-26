@@ -7,6 +7,7 @@ public class UserNews
     public string Title { get; set; } = string.Empty;
     public string Content { get; set; } = string.Empty;
     public DateTime CreatedAt { get; set; }
+    public bool ApplyTheme { get; set; }
     
     public User User { get; set; } = null!;
 }

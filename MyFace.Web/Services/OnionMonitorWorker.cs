@@ -21,7 +21,7 @@ public class OnionMonitorWorker : BackgroundService
             var svc = scope.ServiceProvider.GetRequiredService<OnionStatusService>();
             try
             {
-                await svc.CheckAllAsync();
+                await svc.CheckAllAsync(stoppingToken);
             }
             catch
             {

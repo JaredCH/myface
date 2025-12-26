@@ -1,0 +1,36 @@
+@model MyFace.Web.Models.EditThreadViewModel
+@{
+    ViewData["Title"] = "Edit Thread";
+}
+
+<h1>Edit Thread</h1>
+
+<form asp-action="Edit" method="post">
+    @Html.AntiForgeryToken()
+    <input type="hidden" asp-for="Id" />
+
+    <div class="form-group">
+        <label asp-for="Title"></label>
+        <input asp-for="Title" class="input" />
+        <span asp-validation-for="Title" class="validation-errors"></span>
+    </div>
+
+    <div class="form-group">
+        <label asp-for="Content">Content (BBCode supported)</label>
+        <textarea asp-for="Content" rows="10" class="input"></textarea>
+        @await Html.PartialAsync("_BBCodeHelp")
+        <span asp-validation-for="Content" class="validation-errors"></span>
+    </div>
+
+    <div class="form-actions">
+        <button type="submit" class="button">Save Changes</button>
+        <a href="@Url.Action("View", new { id = Model.Id })" class="button button-secondary">Cancel</a>
+    </div>
+</form>
+
+<style>
+    .form-group { margin-bottom: 1rem; display: flex; flex-direction: column; gap: 0.35rem; }
+    .input { padding: 0.55rem 0.65rem; border: 1px solid var(--border); border-radius: 6px; }
+    .validation-errors { color: #b91c1c; }
+    .form-actions { display: flex; gap: 0.5rem; margin-top: 1rem; }
+</style>

@@ -28,4 +28,6 @@ public class AddNewsViewModel
     
     [Required]
     public string Content { get; set; } = string.Empty;
+
+    public bool ApplyTheme { get; set; }
 }

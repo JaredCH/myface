@@ -33,6 +33,13 @@ public class ThreadController : Controller
         
         // Announcements: Only threads with Announcements category
         ViewBag.AnnouncementsThreads = allThreads.Where(t => t.Category == "Announcements").OrderByDescending(t => t.CreatedAt).Take(pageSize).ToList();
+
+        var role = User.FindFirstValue(ClaimTypes.Role);
+        if (role == "Admin" || role == "Moderator")
+        {
+            ViewBag.ReportedPosts = await _forumService.GetReportedPostsAsync();
+        }
+        ViewBag.ReportHideThreshold = _forumService.GetReportHideThreshold();
         
         ViewBag.CurrentPage = page;
         ViewBag.HasMorePages = false;
@@ -49,6 +56,43 @@ public class ThreadController : Controller
         ViewBag.CaptchaContext = challenge.Context;
         ViewBag.CaptchaQuestion = challenge.Question;
         return View();
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> Edit(int id)
+    {
+        var thread = await _forumService.GetThreadWithUserAsync(id);
+        if (thread == null)
+        {
+            return NotFound();
+        }
+
+        var userId = GetCurrentUserId();
+        var role = User.FindFirstValue(ClaimTypes.Role);
+        var isAdmin = role == "Admin";
+        var isMod = role == "Moderator";
+        var ownerRole = thread.User?.Role ?? "User";
+        var canOverride = isAdmin || (isMod && ownerRole == "User");
+
+        if (userId == null && !isAdmin)
+        {
+            return Forbid();
+        }
+
+        if (thread.UserId != userId && !canOverride)
+        {
+            return Forbid();
+        }
+
+        var mainPost = thread.Posts.OrderBy(p => p.CreatedAt).FirstOrDefault();
+        var model = new EditThreadViewModel
+        {
+            Id = thread.Id,
+            Title = thread.Title,
+            Content = mainPost?.Content ?? string.Empty
+        };
+
+        return View(model);
     }
 
     [HttpPost]
@@ -83,6 +127,50 @@ public class ThreadController : Controller
         return RedirectToAction("View", new { id = thread.Id });
     }
 
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> Edit(EditThreadViewModel model)
+    {
+        var thread = await _forumService.GetThreadWithUserAsync(model.Id);
+        if (thread == null)
+        {
+            return NotFound();
+        }
+
+        var userId = GetCurrentUserId();
+        var role = User.FindFirstValue(ClaimTypes.Role);
+        var isAdmin = role == "Admin";
+        var isMod = role == "Moderator";
+        var ownerRole = thread.User?.Role ?? "User";
+        var canOverride = isAdmin || (isMod && ownerRole == "User");
+
+        if (userId == null && !isAdmin)
+        {
+            return Forbid();
+        }
+
+        if (thread.UserId != userId && !canOverride)
+        {
+            return Forbid();
+        }
+
+        if (!ModelState.IsValid)
+        {
+            return View(model);
+        }
+
+        var actingUserId = userId ?? 0;
+        await _forumService.UpdateThreadAsync(thread.Id, actingUserId, model.Title, canOverride);
+
+        var mainPost = thread.Posts.OrderBy(p => p.CreatedAt).FirstOrDefault();
+        if (mainPost != null)
+        {
+            await _forumService.UpdatePostAsync(mainPost.Id, actingUserId, model.Content, canOverride);
+        }
+
+        return RedirectToAction("View", new { id = thread.Id });
+    }
+
     public async Task<IActionResult> View(int id)
     {
         var thread = await _forumService.GetThreadByIdAsync(id);
@@ -97,6 +185,8 @@ public class ThreadController : Controller
 
         // Calculate thread score
         ViewBag.ThreadScore = await _forumService.GetThreadScoreAsync(id);
+
+        ViewBag.ReportHideThreshold = _forumService.GetReportHideThreshold();
 
         // Calculate scores for posts
         var postScores = new Dictionary<int, int>();
@@ -225,6 +315,12 @@ public class ThreadController : Controller
         if (post == null) return NotFound();
 
         await _forumService.AdminDeletePostAsync(postId);
+        var returnToModeration = Request.HasFormContentType && Request.Form.TryGetValue("returnToModeration", out var flag) && flag == "true";
+        if (returnToModeration)
+        {
+            return RedirectToAction("Index", new { tab = "moderation" });
+        }
+
         return RedirectToAction("View", new { id = post.ThreadId });
     }
 
@@ -238,8 +334,14 @@ public class ThreadController : Controller
             return Forbid();
         }
 
-        var post = await _forumService.GetPostByIdAsync(postId);
+        var post = await _forumService.GetPostWithUserAsync(postId);
         if (post == null) return NotFound();
+
+        var ownerRole = post.User?.Role ?? "User";
+        if (role == "Moderator" && ownerRole != "User")
+        {
+            return Forbid();
+        }
 
         await _forumService.AdminEditPostAsync(postId, content, GetCurrentUserId());
         return RedirectToAction("View", new { id = post.ThreadId });
@@ -259,6 +361,32 @@ public class ThreadController : Controller
         if (post == null) return NotFound();
 
         await _forumService.SetStickyAsync(postId, isSticky);
+        return RedirectToAction("View", new { id = post.ThreadId });
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> RestoreReportedPost(int postId)
+    {
+        var role = User.FindFirstValue(ClaimTypes.Role);
+        if (role != "Admin" && role != "Moderator")
+        {
+            return Forbid();
+        }
+
+        var post = await _forumService.GetPostByIdAsync(postId);
+        if (post == null)
+        {
+            return NotFound();
+        }
+
+        await _forumService.RestorePostFromReportsAsync(postId);
+        var returnToModeration = Request.HasFormContentType && Request.Form.TryGetValue("returnToModeration", out var flag) && flag == "true";
+        if (returnToModeration)
+        {
+            return RedirectToAction("Index", new { tab = "moderation" });
+        }
+
         return RedirectToAction("View", new { id = post.ThreadId });
     }
 

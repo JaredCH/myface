@@ -15,6 +15,21 @@ public class PostController : Controller
 
     [HttpPost]
     [ValidateAntiForgeryToken]
+    public async Task<IActionResult> Report(int postId)
+    {
+        var userId = GetCurrentUserId();
+        if (userId == null)
+        {
+            return Forbid();
+        }
+
+        await _forumService.ReportPostAsync(postId);
+        var post = await _forumService.GetPostByIdAsync(postId);
+        return RedirectToAction("View", "Thread", new { id = post?.ThreadId ?? 1 });
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
     public async Task<IActionResult> Create(int threadId, string content, bool postAsAnonymous = false)
     {
         if (string.IsNullOrWhiteSpace(content))
@@ -32,7 +47,7 @@ public class PostController : Controller
     [HttpGet]
     public async Task<IActionResult> Edit(int id)
     {
-        var post = await _forumService.GetPostByIdAsync(id);
+        var post = await _forumService.GetPostWithUserAsync(id);
         if (post == null)
         {
             return NotFound();
@@ -40,8 +55,17 @@ public class PostController : Controller
 
         var userId = GetCurrentUserId();
         var role = User.FindFirstValue(ClaimTypes.Role);
-        var isAdminOrMod = role == "Admin" || role == "Moderator";
-        if (userId == null || (post.UserId != userId && !isAdminOrMod))
+        var isAdmin = role == "Admin";
+        var isMod = role == "Moderator";
+        var postOwnerRole = post.User?.Role ?? "User";
+        var canOverride = isAdmin || (isMod && postOwnerRole == "User");
+
+        if (userId == null && !isAdmin)
+        {
+            return Forbid();
+        }
+
+        if (post.UserId != userId && !canOverride)
         {
             return Forbid();
         }
@@ -55,21 +79,37 @@ public class PostController : Controller
     {
         var userId = GetCurrentUserId();
         var role = User.FindFirstValue(ClaimTypes.Role);
-        var isAdminOrMod = role == "Admin" || role == "Moderator";
-        if (userId == null && !isAdminOrMod)
+        var isAdmin = role == "Admin";
+        var isMod = role == "Moderator";
+
+        if (userId == null && !isAdmin)
         {
             return Forbid();
         }
 
+        var post = await _forumService.GetPostWithUserAsync(id);
+        if (post == null)
+        {
+            return NotFound();
+        }
+
+        var postOwnerRole = post.User?.Role ?? "User";
+        var canOverride = isAdmin || (isMod && postOwnerRole == "User");
         var actingUserId = userId ?? 0;
-        var success = await _forumService.UpdatePostAsync(id, actingUserId, content, isAdminOrMod);
+
+        if (post.UserId != actingUserId && !canOverride)
+        {
+            return Forbid();
+        }
+
+        var success = await _forumService.UpdatePostAsync(id, actingUserId, content, canOverride);
         if (!success)
         {
             return NotFound();
         }
 
-        var post = await _forumService.GetPostByIdAsync(id);
-        return RedirectToAction("View", "Thread", new { id = post?.ThreadId });
+        var threadId = post.ThreadId;
+        return RedirectToAction("View", "Thread", new { id = threadId });
     }
 
     [HttpGet]

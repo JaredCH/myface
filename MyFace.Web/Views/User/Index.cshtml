@@ -78,6 +78,7 @@
                     <div style="margin-top: 0.75rem; display: flex; gap: 0.5rem; flex-wrap: wrap;">
                         <a href="/user/editprofile" class="theme-button">🎨 Customize Page</a>
                         <a href="/user/edit" class="theme-button ghost">📝 Quick Edit</a>
+                        <a href="/user/news/new" class="theme-button ghost">📰 Post news</a>
                     </div>
                 }
                 else if (User.Identity?.IsAuthenticated == true)
@@ -252,28 +253,26 @@
                 </li>
             }
         </ul>
-        </ul>
-        @if (isSelf)
-        {
-            <h4>Add Contact</h4>
-            <form asp-action="AddContact" method="post">
-                <input name="ServiceName" placeholder="Service (e.g. XMPP)" class="input" style="width: 30%" />
-                <input name="AccountId" placeholder="Account ID" class="input" style="width: 40%" />
-                <button type="submit" class="theme-button">Add</button>
-            </form>
-        }
     </div>
 
-    <div class="card">
-        <h3>News Feed</h3>
+    <div style="background: @bgColor; border: 1px solid @borderColor; padding: 1.5rem; border-radius: 8px; margin-bottom: 1rem; color: @fontColor;">
+        <div style="display:flex; justify-content: space-between; align-items: center; gap: 1rem;">
+            <h3 style="margin: 0; color: @accentColor;">News Feed</h3>
+        </div>
         @foreach (var news in user.News.OrderByDescending(n => n.CreatedAt))
         {
-            <div style="border-bottom: 1px solid #333; padding-bottom: 1rem; margin-bottom: 1rem;">
-                <h4><a href="/user/news/@news.Id">@news.Title</a> <span class="meta" style="font-size: 0.8rem">@news.CreatedAt.ToString("g")</span></h4>
-                <div style="max-height: 200px; overflow: hidden; position: relative;">
+            var useTheme = news.ApplyTheme;
+            var newsBg = useTheme ? bgColor : defaultRecentBg;
+            var newsBorder = useTheme ? borderColor : defaultRecentBorder;
+            var newsText = useTheme ? fontColor : defaultRecentText;
+            var newsAccent = useTheme ? accentColor : defaultRecentAccent;
+
+            <div style="border: 1px solid @newsBorder; background: @newsBg; color: @newsText; padding: 1rem 1rem 0.5rem; border-radius: 8px; margin-bottom: 1rem; box-shadow: 0 4px 12px rgba(0,0,0,0.06);">
+                <h4 style="margin: 0 0 0.35rem 0; color: @newsAccent;"><a href="/user/news/@news.Id" style="color: @newsAccent; text-decoration: none;">@news.Title</a> <span class="meta" style="font-size: 0.8rem; color: @newsText; opacity: 0.7;">@news.CreatedAt.ToString("g")</span></h4>
+                <div style="max-height: 200px; overflow: hidden; position: relative; color: @newsText;">
                     @Formatter.Format(news.Content)
                 </div>
-                <p><a href="/user/news/@news.Id" style="font-size: 0.9rem;">Read more / Permalink</a></p>
+                <p style="margin: 0.4rem 0 0.6rem 0;"><a href="/user/news/@news.Id" style="font-size: 0.9rem; color: @newsAccent;">Read more / Permalink</a></p>
                 @if (isSelf)
                 {
                     <form asp-action="RemoveNews" method="post" style="display:inline">
@@ -289,15 +288,6 @@
                     </form>
                 }
             </div>
-        }
-        @if (isSelf)
-        {
-            <h4>Post News</h4>
-            <form asp-action="AddNews" method="post">
-                <input name="Title" placeholder="Title" class="input" style="margin-bottom: 0.5rem" />
-                <textarea name="Content" placeholder="Content (BBCode supported)" class="input" rows="3"></textarea>
-                <button type="submit" class="button">Post</button>
-            </form>
         }
     </div>
 
@@ -335,6 +325,17 @@
             </div>
         }
     </div>
+
+    @if (isSelf)
+    {
+        <div style="background: @bgColor; border: 1px solid @borderColor; padding: 1.25rem; border-radius: 8px; margin-bottom: 1rem; display: flex; justify-content: space-between; align-items: center; gap: 1rem; flex-wrap: wrap;">
+            <div>
+                <h3 style="margin: 0 0 0.35rem 0; color: @accentColor;">Reset your password</h3>
+                <p style="margin: 0; opacity: 0.7; color: @fontColor;">You can change your password anytime without contacting support.</p>
+            </div>
+            <a href="/account/changepassword" class="button" style="background: @accentColor;">🔒 Change Password</a>
+        </div>
+    }
 
     </div>
 </div>

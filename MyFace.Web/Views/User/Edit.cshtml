@@ -23,6 +23,7 @@
 <form asp-action="Edit" method="post">
     <label asp-for="AboutMe">About Me (BBCode supported)</label>
     <textarea asp-for="AboutMe" class="input" rows="10"></textarea>
+    @await Html.PartialAsync("_BBCodeHelp")
 
     <label asp-for="FontColor">Font Color (Hex or Name)</label>
     <input asp-for="FontColor" class="input" type="color" style="height: 50px" />

@@ -12,14 +12,7 @@
     <div class="form-group">
         <label for="content">Content (BBCode supported)</label>
         <textarea name="content" id="content" rows="10" required>@Model.Content</textarea>
-        <div class="bbcode-help">
-            <strong>BBCode formatting:</strong>
-            [b]bold[/b], [i]italic[/i], [u]underline[/u], [s]strikethrough[/s], 
-            [color=#hex]colored[/color], [bg=#hex]background[/bg], 
-            [code]code[/code], [h1]heading[/h1], [center]centered[/center], 
-            [quote]quote[/quote], [list][*]item1[*]item2[/list], [hr], 
-            [spoiler]hidden[/spoiler], @@username for mentions
-        </div>
+        @await Html.PartialAsync("_BBCodeHelp")
     </div>
     
     <div class="form-actions">
@@ -29,14 +22,6 @@
 </form>
 
 <style>
-.bbcode-help {
-    margin-top: 0.5rem;
-    padding: 0.75rem;
-    background: var(--card-bg);
-    border-radius: 4px;
-    font-size: 0.85rem;
-    color: var(--text-muted);
-}
 .form-actions {
     display: flex;
     gap: 0.5rem;

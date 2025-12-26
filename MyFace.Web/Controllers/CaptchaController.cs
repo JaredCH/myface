@@ -32,7 +32,7 @@ public class CaptchaController : Controller
         {
             // Reset page view count
             HttpContext.Session.SetInt32("PageViews", 0);
-            HttpContext.Session.SetInt32("CaptchaThreshold", CaptchaSettings.NextThreshold());
+            HttpContext.Session.SetInt32("CaptchaThreshold", CaptchaSettings.NextThreshold(User));
             HttpContext.Session.Remove("CaptchaAnswer");
             
             if (!string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl))

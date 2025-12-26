@@ -67,4 +67,45 @@ public class AdminController : Controller
 
         return RedirectToAction("Index");
     }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> ResetPasswordTemp(int userId, string tempPassword)
+    {
+        if (string.IsNullOrWhiteSpace(tempPassword))
+        {
+            TempData["Error"] = "Temporary password is required.";
+            return RedirectToAction("Index");
+        }
+
+        var success = await _userService.AdminSetPasswordAsync(userId, tempPassword);
+        TempData[success ? "Success" : "Error"] = success
+            ? "Temporary password set. Ask the user to change it after logging in."
+            : "User not found.";
+
+        return RedirectToAction("Index");
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> DeleteUser(int userId)
+    {
+        var currentIdString = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (int.TryParse(currentIdString, out var currentId) && currentId == userId)
+        {
+            TempData["Error"] = "You cannot delete your own account.";
+            return RedirectToAction("Index");
+        }
+
+        var user = await _userService.GetUserByIdAsync(userId);
+        if (user == null)
+        {
+            TempData["Error"] = "User not found.";
+            return RedirectToAction("Index");
+        }
+
+        await _userService.DeleteUserAsync(userId);
+        TempData["Success"] = $"User {(string.IsNullOrWhiteSpace(user.Username) ? user.LoginName : user.Username)} deleted.";
+        return RedirectToAction("Index");
+    }
 }

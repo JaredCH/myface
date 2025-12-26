@@ -1,4 +1,5 @@
 using System.Security.Cryptography;
+using System.Security.Claims;
 
 namespace MyFace.Web.Services;
 
@@ -14,9 +15,32 @@ public static class CaptchaSettings
     public const int MinPageViewsBeforeCaptcha = 15;
     public const int MaxPageViewsBeforeCaptcha = 30;
 
-    public static int NextThreshold()
+    public const int AnonymousMinPageViews = 3;
+    public const int AnonymousMaxPageViews = 7;
+
+    public const int AdminModMinPageViews = 30;
+    public const int AdminModMaxPageViews = 60;
+
+    public static int NextThreshold(System.Security.Claims.ClaimsPrincipal user)
     {
-        return RandomNumberGenerator.GetInt32(MinPageViewsBeforeCaptcha, MaxPageViewsBeforeCaptcha + 1);
+        var (min, max) = GetRangeForUser(user);
+        return RandomNumberGenerator.GetInt32(min, max + 1);
+    }
+
+    public static (int Min, int Max) GetRangeForUser(System.Security.Claims.ClaimsPrincipal user)
+    {
+        if (user?.Identity?.IsAuthenticated != true)
+        {
+            return (AnonymousMinPageViews, AnonymousMaxPageViews);
+        }
+
+        var role = user.FindFirstValue(System.Security.Claims.ClaimTypes.Role)?.ToLowerInvariant();
+        if (role == "admin" || role == "moderator")
+        {
+            return (AdminModMinPageViews, AdminModMaxPageViews);
+        }
+
+        return (MinPageViewsBeforeCaptcha, MaxPageViewsBeforeCaptcha);
     }
 }
 

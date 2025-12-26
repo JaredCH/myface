@@ -8,6 +8,7 @@ namespace MyFace.Services;
 public class ForumService
 {
     private readonly ApplicationDbContext _context;
+    private const int ReportHideThreshold = 2;
 
     public ForumService(ApplicationDbContext context)
     {
@@ -74,12 +75,29 @@ public class ForumService
             .FirstOrDefaultAsync(t => t.Id == id);
     }
 
+    public async Task<ThreadEntity?> GetThreadWithUserAsync(int id)
+    {
+        return await _context.Threads
+            .Include(t => t.User)
+            .Include(t => t.Posts)
+            .FirstOrDefaultAsync(t => t.Id == id);
+    }
+
     public async Task<Post?> GetPostByIdAsync(int postId)
     {
         return await _context.Posts.FindAsync(postId);
     }
 
+    public async Task<Post?> GetPostWithUserAsync(int postId)
+    {
+        return await _context.Posts
+            .Include(p => p.User)
+            .FirstOrDefaultAsync(p => p.Id == postId);
+    }
+
     // Post operations
+    public int GetReportHideThreshold() => ReportHideThreshold;
+
     public async Task<Post> CreatePostAsync(int threadId, string content, int? userId, bool isAnonymous)
     {
         var post = new Post
@@ -89,13 +107,62 @@ public class ForumService
             UserId = userId,
             IsAnonymous = isAnonymous,
             CreatedAt = DateTime.UtcNow,
-            IsDeleted = false
+            IsDeleted = false,
+            ReportCount = 0,
+            IsReportHidden = false,
+            WasModerated = false
         };
 
         _context.Posts.Add(post);
         TrackActivity("comment", userId);
         await _context.SaveChangesAsync();
         return post;
+    }
+
+    public async Task<bool> ReportPostAsync(int postId)
+    {
+        var post = await _context.Posts.FindAsync(postId);
+        if (post == null || post.IsDeleted)
+        {
+            return false;
+        }
+
+        post.ReportCount += 1;
+        if (post.ReportCount >= ReportHideThreshold)
+        {
+            post.IsReportHidden = true;
+        }
+
+        await _context.SaveChangesAsync();
+        return true;
+    }
+
+    public async Task<List<Post>> GetReportedPostsAsync()
+    {
+        return await _context.Posts
+            .Include(p => p.User)
+                .ThenInclude(u => u.PGPVerifications)
+            .Include(p => p.Thread)
+            .Where(p => !p.IsDeleted && (p.ReportCount > 0 || p.IsReportHidden))
+            .OrderByDescending(p => p.IsReportHidden)
+            .ThenByDescending(p => p.ReportCount)
+            .ThenByDescending(p => p.CreatedAt)
+            .ToListAsync();
+    }
+
+    public async Task<bool> RestorePostFromReportsAsync(int postId)
+    {
+        var post = await _context.Posts.FindAsync(postId);
+        if (post == null)
+        {
+            return false;
+        }
+
+        post.ReportCount = 0;
+        post.IsReportHidden = false;
+        post.WasModerated = true;
+        await _context.SaveChangesAsync();
+        return true;
     }
 
     public async Task<bool> UpdatePostAsync(int postId, int userId, string content, bool allowOverride = false)
@@ -225,6 +292,24 @@ public class ForumService
             .Skip(skip)
             .Take(take)
             .ToListAsync();
+    }
+
+    public async Task<bool> UpdateThreadAsync(int threadId, int actingUserId, string title, bool allowOverride = false)
+    {
+        var thread = await _context.Threads.FindAsync(threadId);
+        if (thread == null)
+        {
+            return false;
+        }
+
+        if (!allowOverride && thread.UserId != actingUserId)
+        {
+            return false;
+        }
+
+        thread.Title = title;
+        await _context.SaveChangesAsync();
+        return true;
     }
 
     public async Task<List<UserActivityItem>> GetUserActivityAsync(int userId, string? search, DateTime? start, DateTime? end, string? sort)

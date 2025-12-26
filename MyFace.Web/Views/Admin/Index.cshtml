@@ -22,7 +22,7 @@
         <h2>📊 Site Statistics</h2>
         
         <div class="stats-compact-grid">
-            <div class="stat-compact stat-highlight">
+            <div class="stat-compact stat-highlight" title="Users active in the last 15 minutes">
                 <span class="stat-icon-sm">🟢</span>
                 <div>
                     <div class="stat-value-sm">@stats.LiveUserCount</div>
@@ -30,7 +30,7 @@
                 </div>
             </div>
             
-            <div class="stat-compact">
+            <div class="stat-compact" title="Page visits in the last 4 hours (rolling)">
                 <span class="stat-icon-sm">⏱️</span>
                 <div>
                     <div class="stat-value-sm">@stats.FourHourCount</div>
@@ -38,7 +38,7 @@
                 </div>
             </div>
             
-            <div class="stat-compact">
+            <div class="stat-compact" title="Page visits since today began (UTC)">
                 <span class="stat-icon-sm">📅</span>
                 <div>
                     <div class="stat-value-sm">@stats.TodayCount</div>
@@ -46,7 +46,7 @@
                 </div>
             </div>
             
-            <div class="stat-compact">
+            <div class="stat-compact" title="Page visits since the start of this week (UTC Sunday)">
                 <span class="stat-icon-sm">📆</span>
                 <div>
                     <div class="stat-value-sm">@stats.WeekCount</div>
@@ -54,7 +54,7 @@
                 </div>
             </div>
             
-            <div class="stat-compact">
+            <div class="stat-compact" title="Page visits since the start of this month (UTC)">
                 <span class="stat-icon-sm">🗓️</span>
                 <div>
                     <div class="stat-value-sm">@stats.MonthCount</div>
@@ -62,7 +62,7 @@
                 </div>
             </div>
             
-            <div class="stat-compact">
+            <div class="stat-compact" title="Page visits since the start of this quarter (UTC)">
                 <span class="stat-icon-sm">📈</span>
                 <div>
                     <div class="stat-value-sm">@stats.QuarterCount</div>
@@ -70,7 +70,7 @@
                 </div>
             </div>
             
-            <div class="stat-compact">
+            <div class="stat-compact" title="Page visits since the start of this year (UTC)">
                 <span class="stat-icon-sm">🎯</span>
                 <div>
                     <div class="stat-value-sm">@stats.YearCount</div>
@@ -78,7 +78,7 @@
                 </div>
             </div>
             
-            <div class="stat-compact stat-highlight">
+            <div class="stat-compact stat-highlight" title="All-time page visits recorded">
                 <span class="stat-icon-sm">🌟</span>
                 <div>
                     <div class="stat-value-sm">@stats.TotalCount</div>
@@ -89,7 +89,7 @@
         
         <h3 style="margin: 1.5rem 0 0.75rem 0; font-size: 1rem; color: var(--text-muted);">👥 User & Activity Metrics</h3>
         <div class="stats-compact-grid">
-            <div class="stat-compact">
+            <div class="stat-compact" title="Registered user accounts (total)">
                 <span class="stat-icon-sm">👤</span>
                 <div>
                     <div class="stat-value-sm">@stats.TotalUsers</div>
@@ -97,7 +97,7 @@
                 </div>
             </div>
             
-            <div class="stat-compact">
+            <div class="stat-compact" title="Tracked actions recorded in the last 60 seconds">
                 <span class="stat-icon-sm">⚡</span>
                 <div>
                     <div class="stat-value-sm">@stats.ActionsPerMinute.ToString("F1")</div>
@@ -105,7 +105,7 @@
                 </div>
             </div>
             
-            <div class="stat-compact">
+            <div class="stat-compact" title="Tracked actions recorded in the last hour">
                 <span class="stat-icon-sm">🕐</span>
                 <div>
                     <div class="stat-value-sm">@stats.ActionsPerHour.ToString("F0")</div>
@@ -113,7 +113,7 @@
                 </div>
             </div>
             
-            <div class="stat-compact">
+            <div class="stat-compact" title="Tracked actions recorded in the last 24 hours">
                 <span class="stat-icon-sm">📊</span>
                 <div>
                     <div class="stat-value-sm">@stats.ActionsPerDay.ToString("F0")</div>
@@ -121,7 +121,7 @@
                 </div>
             </div>
             
-            <div class="stat-compact">
+            <div class="stat-compact" title="Tracked actions recorded in the last 7 days">
                 <span class="stat-icon-sm">📈</span>
                 <div>
                     <div class="stat-value-sm">@stats.ActionsPerWeek.ToString("F0")</div>
@@ -129,7 +129,7 @@
                 </div>
             </div>
             
-            <div class="stat-compact">
+            <div class="stat-compact" title="Tracked actions recorded in the last 30 days">
                 <span class="stat-icon-sm">📉</span>
                 <div>
                     <div class="stat-value-sm">@stats.ActionsPerMonth.ToString("F0")</div>
@@ -137,7 +137,7 @@
                 </div>
             </div>
             
-            <div class="stat-compact">
+            <div class="stat-compact" title="Tracked actions recorded in the last 12 months">
                 <span class="stat-icon-sm">🗓️</span>
                 <div>
                     <div class="stat-value-sm">@stats.ActionsPerYear.ToString("F0")</div>
@@ -175,7 +175,7 @@
             {
                 <tr>
                     <td>
-                        <strong>@user.Username</strong>
+                        <a href="@Url.Action("Index", "User", new { username = user.Username })"><strong>@user.Username</strong></a>
                         @if (!string.IsNullOrEmpty(user.LoginName))
                         {
                             <span class="text-muted" style="font-size: 0.85rem;">(Login: @user.LoginName)</span>
@@ -202,6 +202,19 @@
                                 <input type="text" name="newUsername" placeholder="Reset to..." class="input" style="width: 120px; padding: 0.3rem 0.5rem;" title="Temporary reset name" />
                                 <input type="text" name="adminNote" placeholder="Reason (optional)" class="input" style="width: 180px; padding: 0.3rem 0.5rem;" title="Note to user explaining why" />
                                 <button type="submit" class="btn btn-warning btn-sm">Reset Username</button>
+                                @Html.AntiForgeryToken()
+                            </form>
+
+                            <form asp-action="ResetPasswordTemp" method="post" class="d-inline" style="display: flex; gap: 0.25rem; align-items: center;" onsubmit="return confirm('Set this temporary password?');">
+                                <input type="hidden" name="userId" value="@user.Id" />
+                                <input type="password" name="tempPassword" placeholder="Temp password" class="input" style="width: 140px; padding: 0.3rem 0.5rem;" autocomplete="new-password" />
+                                <button type="submit" class="btn btn-info btn-sm">Set Temp Password</button>
+                                @Html.AntiForgeryToken()
+                            </form>
+
+                            <form asp-action="DeleteUser" method="post" class="d-inline" onsubmit="return confirm('Delete this account? This cannot be undone.');">
+                                <input type="hidden" name="userId" value="@user.Id" />
+                                <button type="submit" class="btn btn-danger btn-sm">Delete</button>
                                 @Html.AntiForgeryToken()
                             </form>
                         </div>

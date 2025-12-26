@@ -6,14 +6,28 @@
     var postScores = (Dictionary<int, int>)ViewBag.PostScores;
     var currentUserId = (int?)ViewBag.CurrentUserId;
     var userRole = User.FindFirstValue(ClaimTypes.Role);
-    var isAdminOrMod = userRole == "Admin" || userRole == "Moderator";
+    var isAdmin = userRole == "Admin";
+    var isMod = userRole == "Moderator";
+    var isAdminOrMod = isAdmin || isMod;
+    var reportThreshold = (int)(ViewBag.ReportHideThreshold ?? 2);
+    var threadOwnerRole = Model.User?.Role ?? "User";
+    var canEditThread = (currentUserId.HasValue && Model.UserId == currentUserId) || isAdmin || (isMod && threadOwnerRole == "User");
     // Simple server-side pagination inside the view (excluding main post, which is always shown)
     var pageParam = ViewContext.HttpContext.Request.Query["page"].ToString();
     var currPage = int.TryParse(pageParam, out var p) && p > 0 ? p : 1;
     const int pageSize = 25;
     var ordered = Model.Posts.OrderBy(p => p.IsSticky ? 0 : 1).ThenBy(p => p.CreatedAt).ToList();
     var mainPost = ordered.FirstOrDefault();
+    var visibleMainPost = mainPost;
     var replies = ordered.Skip(mainPost != null ? 1 : 0).ToList();
+    if (!isAdminOrMod)
+    {
+        if (visibleMainPost != null && visibleMainPost.IsReportHidden)
+        {
+            visibleMainPost = null;
+        }
+        replies = replies.Where(p => !p.IsReportHidden).ToList();
+    }
     var total = replies.Count;
     var skip = (currPage - 1) * pageSize;
     var pagePosts = replies.Skip(skip).Take(pageSize).ToList();
@@ -21,7 +35,7 @@
     var hasNext = skip + pagePosts.Count < total;
 }
 
-@if (mainPost != null)
+@if (visibleMainPost != null || (!isAdminOrMod && mainPost != null))
 {
     <div class="card thread-shell">
         <div class="thread-shell-header">
@@ -53,9 +67,18 @@
             </div>
         </div>
 
-        <div class="thread-shell-body">
-            @Formatter.Format(mainPost.Content)
-        </div>
+        @if (visibleMainPost != null)
+        {
+            <div class="thread-shell-body">
+                @Formatter.Format(visibleMainPost.Content)
+            </div>
+        }
+        else
+        {
+            <div class="thread-shell-body" style="color: var(--text-muted);">
+                This post is hidden pending moderation after multiple reports.
+            </div>
+        }
 
         <div class="thread-shell-actions">
             <div class="thread-shell-actions-primary">
@@ -68,6 +91,10 @@
                     <button class="btn-vote btn-downvote" type="submit">👎 Thread</button>
                 </form>
                 <a class="button button-secondary" href="#reply">Reply</a>
+                @if (canEditThread)
+                {
+                    <a class="button" href="@Url.Action("Edit", "Thread", new { id = Model.Id })">✏️ Edit Thread</a>
+                }
             </div>
             @if (isAdminOrMod)
             {
@@ -108,6 +135,14 @@
         {
             <div class="post-op-badge">🎯 Original Poster</div>
         }
+        @if (post.IsReportHidden)
+        {
+            <div class="post-op-badge" style="background: #5a1f1f; color: #ffe3e3;">🚨 Hidden after reports</div>
+        }
+        else if (post.ReportCount > 0)
+        {
+            <div class="post-op-badge" style="background: #444; color: #fff;">⚠️ Reported @post.ReportCount</div>
+        }
         <div class="post-content">@Formatter.Format(post.Content)</div>
         <div class="post-footer">
             <div class="post-meta">
@@ -134,6 +169,10 @@
                     }
                 </span>
                 <span class="post-score">⭐ @postScores[post.Id]</span>
+                @if (post.IsReportHidden && isAdminOrMod)
+                {
+                    <span class="post-score" style="color: #ff8a65;">Hidden @post.ReportCount/@reportThreshold</span>
+                }
             </div>
             <div class="post-actions">
                 <form asp-controller="Vote" asp-action="Up" method="post">
@@ -144,13 +183,29 @@
                     <input type="hidden" name="postId" value="@post.Id" />
                     <button class="btn-vote btn-downvote" type="submit">👎</button>
                 </form>
-                @if (!post.IsDeleted && (currentUserId.HasValue && post.UserId == currentUserId || isAdminOrMod))
+                @{ var postOwnerRole = post.User?.Role ?? "User"; }
+                @{ var canEditPost = !post.IsDeleted && ((currentUserId.HasValue && post.UserId == currentUserId) || isAdmin || (isMod && postOwnerRole == "User")); }
+                @if (canEditPost)
                 {
                     <a href="@Url.Action("Edit", "Post", new { id = post.Id })" class="btn-mod btn-edit">✏️ Edit</a>
+                }
+                @if (!post.IsDeleted && !post.IsReportHidden && currentUserId.HasValue)
+                {
+                    <form asp-controller="Post" asp-action="Report" method="post">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="postId" value="@post.Id" />
+                        <button class="btn-mod" type="submit">🚩 Report</button>
+                    </form>
                 }
                 @if (isAdminOrMod)
                 {
                     <form method="post">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="returnToModeration" value="false" />
+                        @if (post.IsReportHidden || post.ReportCount > 0)
+                        {
+                            <button formaction="@Url.Action("RestoreReportedPost", "Thread", new { postId = post.Id })" type="submit" class="btn-mod">✅ Restore</button>
+                        }
                         <button formaction="@Url.Action("AdminDeletePost", "Thread", new { postId = post.Id })" type="submit" class="btn-mod btn-delete">🗑️</button>
                         @if (post.IsSticky)
                         {

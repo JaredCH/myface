@@ -59,6 +59,9 @@ public class ApplicationDbContext : DbContext
             entity.HasKey(e => e.Id);
             entity.Property(e => e.Content).IsRequired();
             entity.Property(e => e.CreatedAt).HasDefaultValueSql("CURRENT_TIMESTAMP");
+            entity.Property(e => e.ReportCount).HasDefaultValue(0);
+            entity.Property(e => e.IsReportHidden).HasDefaultValue(false);
+            entity.Property(e => e.WasModerated).HasDefaultValue(false);
             
             entity.HasOne(e => e.Thread)
                 .WithMany(t => t.Posts)

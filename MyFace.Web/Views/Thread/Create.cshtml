@@ -21,6 +21,15 @@
     <div style="background: var(--accent-light); padding: 1rem; border-left: 4px solid var(--accent); margin: 1rem 0; color: var(--fg);">
         <strong>@Html.Raw(ViewBag.CaptchaContext)</strong>
     </div>
+    <details style="background: #0f172a08; border: 1px solid #cbd5e1; border-radius: 6px; padding: 0.75rem 1rem; margin: 0.5rem 0 1rem;">
+        <summary style="cursor: pointer; font-weight: 600;">How to complete this captcha</summary>
+        <ul style="margin: 0.5rem 0 0 1.25rem; padding: 0; list-style: disc;">
+            <li>Read the prompt above; it includes the answer you need.</li>
+            <li>Type the phrase as shown, or the numeric result if it is math.</li>
+            <li>Case is ignored; keep spaces between words, skip punctuation.</li>
+            <li>Stuck? Refresh to get a new challenge.</li>
+        </ul>
+    </details>
     <div class="form-group">
         <label for="captchaAnswer">@ViewBag.CaptchaQuestion</label>
         <input name="captchaAnswer" id="captchaAnswer" class="input" required autocomplete="off" />

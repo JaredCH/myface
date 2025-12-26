@@ -2,10 +2,15 @@
 @inject MyFace.Web.Services.BBCodeFormatter Formatter
 @{
     ViewData["Title"] = Model.Title;
+    var useTheme = Model.ApplyTheme;
+    var bg = useTheme ? Model.User.BackgroundColor ?? "#ffffff" : "#ffffff";
+    var text = useTheme ? Model.User.FontColor ?? "#1f2937" : "#1f2937";
+    var accent = useTheme ? Model.User.AccentColor ?? "#0ea5e9" : "#0ea5e9";
+    var border = useTheme ? Model.User.BorderColor ?? "#e2e8f0" : "#e2e8f0";
 }
 
-<div style="color: @Model.User.FontColor; font-family: @Model.User.FontFamily">
-    <h1>@Model.Title</h1>
+<div style="color: @text; font-family: @Model.User.FontFamily; background: @bg; padding: 1.5rem; border-radius: 12px; border: 1px solid @border;">
+    <h1 style="color: @accent; margin-top: 0;">@Model.Title</h1>
     <p class="meta">
         Posted by @await Html.PartialAsync("_UserName", Model.User) on @Model.CreatedAt.ToString("u")
     </p>

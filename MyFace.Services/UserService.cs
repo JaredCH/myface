@@ -250,14 +250,15 @@ public class UserService
         }
     }
 
-    public async Task AddNewsAsync(int userId, string title, string content)
+    public async Task AddNewsAsync(int userId, string title, string content, bool applyTheme)
     {
         var news = new UserNews
         {
             UserId = userId,
             Title = title,
             Content = content,
-            CreatedAt = DateTime.UtcNow
+            CreatedAt = DateTime.UtcNow,
+            ApplyTheme = applyTheme
         };
         _context.UserNews.Add(news);
         await _context.SaveChangesAsync();
@@ -358,6 +359,37 @@ public class UserService
         };
 
         _context.UsernameChangeLogs.Add(changeLog);
+        await _context.SaveChangesAsync();
+        return true;
+    }
+
+    public async Task<bool> ChangePasswordAsync(int userId, string currentPassword, string newPassword)
+    {
+        var user = await _context.Users.FindAsync(userId);
+        if (user == null)
+        {
+            return false;
+        }
+
+        if (!VerifyPassword(currentPassword, user.PasswordHash))
+        {
+            return false;
+        }
+
+        user.PasswordHash = HashPassword(newPassword);
+        await _context.SaveChangesAsync();
+        return true;
+    }
+
+    public async Task<bool> AdminSetPasswordAsync(int userId, string newPassword)
+    {
+        var user = await _context.Users.FindAsync(userId);
+        if (user == null)
+        {
+            return false;
+        }
+
+        user.PasswordHash = HashPassword(newPassword);
         await _context.SaveChangesAsync();
         return true;
     }

@@ -15,5 +15,7 @@ public partial class UserNews
 
     public DateTime CreatedAt { get; set; }
 
+    public bool ApplyTheme { get; set; }
+
     public virtual User User { get; set; } = null!;
 }

@@ -14,75 +14,6 @@
 
 <h1>Moderator Panel</h1>
 
-@if (isAdminOrMod)
-{
-    <section class="panel-section">
-        <h2>📊 Manage Service Monitor</h2>
-        <p>Add, edit, or remove monitored onion services directly here.</p>
-
-        <h3>Add Service</h3>
-        <form asp-controller="Monitor" asp-action="Add" method="post" class="mb-3">
-            <div class="row g-2">
-                <div class="col-sm-3">
-                    <label for="Name">Name</label>
-                    <input name="Name" class="input w-100" />
-                </div>
-                <div class="col-sm-5">
-                    <label for="OnionUrl">Onion URL</label>
-                    <input name="OnionUrl" class="input w-100" />
-                </div>
-                <div class="col-sm-4">
-                    <label for="Description">Description</label>
-                    <input name="Description" class="input w-100" />
-                </div>
-            </div>
-            <div class="form-actions mt-2">
-                <button type="submit" class="button">➕ Add Service</button>
-            </div>
-        </form>
-
-        <h3>Existing Services</h3>
-        <table class="table">
-            <thead>
-                <tr>
-                    <th>Name</th>
-                    <th>Onion URL</th>
-                    <th>Description</th>
-                    <th>Status</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach (var m in Model.Monitors)
-                {
-                    <tr>
-                        <td>
-                            <input name="Name" value="@m.Name" class="input" placeholder="Name" form="edit-@m.Id" />
-                        </td>
-                        <td>
-                            <input name="OnionUrl" value="@m.OnionUrl" class="input" placeholder="Onion URL" form="edit-@m.Id" />
-                        </td>
-                        <td>
-                            <input name="Description" value="@m.Description" class="input" placeholder="Description" form="edit-@m.Id" />
-                        </td>
-                        <td>
-                            <span class="status-badge">@m.Status</span>
-                        </td>
-                        <td>
-                            <form id="edit-@m.Id" asp-controller="Monitor" asp-action="Edit" asp-route-id="@m.Id" method="post" class="d-inline-block">
-                                <button type="submit" class="button button-sm">💾 Save</button>
-                            </form>
-                            <form asp-controller="Monitor" asp-action="Remove" asp-route-id="@m.Id" method="post" class="d-inline-block ms-1">
-                                <button type="submit" class="button button-sm">🗑️ Remove</button>
-                            </form>
-                        </td>
-                    </tr>
-                }
-            </tbody>
-        </table>
-    </section>
-}
-
 <section class="panel-section">
     <h2>🔒 User Suspension Management</h2>
     <p>Manage user suspensions and access control:</p>
@@ -115,7 +46,7 @@
             @foreach (var user in Model.Users)
             {
                 <tr>
-                    <td><strong>@user.Username</strong></td>
+                    <td><a href="@Url.Action("Index", "User", new { username = user.Username })"><strong>@user.Username</strong></a></td>
                     <td><span class="role-badge role-@user.Role.ToLower()">@user.Role</span></td>
                     <td>
                         @if (user.SuspendedUntil.HasValue)
@@ -176,3 +107,76 @@
         </tbody>
     </table>
 </section>
+
+@if (isAdminOrMod)
+{
+    <details class="panel-section" style="margin-top: 1rem;" aria-label="Manage Service Monitor">
+        <summary style="cursor: pointer; display: flex; align-items: center; gap: 0.5rem; font-size: 1.1rem;">
+            📊 Manage Service Monitor
+        </summary>
+        <div style="margin-top: 0.5rem;">
+            <p>Add, edit, or remove monitored onion services directly here.</p>
+
+            <h3>Add Service</h3>
+            <form asp-controller="Monitor" asp-action="Add" method="post" class="mb-3">
+                <div class="row g-2">
+                    <div class="col-sm-3">
+                        <label for="Name">Name</label>
+                        <input name="Name" class="input w-100" />
+                    </div>
+                    <div class="col-sm-5">
+                        <label for="OnionUrl">Onion URL</label>
+                        <input name="OnionUrl" class="input w-100" />
+                    </div>
+                    <div class="col-sm-4">
+                        <label for="Description">Description</label>
+                        <input name="Description" class="input w-100" />
+                    </div>
+                </div>
+                <div class="form-actions mt-2">
+                    <button type="submit" class="button">➕ Add Service</button>
+                </div>
+            </form>
+
+            <h3>Existing Services</h3>
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Onion URL</th>
+                        <th>Description</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var m in Model.Monitors)
+                    {
+                        <tr>
+                            <td>
+                                <input name="Name" value="@m.Name" class="input" placeholder="Name" form="edit-@m.Id" />
+                            </td>
+                            <td>
+                                <input name="OnionUrl" value="@m.OnionUrl" class="input" placeholder="Onion URL" form="edit-@m.Id" />
+                            </td>
+                            <td>
+                                <input name="Description" value="@m.Description" class="input" placeholder="Description" form="edit-@m.Id" />
+                            </td>
+                            <td>
+                                <span class="status-badge">@m.Status</span>
+                            </td>
+                            <td>
+                                <form id="edit-@m.Id" asp-controller="Monitor" asp-action="Edit" asp-route-id="@m.Id" method="post" class="d-inline-block">
+                                    <button type="submit" class="button button-sm">💾 Save</button>
+                                </form>
+                                <form asp-controller="Monitor" asp-action="Remove" asp-route-id="@m.Id" method="post" class="d-inline-block ms-1">
+                                    <button type="submit" class="button button-sm">🗑️ Remove</button>
+                                </form>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </details>
+}

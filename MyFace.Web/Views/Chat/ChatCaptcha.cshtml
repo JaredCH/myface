@@ -31,6 +31,15 @@
         }
         <div class="context">@Html.Raw(Model.ContextHtml)</div>
         <div class="question">@Model.Question</div>
+        <details style="background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 6px; padding: 0.5rem 0.75rem; margin: 0.25rem 0 0.75rem;">
+            <summary style="cursor: pointer; font-weight: 700;">How to complete this captcha</summary>
+            <ul style="margin: 0.4rem 0 0 1.2rem; padding: 0;">
+                <li>Look at the prompt above; it includes the answer you must type.</li>
+                <li>Enter the phrase exactly as shown; for math, enter the numeric result.</li>
+                <li>Case is ignored; avoid extra punctuation or quotes.</li>
+                <li>If unsure, reread the prompt and retype carefully.</li>
+            </ul>
+        </details>
         <form method="post" asp-action="SolveCaptcha" asp-controller="Chat">
             @Html.AntiForgeryToken()
             <input type="hidden" name="room" value="@Model.Room" />

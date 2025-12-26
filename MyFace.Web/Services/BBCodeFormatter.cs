@@ -36,6 +36,17 @@ public class BBCodeFormatter
         // 1. Sanitize raw HTML first
         var encoded = HttpUtility.HtmlEncode(input);
 
+        // 1a. Extract [code] blocks first so their contents are not re-parsed by later replacements
+        var codeBlocks = new List<string>();
+        encoded = Regex.Replace(encoded, @"\[code\](.*?)\[/code\]", match =>
+        {
+            var idx = codeBlocks.Count;
+            var content = match.Groups[1].Value;
+            var rendered = $"<pre class=\"bbcode-code\"><code>{content}</code></pre>";
+            codeBlocks.Add(rendered);
+            return $"__BBCODE_CODEBLOCK_{idx}__";
+        }, RegexOptions.IgnoreCase | RegexOptions.Singleline);
+
         // 2. Apply BBCode replacements (order matters!)
         
         // Headers (map to h3/h4 for safety) - do these early before newlines become <br>
@@ -75,11 +86,21 @@ public class BBCodeFormatter
         // Background color
         encoded = Regex.Replace(encoded, @"\[bg=([#a-zA-Z0-9]+)\](.*?)\[/bg\]", "<span style=\"background-color:$1;padding:2px 4px;border-radius:2px\">$2</span>", RegexOptions.IgnoreCase | RegexOptions.Singleline);
         
-        // Code (inline)
-        encoded = Regex.Replace(encoded, @"\[code\](.*?)\[/code\]", "<code style=\"background:var(--card-bg);padding:2px 6px;border-radius:3px;font-family:monospace;font-size:0.9em\">$1</code>", RegexOptions.IgnoreCase | RegexOptions.Singleline);
-        
         // Spoiler (CSS-only hover with spoiler class)
         encoded = Regex.Replace(encoded, @"\[spoiler\](.*?)\[/spoiler\]", "<span class=\"spoiler\">$1</span>", RegexOptions.IgnoreCase | RegexOptions.Singleline);
+
+        // Line breaks: [br] or [brN] where N=1-10; each represents a blank line (two <br />)
+        encoded = Regex.Replace(encoded, @"\[br(\d{0,2})\]", match =>
+        {
+            var numPart = match.Groups[1].Value;
+            var blankLines = 1;
+            if (!string.IsNullOrEmpty(numPart) && int.TryParse(numPart, out var parsed))
+            {
+                blankLines = Math.Clamp(parsed, 1, 10);
+            }
+            var brCount = blankLines * 2; // blank line = two <br />
+            return string.Concat(Enumerable.Repeat("<br />", brCount));
+        }, RegexOptions.IgnoreCase);
 
         // Disallow images: render [img]...[/img] as plain text URL (already encoded)
         encoded = Regex.Replace(encoded, @"\[img\](.*?)\[/img\]", "$1", RegexOptions.IgnoreCase | RegexOptions.Singleline);
@@ -120,6 +141,12 @@ public class BBCodeFormatter
         encoded = Regex.Replace(encoded, "</h4>\\s*<br \\s*/?>", "</h4>", RegexOptions.IgnoreCase);
         encoded = Regex.Replace(encoded, "<hr([^>]*)>\\s*<br \\s*/?>", "<hr$1>", RegexOptions.IgnoreCase);
         encoded = Regex.Replace(encoded, "<br \\s*/?>\\s*<hr", "<hr", RegexOptions.IgnoreCase);
+
+        // 6. Restore code blocks (kept untouched)
+        for (int i = 0; i < codeBlocks.Count; i++)
+        {
+            encoded = encoded.Replace($"__BBCODE_CODEBLOCK_{i}__", codeBlocks[i]);
+        }
 
         return new HtmlString(encoded);
     }
