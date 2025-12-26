@@ -12,4 +12,5 @@ public class OnionStatus
     public int ReachableAttempts { get; set; }
     public int TotalAttempts { get; set; }
     public double? AverageLatency { get; set; }
+    public int ClickCount { get; set; }
 }

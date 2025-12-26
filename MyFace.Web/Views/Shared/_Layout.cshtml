@@ -1,5 +1,6 @@
 @using Microsoft.AspNetCore.Html
 @inject MyFace.Services.MailService MailService
+@inject MyFace.Services.OnionStatusService OnionService
 @{
     var unreadCount = 0;
     if (User.Identity?.IsAuthenticated == true)
@@ -10,6 +11,7 @@
             unreadCount = await MailService.GetUnreadCountAsync(uid);
         }
     }
+    var topOnions = await OnionService.GetTopByClicksAsync(4);
     Func<IHtmlContent> MailBadge = () => unreadCount > 0
         ? new HtmlString("<span style=\"color:#e11d48; font-weight:700; margin-left:2px; position:relative; top:-1px;\">!" + "</span>")
         : HtmlString.Empty;
@@ -91,11 +93,30 @@
             </main>
         </div>
         <aside class="sidebar sidebar-right">
-            <div class="ad-frame">
-                <div class="ad-placeholder">
-                    <p><strong>Advertisement</strong></p>
-                    <p style="font-size: 0.85rem; color: var(--muted);">Your ad here</p>
-                </div>
+            <p class="onion-title">Top Onion Links</p>
+            <div class="onion-cards">
+                @foreach (var link in topOnions)
+                {
+                    var statusClass = link.Status?.Equals("Online", StringComparison.OrdinalIgnoreCase) == true
+                        ? "status-online"
+                        : link.Status?.Equals("DEGRADED", StringComparison.OrdinalIgnoreCase) == true
+                            ? "status-degraded"
+                            : "status-offline";
+
+                    <a href="@Url.Action("Go", "Monitor", new { id = link.Id })" class="onion-card">
+                        <div class="onion-card__header">
+                            <div>
+                                <span class="onion-name">@link.Name</span>
+                                <span class="onion-url">@link.OnionUrl</span>
+                            </div>
+                            <span class="status-dot @statusClass" title="@link.Status"></span>
+                        </div>
+                        <div class="onion-card__meta">
+                            <span class="onion-clicks">Clicks: @link.ClickCount</span>
+                            <span class="onion-status-label">@link.Status</span>
+                        </div>
+                    </a>
+                }
             </div>
         </aside>
     </div>

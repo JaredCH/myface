@@ -128,3 +128,13 @@
 /home/server/myface/MyFace.Web/obj/Debug/net8.0/MyFace.Web.pdb
 /home/server/myface/MyFace.Web/obj/Debug/net8.0/MyFace.Web.genruntimeconfig.cache
 /home/server/myface/MyFace.Web/obj/Debug/net8.0/ref/MyFace.Web.dll
+/home/server/myface/MyFace.Web/bin/Debug/net8.0/Microsoft.Extensions.Configuration.EnvironmentVariables.dll
+/home/server/myface/MyFace.Web/bin/Debug/net8.0/Microsoft.Extensions.Configuration.FileExtensions.dll
+/home/server/myface/MyFace.Web/bin/Debug/net8.0/Microsoft.Extensions.Configuration.Json.dll
+/home/server/myface/MyFace.Web/bin/Debug/net8.0/Microsoft.Extensions.FileProviders.Abstractions.dll
+/home/server/myface/MyFace.Web/bin/Debug/net8.0/Microsoft.Extensions.FileProviders.Physical.dll
+/home/server/myface/MyFace.Web/bin/Debug/net8.0/Microsoft.Extensions.FileSystemGlobbing.dll
+/home/server/myface/MyFace.Web/bin/Debug/net8.0/System.IO.Pipelines.dll
+/home/server/myface/MyFace.Web/bin/Debug/net8.0/System.Text.Encodings.Web.dll
+/home/server/myface/MyFace.Web/bin/Debug/net8.0/System.Text.Json.dll
+/home/server/myface/MyFace.Web/bin/Debug/net8.0/runtimes/browser/lib/net8.0/System.Text.Encodings.Web.dll

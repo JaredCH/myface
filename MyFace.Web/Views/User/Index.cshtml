@@ -29,25 +29,25 @@
     var isAdmin = (bool)(ViewBag.IsAdmin ?? false);
     
     // Provide defaults for theme properties
-    var bgColor = string.IsNullOrWhiteSpace(user.BackgroundColor) ? "#0f172a" : user.BackgroundColor;
-    var fontColor = string.IsNullOrWhiteSpace(user.FontColor) ? "#e5e7eb" : user.FontColor;
+    var bgColor = string.IsNullOrWhiteSpace(user.BackgroundColor) ? "#f6f7fb" : user.BackgroundColor;
+    var fontColor = string.IsNullOrWhiteSpace(user.FontColor) ? "#1f2933" : user.FontColor;
     var fontFamily = string.IsNullOrWhiteSpace(user.FontFamily) ? "system-ui, -apple-system, sans-serif" : user.FontFamily;
     var fontSize = 14; // fixed page-wide size; use BBCode for per-text sizing
-    var accentColor = string.IsNullOrWhiteSpace(user.AccentColor) ? "#3b82f6" : user.AccentColor;
-    var borderColor = string.IsNullOrWhiteSpace(user.BorderColor) ? "#334155" : user.BorderColor;
+    var accentColor = string.IsNullOrWhiteSpace(user.AccentColor) ? "#2f6fe4" : user.AccentColor;
+    var borderColor = string.IsNullOrWhiteSpace(user.BorderColor) ? "#d9dee7" : user.BorderColor;
 
     // Button theming (with derived hover/active)
-    var btnBg = string.IsNullOrWhiteSpace(user.ButtonBackgroundColor) ? "#0ea5e9" : user.ButtonBackgroundColor;
+    var btnBg = string.IsNullOrWhiteSpace(user.ButtonBackgroundColor) ? accentColor : user.ButtonBackgroundColor;
     var btnText = string.IsNullOrWhiteSpace(user.ButtonTextColor) ? "#ffffff" : user.ButtonTextColor;
     var btnBorder = string.IsNullOrWhiteSpace(user.ButtonBorderColor) ? btnBg : user.ButtonBorderColor;
     var btnHover = AdjustColor(btnBg, 0.9);
     var btnActive = AdjustColor(btnBg, 0.8);
 
     // Site defaults for recent posts (not themed)
-    var defaultRecentBg = "#0b1220";
-    var defaultRecentBorder = "#334155";
-    var defaultRecentText = "#e5e7eb";
-    var defaultRecentAccent = "#3b82f6";
+    var defaultRecentBg = "#ffffff";
+    var defaultRecentBorder = "#d9dee7";
+    var defaultRecentText = "#1f2933";
+    var defaultRecentAccent = accentColor;
 }
 
 <style>
@@ -69,6 +69,9 @@
                     }
                 </h1>
                 <p class="meta" style="color: @fontColor; opacity: 0.7; margin: 0;">Joined @user.CreatedAt.ToString("MMMM yyyy")</p>
+                <div style="margin-top: 0.5rem; display: flex; gap: 0.4rem; flex-wrap: wrap;">
+                    <a href="@Url.Action("Activity", "User", new { username = user.Username })" class="theme-button ghost">🔍 Recent Activity</a>
+                </div>
                 
                 @if (isSelf)
                 {
@@ -83,85 +86,79 @@
                         <a href="@Url.Action("Index", "Mail", new { tab = "new", to = user.Username })" class="theme-button">✉️ Message</a>
                     </div>
                 }
+                else if (isAdminOrMod)
+                {
+                    <div style="margin-top: 0.75rem; display: flex; gap: 0.4rem; flex-wrap: wrap; align-items: center;">
+                        <details style="font-size: 0.9rem; color: #475569; background: rgba(148,163,184,0.12); border: 1px solid rgba(148,163,184,0.45); border-radius: 6px; padding: 0.35rem 0.55rem;">
+                            <summary style="cursor: pointer; list-style: none; display: inline-flex; align-items: center; gap: 0.35rem; font-weight: 700; color: #0f172a;">
+                                🛠️ Admin tools
+                            </summary>
+                            <div style="display: grid; gap: 0.45rem; margin-top: 0.4rem;">
+                                <form asp-action="SuspendUser" method="post" style="display: flex; gap: 0.35rem; align-items: center;">
+                                    <input type="hidden" name="userId" value="@user.Id" />
+                                    <select name="duration" style="padding: 0.25rem 0.35rem; border: 1px solid #cbd5e1; border-radius: 4px; font-size: 0.85rem;">
+                                        <option value="24h">24h</option>
+                                        <option value="72h">3d</option>
+                                        <option value="1w">1w</option>
+                                        <option value="2w">2w</option>
+                                        <option value="1m">1m</option>
+                                        <option value="forever">Forever</option>
+                                        <option value="unsuspend">Unsuspend</option>
+                                    </select>
+                                    <button type="submit" class="button" style="padding: 0.35rem 0.6rem; font-size: 0.85rem;">⏸️ Apply</button>
+                                </form>
+                                @if (isAdmin)
+                                {
+                                    <form asp-action="DeleteAccount" method="post" style="display: flex; gap: 0.35rem; align-items: center;">
+                                        <input type="hidden" name="userId" value="@user.Id" />
+                                        <button type="submit" class="button" style="padding: 0.35rem 0.6rem; font-size: 0.85rem; background: #dc2626; color: #fff; border-color: #dc2626;">🗑️ Delete Account</button>
+                                    </form>
+                                }
+                            </div>
+                        </details>
+                    </div>
+                }
             </div>
             
             <!-- Trophy Display for Votes -->
             <div style="display: flex; gap: 0.6rem; flex-wrap: wrap;">
-                <div style="text-align: center; min-width: 70px;" title="Thread upvotes received">
-                    <div style="font-size: 1.8rem; margin-bottom: 0.15rem; line-height: 1;">🏆</div>
-                    <div style="font-size: 1.3rem; font-weight: 700; color: #10b981; line-height: 1;">@user.PostUpvotes</div>
-                    <div style="font-size: 0.8rem; font-weight: 700; color: @fontColor; opacity: 0.85; line-height: 1;">Thread ↑</div>
+                <div style="text-align: center; min-width: 80px; background: rgba(47,111,228,0.12); border: 1px solid rgba(47,111,228,0.35); border-radius: 10px; padding: 0.6rem 0.75rem;">
+                    <div style="font-size: 1.8rem; margin-bottom: 0.1rem; line-height: 1;">🏆</div>
+                    <div style="font-size: 1.3rem; font-weight: 800; color: @accentColor; line-height: 1;">@user.PostUpvotes</div>
+                    <div style="font-size: 0.8rem; font-weight: 700; color: @fontColor; opacity: 0.95; line-height: 1;">Thread ↑</div>
                 </div>
-                <div style="text-align: center; min-width: 70px;" title="Thread downvotes received">
-                    <div style="font-size: 1.8rem; margin-bottom: 0.15rem; line-height: 1;">⚡</div>
-                    <div style="font-size: 1.3rem; font-weight: 700; color: #ef4444; line-height: 1;">@user.PostDownvotes</div>
-                    <div style="font-size: 0.8rem; font-weight: 700; color: @fontColor; opacity: 0.85; line-height: 1;">Thread ↓</div>
+                <div style="text-align: center; min-width: 80px; background: rgba(239,68,68,0.12); border: 1px solid rgba(239,68,68,0.35); border-radius: 10px; padding: 0.6rem 0.75rem;">
+                    <div style="font-size: 1.8rem; margin-bottom: 0.1rem; line-height: 1;">⚡</div>
+                    <div style="font-size: 1.3rem; font-weight: 800; color: #d92c2c; line-height: 1;">@user.PostDownvotes</div>
+                    <div style="font-size: 0.8rem; font-weight: 700; color: @fontColor; opacity: 0.95; line-height: 1;">Thread ↓</div>
                 </div>
-                <div style="text-align: center; min-width: 70px;" title="Comment upvotes received">
-                    <div style="font-size: 1.8rem; margin-bottom: 0.15rem; line-height: 1;">💬</div>
-                    <div style="font-size: 1.3rem; font-weight: 700; color: #3b82f6; line-height: 1;">@user.CommentUpvotes</div>
-                    <div style="font-size: 0.8rem; font-weight: 700; color: @fontColor; opacity: 0.85; line-height: 1;">Comment ↑</div>
+                <div style="text-align: center; min-width: 80px; background: rgba(47,111,228,0.12); border: 1px solid rgba(47,111,228,0.35); border-radius: 10px; padding: 0.6rem 0.75rem;">
+                    <div style="font-size: 1.8rem; margin-bottom: 0.1rem; line-height: 1;">💬</div>
+                    <div style="font-size: 1.3rem; font-weight: 800; color: @accentColor; line-height: 1;">@user.CommentUpvotes</div>
+                    <div style="font-size: 0.8rem; font-weight: 700; color: @fontColor; opacity: 0.95; line-height: 1;">Comment ↑</div>
                 </div>
-                <div style="text-align: center; min-width: 70px;" title="Comment downvotes received">
-                    <div style="font-size: 1.8rem; margin-bottom: 0.15rem; line-height: 1;">💭</div>
-                    <div style="font-size: 1.3rem; font-weight: 700; color: #f97316; line-height: 1;">@user.CommentDownvotes</div>
-                    <div style="font-size: 0.8rem; font-weight: 700; color: @fontColor; opacity: 0.85; line-height: 1;">Comment ↓</div>
-                </div>
-            </div>
-        </div>
-
-    @if (isAdminOrMod)
-    {
-        <div style="background: #1e293b; border: 1px solid #334155; padding: 1rem; margin-bottom: 1rem; border-radius: 6px;">
-            <div style="color: #94a3b8; font-weight: 600; font-size: 0.9rem; margin-bottom: 0.75rem; display: flex; align-items: center; gap: 0.5rem;">
-                <span>⚙️ Moderation Tools</span>
-            </div>
-            
-            <div style="display: grid; gap: 1rem;">
-                <div>
-                    <label style="display: block; color: #94a3b8; font-size: 0.85rem; font-weight: 500; margin-bottom: 0.4rem;">Edit About Me</label>
-                    <form asp-action="AdminEditAboutMe" method="post" style="display: flex; gap: 0.5rem;">
-                        <input type="hidden" name="userId" value="@user.Id" />
-                        <input name="aboutMe" value="@user.AboutMe" placeholder="About me text..." style="flex: 1; padding: 0.5rem; border: 1px solid #475569; border-radius: 4px; font-size: 0.85rem; background: #0f172a; color: #e2e8f0;" />
-                        <button type="submit" style="background: #3b82f6; color: white; border: none; padding: 0.5rem 1rem; border-radius: 4px; font-size: 0.85rem; font-weight: 500; cursor: pointer; white-space: nowrap;">✏️ Save</button>
-                    </form>
-                </div>
-                
-                <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
-                    <div style="flex: 1; min-width: 200px;">
-                        <label style="display: block; color: #94a3b8; font-size: 0.85rem; font-weight: 500; margin-bottom: 0.4rem;">Suspend User</label>
-                        <form asp-action="SuspendUser" method="post" style="display: flex; gap: 0.5rem;">
-                            <input type="hidden" name="userId" value="@user.Id" />
-                            <select name="duration" style="flex: 1; padding: 0.5rem; border: 1px solid #475569; border-radius: 4px; font-size: 0.85rem; background: #0f172a; color: #e2e8f0;">
-                                <option value="24h">24 Hours</option>
-                                <option value="72h">3 Days</option>
-                                <option value="1w">1 Week</option>
-                                <option value="2w">2 Weeks</option>
-                                <option value="1m">1 Month</option>
-                                <option value="forever">Forever</option>
-                                <option value="unsuspend">Unsuspend</option>
-                            </select>
-                            <button type="submit" style="background: #f59e0b; color: white; border: none; padding: 0.5rem 1rem; border-radius: 4px; font-size: 0.85rem; font-weight: 500; cursor: pointer;">⏸️ Apply</button>
-                        </form>
-                    </div>
-                    
-                    @if (isAdmin)
-                    {
-                        <div style="flex: 1; min-width: 200px;">
-                            <label style="display: block; color: #fca5a5; font-size: 0.85rem; font-weight: 500; margin-bottom: 0.4rem;">Delete Account</label>
-                            <form asp-action="DeleteAccount" method="post">
-                                <input type="hidden" name="userId" value="@user.Id" />
-                                <button type="submit" style="background: #dc2626; color: white; border: none; padding: 0.5rem 1rem; border-radius: 4px; font-size: 0.85rem; font-weight: 500; cursor: pointer; width: 100%;">🗑️ Delete Account</button>
-                            </form>
-                        </div>
-                    }
+                <div style="text-align: center; min-width: 80px; background: rgba(249,115,22,0.12); border: 1px solid rgba(249,115,22,0.35); border-radius: 10px; padding: 0.6rem 0.75rem;">
+                    <div style="font-size: 1.8rem; margin-bottom: 0.1rem; line-height: 1;">💭</div>
+                    <div style="font-size: 1.3rem; font-weight: 800; color: #d6580a; line-height: 1;">@user.CommentDownvotes</div>
+                    <div style="font-size: 0.8rem; font-weight: 700; color: @fontColor; opacity: 0.95; line-height: 1;">Comment ↓</div>
                 </div>
             </div>
         </div>
-    }
 
     <div style="background: @bgColor; border: 1px solid @borderColor; padding: 1.5rem; border-radius: 8px; margin-bottom: 1rem;">
-        <h3 style="color: @accentColor; margin-top: 0;">About Me</h3>
+        <h3 style="color: @accentColor; margin-top: 0; display: inline-flex; align-items: center; gap: 0.4rem;">About Me
+            @if (isAdminOrMod && !isSelf)
+            {
+                <details style="font-size: 0.85rem; color: #475569;">
+                    <summary style="cursor: pointer; list-style: none;">✏️</summary>
+                    <form asp-action="AdminEditAboutMe" method="post" style="margin-top: 0.4rem; display: grid; gap: 0.35rem;">
+                        <input type="hidden" name="userId" value="@user.Id" />
+                        <textarea name="aboutMe" rows="3" style="padding: 0.35rem; border: 1px solid @borderColor; border-radius: 6px; font-size: 0.9rem;">@user.AboutMe</textarea>
+                        <button type="submit" class="button" style="width: fit-content; padding: 0.3rem 0.6rem; font-size: 0.85rem;">💾 Save</button>
+                    </form>
+                </details>
+            }
+        </h3>
         @if (!string.IsNullOrEmpty(user.AboutMe))
         {
             <div>@Formatter.Format(user.AboutMe)</div>
@@ -173,7 +170,22 @@
     </div>
 
     <div style="background: @bgColor; border: 1px solid @borderColor; padding: 1.5rem; border-radius: 8px; margin-bottom: 1rem;">
-        <h3 style="color: @accentColor; margin-top: 0;">Vendor Profile</h3>
+        <h3 style="color: @accentColor; margin-top: 0; display: inline-flex; align-items: center; gap: 0.4rem;">Vendor Profile
+            @if (isAdminOrMod && !isSelf)
+            {
+                <details style="font-size: 0.85rem; color: #475569;">
+                    <summary style="cursor: pointer; list-style: none;">✏️</summary>
+                    <form asp-action="AdminUpdateVendor" method="post" style="margin-top: 0.4rem; display: grid; gap: 0.35rem;">
+                        <input type="hidden" name="userId" value="@user.Id" />
+                        <textarea name="vendorShopDescription" rows="2" placeholder="Shop" style="padding: 0.35rem; border: 1px solid @borderColor; border-radius: 6px; font-size: 0.9rem;">@user.VendorShopDescription</textarea>
+                        <textarea name="vendorPolicies" rows="2" placeholder="Policies" style="padding: 0.35rem; border: 1px solid @borderColor; border-radius: 6px; font-size: 0.9rem;">@user.VendorPolicies</textarea>
+                        <textarea name="vendorPayments" rows="2" placeholder="Payments" style="padding: 0.35rem; border: 1px solid @borderColor; border-radius: 6px; font-size: 0.9rem;">@user.VendorPayments</textarea>
+                        <textarea name="vendorExternalReferences" rows="2" placeholder="External references" style="padding: 0.35rem; border: 1px solid @borderColor; border-radius: 6px; font-size: 0.9rem;">@user.VendorExternalReferences</textarea>
+                        <button type="submit" class="button" style="width: fit-content; padding: 0.3rem 0.6rem; font-size: 0.85rem;">💾 Save</button>
+                    </form>
+                </details>
+            }
+        </h3>
         <p class="meta" style="color: @fontColor; opacity: 0.7; margin-top: 0;">External references render as plain text; images and embeds are blocked.</p>
         @if (!string.IsNullOrWhiteSpace(user.VendorShopDescription) || !string.IsNullOrWhiteSpace(user.VendorPolicies) || !string.IsNullOrWhiteSpace(user.VendorPayments) || !string.IsNullOrWhiteSpace(user.VendorExternalReferences))
         {
@@ -230,6 +242,13 @@
                             <button type="submit" class="btn-delete" style="padding: 0.2rem 0.5rem; font-size: 0.8rem;">Remove</button>
                         </form>
                     }
+                    else if (isAdminOrMod)
+                    {
+                        <form asp-action="AdminRemoveContact" method="post" style="display:inline">
+                            <input type="hidden" name="id" value="@contact.Id" />
+                            <button type="submit" class="btn-delete" style="padding: 0.2rem 0.5rem; font-size: 0.8rem;">Remove</button>
+                        </form>
+                    }
                 </li>
             }
         </ul>
@@ -262,6 +281,13 @@
                         <button type="submit" class="button" style="padding: 0.2rem 0.5rem; font-size: 0.8rem;">Delete</button>
                     </form>
                 }
+                else if (isAdminOrMod)
+                {
+                    <form asp-action="AdminRemoveNews" method="post" style="display:inline">
+                        <input type="hidden" name="id" value="@news.Id" />
+                        <button type="submit" class="button" style="padding: 0.2rem 0.5rem; font-size: 0.8rem; background: #dc2626; color: #fff; border-color: #dc2626;">Delete</button>
+                    </form>
+                }
             </div>
         }
         @if (isSelf)
@@ -276,7 +302,15 @@
     </div>
 
     <div style="background: @bgColor; border: 1px solid @borderColor; padding: 1.5rem; border-radius: 8px; margin-bottom: 1rem;">
-        <h3 style="color: @accentColor; margin-top: 0;">🔐 PGP Public Key</h3>
+        <h3 style="color: @accentColor; margin-top: 0; display: inline-flex; align-items: center; gap: 0.35rem;">🔐 PGP Public Key
+            @if (isAdminOrMod && !isSelf && !string.IsNullOrWhiteSpace(user.PgpPublicKey))
+            {
+                <form asp-action="AdminClearPgpKey" method="post" style="display: inline;">
+                    <input type="hidden" name="userId" value="@user.Id" />
+                    <button type="submit" class="button" style="padding: 0.15rem 0.4rem; font-size: 0.8rem; background: #f97316; color: #fff; border-color: #f97316;">Clear</button>
+                </form>
+            }
+        </h3>
         @if (!string.IsNullOrWhiteSpace(user.PgpPublicKey))
         {
             @if (user.PGPVerifications?.Any(v => v.Verified) == true)
@@ -302,30 +336,5 @@
         }
     </div>
 
-    <div style="background: @defaultRecentBg; color: @defaultRecentText; border: 1px solid @defaultRecentBorder; padding: 1.25rem; border-radius: 10px; margin-top: 2rem;">
-        <h3 style="color: @defaultRecentAccent; margin-top: 0;">Recent Posts (Default Styling)</h3>
-        @foreach (var post in Model)
-        {
-            <div style="background: #0f172a; border: 1px solid @defaultRecentBorder; padding: 0.9rem; border-radius: 6px; margin-bottom: 0.75rem; color: @defaultRecentText;">
-                <div style="font-size: 0.95rem;">@Formatter.Format(post.Content)</div>
-                <p style="opacity: 0.8; margin-top: 0.5rem; font-size: 0.85rem; color: @defaultRecentText;">@post.CreatedAt.ToString("u") in <a href="@Url.Action("View","Thread", new { id = post.ThreadId })" style="color: @defaultRecentAccent;">@post.Thread.Title</a></p>
-                <p style="margin-top: 0.5rem;">
-                    <a style="background: @defaultRecentAccent; color: #0b1220; padding: 0.35rem 0.65rem; font-size: 0.85rem; border-radius: 5px; text-decoration: none; font-weight: 700;" href="@Url.Action("View","Thread", new { id = post.ThreadId })#reply">Reply</a>
-                </p>
-            </div>
-        }
-
-        <div class="form-actions" style="margin-top: 1rem; display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;">
-            @if (currentPage > 1)
-            {
-                <a class="theme-button" style="background: @defaultRecentAccent; border-color: @defaultRecentAccent; color: #0b1220; box-shadow: none;" href="@Url.Action("Index", new { username = user.Username, page = currentPage - 1 })">Previous</a>
-            }
-            @if (hasMore)
-            {
-                <a class="theme-button" style="background: @defaultRecentAccent; border-color: @defaultRecentAccent; color: #0b1220; box-shadow: none;" href="@Url.Action("Index", new { username = user.Username, page = currentPage + 1 })">Next</a>
-            }
-            <span style="opacity: 0.7; color: @defaultRecentText;"> Page @currentPage </span>
-        </div>
-    </div>
     </div>
 </div>

@@ -15,8 +15,21 @@ public class MonitorController : Controller
 
     public async Task<IActionResult> Index()
     {
+        await _statusService.EnsureSeedDataAsync();
         var monitors = await _statusService.GetAllAsync();
         return View(monitors);
+    }
+
+    [HttpGet("/monitor/go/{id}")]
+    public async Task<IActionResult> Go(int id)
+    {
+        var target = await _statusService.RegisterClickAsync(id);
+        if (string.IsNullOrWhiteSpace(target))
+        {
+            return NotFound();
+        }
+
+        return Redirect(target);
     }
 
     [HttpGet]

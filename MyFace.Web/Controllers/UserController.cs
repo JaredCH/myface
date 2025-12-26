@@ -31,6 +31,12 @@ public class UserController : Controller
         const int pageSize = 25;
         var posts = await _forumService.GetUserPostsAsync(user.Id, (page - 1) * pageSize, pageSize);
 
+        var voteStats = await _forumService.CalculateUserVoteStatsAsync(user.Id);
+        user.PostUpvotes = voteStats.ThreadUpvotes;
+        user.PostDownvotes = voteStats.ThreadDownvotes;
+        user.CommentUpvotes = voteStats.CommentUpvotes;
+        user.CommentDownvotes = voteStats.CommentDownvotes;
+
         ViewBag.User = user;
         ViewBag.CurrentPage = page;
         ViewBag.HasMorePages = posts.Count == pageSize;
@@ -42,6 +48,42 @@ public class UserController : Controller
         ViewBag.IsAdmin = viewerRole == "Admin";
 
         return View(posts);
+    }
+
+    [HttpGet("/user/{username}/activity")]
+    public async Task<IActionResult> Activity(string username, string? q, DateTime? start, DateTime? end, string? sort)
+    {
+        var user = await _userService.GetByUsernameAsync(username);
+        if (user == null)
+        {
+            return NotFound();
+        }
+
+        var activity = await _forumService.GetUserActivityAsync(user.Id, q, start, end, sort);
+        var isSelf = User.Identity?.IsAuthenticated == true && User.Identity.Name == username;
+        var normalizedSort = string.IsNullOrWhiteSpace(sort) ? "newest" : sort.Trim().ToLower();
+
+        var model = new UserActivityViewModel
+        {
+            Username = user.Username,
+            Items = activity.Select(a => new UserActivityItemViewModel
+            {
+                Type = a.Type,
+                Title = a.Title,
+                Content = a.Content,
+                CreatedAt = a.CreatedAt,
+                ThreadId = a.ThreadId,
+                PostId = a.PostId,
+                NewsId = a.NewsId
+            }).ToList(),
+            Query = q,
+            Start = start,
+            End = end,
+            Sort = normalizedSort,
+            IsSelf = isSelf
+        };
+
+        return View("Activity", model);
     }
 
     [HttpGet("/user/news/{id}")]
@@ -199,6 +241,23 @@ public class UserController : Controller
         return RedirectToAction("Index", new { username = user.Username });
     }
 
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> AdminUpdateVendor(int userId, string vendorShopDescription, string vendorPolicies, string vendorPayments, string vendorExternalReferences)
+    {
+        var role = User.FindFirstValue(ClaimTypes.Role);
+        if (role != "Admin" && role != "Moderator")
+        {
+            return Forbid();
+        }
+
+        var user = await _userService.GetByIdAsync(userId);
+        if (user == null) return NotFound();
+
+        await _userService.UpdateVendorAsync(userId, vendorShopDescription, vendorPolicies, vendorPayments, vendorExternalReferences);
+        return RedirectToAction("Index", new { username = user.Username });
+    }
+
     // Admin/Mod suspend user
     [HttpPost]
     [ValidateAntiForgeryToken]
@@ -277,6 +336,30 @@ public class UserController : Controller
         return RedirectToAction("Index", "Moderator");
     }
 
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> AdminRemoveContact(int id)
+    {
+        var role = User.FindFirstValue(ClaimTypes.Role);
+        if (role != "Admin" && role != "Moderator")
+        {
+            return Forbid();
+        }
+
+        var contact = await _userService.GetContactByIdAsync(id);
+        if (contact == null) return NotFound();
+
+        var username = contact.User?.Username;
+        await _userService.RemoveContactByAdminAsync(id);
+
+        if (!string.IsNullOrWhiteSpace(username))
+        {
+            return RedirectToAction("Index", new { username });
+        }
+
+        return RedirectToAction("Index", "Moderator");
+    }
+
     [Authorize]
     [HttpPost("/user/contact/add")]
     [ValidateAntiForgeryToken]
@@ -321,6 +404,40 @@ public class UserController : Controller
         var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
         await _userService.RemoveNewsAsync(userId, id);
         return RedirectToAction("Index", new { username = User.Identity!.Name });
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> AdminRemoveNews(int id)
+    {
+        var role = User.FindFirstValue(ClaimTypes.Role);
+        if (role != "Admin" && role != "Moderator")
+        {
+            return Forbid();
+        }
+
+        var news = await _userService.GetNewsByIdAsync(id);
+        if (news == null) return NotFound();
+
+        await _userService.RemoveNewsByAdminAsync(id);
+        return RedirectToAction("Index", new { username = news.User?.Username ?? User.Identity?.Name });
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> AdminClearPgpKey(int userId)
+    {
+        var role = User.FindFirstValue(ClaimTypes.Role);
+        if (role != "Admin" && role != "Moderator")
+        {
+            return Forbid();
+        }
+
+        var user = await _userService.GetByIdAsync(userId);
+        if (user == null) return NotFound();
+
+        await _userService.ClearPgpKeyAsync(userId);
+        return RedirectToAction("Index", new { username = user.Username });
     }
 
     private static string NormalizeHexOrFallback(string? hexValue, string? colorInput, string fallback)

@@ -127,6 +127,7 @@ public class ApplicationDbContext : DbContext
             entity.Property(e => e.Status).HasMaxLength(50).IsRequired();
             entity.Property(e => e.ResponseTime);
             entity.Property(e => e.LastChecked).HasDefaultValueSql("CURRENT_TIMESTAMP");
+            entity.Property(e => e.ClickCount).HasDefaultValue(0);
         });
 
         // UserContact configuration

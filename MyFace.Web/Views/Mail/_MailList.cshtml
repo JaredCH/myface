@@ -1,4 +1,7 @@
 @model IEnumerable<MyFace.Web.Models.MailItemViewModel>
+@{
+    var highlightUnread = (ViewData["HighlightUnread"] as bool?) == true;
+}
 @if (!Model.Any())
 {
     <div class="text-muted">No messages.</div>
@@ -18,7 +21,8 @@ else
         <tbody>
         @foreach (var item in Model)
         {
-            <tr>
+            var rowClass = highlightUnread && !item.ReadAt.HasValue ? "mail-unread" : string.Empty;
+            <tr class="@rowClass">
                 <td><a href="@Url.Action("View", "Mail", new { id = item.Id })">@item.Subject</a></td>
                 <td>@item.From</td>
                 <td>@item.To</td>

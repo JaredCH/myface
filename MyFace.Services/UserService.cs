@@ -119,6 +119,13 @@ public class UserService
             .FirstOrDefaultAsync(u => u.Id == id);
     }
 
+    public async Task<UserContact?> GetContactByIdAsync(int contactId)
+    {
+        return await _context.UserContacts
+            .Include(c => c.User)
+            .FirstOrDefaultAsync(c => c.Id == contactId);
+    }
+
     public async Task<User?> GetByUsernameAsync(string username)
     {
         return await _context.Users
@@ -175,6 +182,19 @@ public class UserService
         }
     }
 
+    public async Task UpdateVendorAsync(int userId, string vendorShopDescription, string vendorPolicies, string vendorPayments, string vendorExternalReferences)
+    {
+        var user = await _context.Users.FindAsync(userId);
+        if (user != null)
+        {
+            user.VendorShopDescription = vendorShopDescription ?? string.Empty;
+            user.VendorPolicies = vendorPolicies ?? string.Empty;
+            user.VendorPayments = vendorPayments ?? string.Empty;
+            user.VendorExternalReferences = vendorExternalReferences ?? string.Empty;
+            await _context.SaveChangesAsync();
+        }
+    }
+
     public async Task<bool> SetUsernameAsync(int userId, string username)
     {
         // Check if username is already taken
@@ -220,6 +240,16 @@ public class UserService
         }
     }
 
+    public async Task RemoveContactByAdminAsync(int contactId)
+    {
+        var contact = await _context.UserContacts.FindAsync(contactId);
+        if (contact != null)
+        {
+            _context.UserContacts.Remove(contact);
+            await _context.SaveChangesAsync();
+        }
+    }
+
     public async Task AddNewsAsync(int userId, string title, string content)
     {
         var news = new UserNews
@@ -239,6 +269,26 @@ public class UserService
         if (news != null && news.UserId == userId)
         {
             _context.UserNews.Remove(news);
+            await _context.SaveChangesAsync();
+        }
+    }
+
+    public async Task RemoveNewsByAdminAsync(int newsId)
+    {
+        var news = await _context.UserNews.FindAsync(newsId);
+        if (news != null)
+        {
+            _context.UserNews.Remove(news);
+            await _context.SaveChangesAsync();
+        }
+    }
+
+    public async Task ClearPgpKeyAsync(int userId)
+    {
+        var user = await _context.Users.FindAsync(userId);
+        if (user != null)
+        {
+            user.PgpPublicKey = string.Empty;
             await _context.SaveChangesAsync();
         }
     }

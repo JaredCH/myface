@@ -7,6 +7,31 @@
     var admins = Configuration.GetSection("Admins").Get<string[]>() ?? Array.Empty<string>();
     var mods = Configuration.GetSection("Moderators").Get<string[]>() ?? Array.Empty<string>();
     var isAdminOrMod = !string.IsNullOrEmpty(username) && (admins.Contains(username) || mods.Contains(username));
+    var categoryOrder = new[]
+    {
+        "Cryptocurrency & Financial",
+        "Directories & Search Engines",
+        "Email & Communication",
+        "Forums & Communities",
+        "Government & Agencies",
+        "Information & Libraries",
+        "Markets & Shops",
+        "News & Leaks",
+        "Privacy, Hosting & Software",
+        "Utilities, Tools & File Sharing"
+    };
+    string Slugify(string value)
+    {
+        if (string.IsNullOrWhiteSpace(value)) return "other";
+        var chars = value.ToLowerInvariant().Select(c => char.IsLetterOrDigit(c) ? c : '-').ToArray();
+        var compact = string.Join("", chars).Replace("--", "-").Trim('-');
+        return string.IsNullOrWhiteSpace(compact) ? "other" : compact;
+    }
+    var groups = Model
+        .GroupBy(m => string.IsNullOrWhiteSpace(m.Description) ? "Other" : m.Description)
+        .OrderBy(g => Array.IndexOf(categoryOrder, g.Key) >= 0 ? Array.IndexOf(categoryOrder, g.Key) : int.MaxValue)
+        .ThenBy(g => g.Key)
+        .ToList();
 }
 <h1>Onion Monitor</h1>
 <div class="monitor-actions">
@@ -20,59 +45,74 @@
     <a href="@Url.Action("Monitor","Rss")" class="button">📡 RSS Feed</a>
 </div>
 
-<div class="monitor-list">
-    @foreach (var monitor in Model)
+<div class="monitor-category-nav">
+    @foreach (var group in groups)
     {
-        <div class="monitor-card">
-            <div class="monitor-header">
-                <div class="monitor-title">
-                    <h3>@monitor.Name</h3>
-                    <p class="monitor-description">@monitor.Description</p>
-                    <a href="@monitor.OnionUrl" class="monitor-link">🔗 @monitor.OnionUrl</a>
+        var anchor = Slugify(group.Key);
+        <a href="@("#" + anchor)" class="category-chip"># @group.Key</a>
+    }
+</div>
+
+<div class="monitor-list">
+    @foreach (var group in groups)
+    {
+        var anchor = Slugify(group.Key);
+        <h2 id="@anchor" class="monitor-category-heading">@group.Key</h2>
+        @foreach (var monitor in group)
+        {
+            <div class="monitor-card">
+                <div class="monitor-header">
+                    <div class="monitor-title">
+                        <div class="monitor-title-row">
+                            <h3>@monitor.Name</h3>
+                            <span class="category-pill">@group.Key</span>
+                        </div>
+                        <a href="@Url.Action("Go", "Monitor", new { id = monitor.Id })" class="monitor-link">🔗 @monitor.OnionUrl</a>
+                    </div>
+                    <div class="monitor-status">
+                        @if (monitor.Status == "Online")
+                        {
+                            <span class="status-badge status-online">● @monitor.Status</span>
+                        }
+                        else if (monitor.Status == "DEGRADED")
+                        {
+                            <span class="status-badge status-degraded">● @monitor.Status</span>
+                        }
+                        else
+                        {
+                            <span class="status-badge status-offline">● @monitor.Status</span>
+                        }
+                    </div>
                 </div>
-                <div class="monitor-status">
-                    @if (monitor.Status == "Online")
-                    {
-                        <span class="status-badge status-online">● @monitor.Status</span>
-                    }
-                    else if (monitor.Status == "DEGRADED")
-                    {
-                        <span class="status-badge status-degraded">● @monitor.Status</span>
-                    }
-                    else
-                    {
-                        <span class="status-badge status-offline">● @monitor.Status</span>
-                    }
+                <div class="monitor-stats">
+                    <div class="stat">
+                        <span class="stat-label">Reachability:</span>
+                        <span class="stat-value">@monitor.ReachableAttempts/@monitor.TotalAttempts</span>
+                    </div>
+                    <div class="stat">
+                        <span class="stat-label">Avg Latency:</span>
+                        <span class="stat-value">@(monitor.AverageLatency?.ToString("F0") ?? "-") ms</span>
+                    </div>
+                    <div class="stat">
+                        <span class="stat-label">Last Checked:</span>
+                        <span class="stat-value">@monitor.LastChecked?.ToString("u")</span>
+                    </div>
                 </div>
+                @if (isAdminOrMod)
+                {
+                    <div class="monitor-actions-row">
+                        <form asp-action="Check" method="post" style="display:inline">
+                            <input type="hidden" name="id" value="@monitor.Id" />
+                            <button class="button button-small" type="submit">🔍 Check Now</button>
+                        </form>
+                        <a href="@Url.Action("Edit", new { id = monitor.Id })" class="button button-small">✏️ Edit</a>
+                        <form asp-action="Remove" method="post" style="display:inline">
+                            <input type="hidden" name="id" value="@monitor.Id" />
+                            <button class="button button-small button-danger" type="submit">🗑️ Remove</button>
+                        </form>
+                    </div>
+                }
             </div>
-            <div class="monitor-stats">
-                <div class="stat">
-                    <span class="stat-label">Reachability:</span>
-                    <span class="stat-value">@monitor.ReachableAttempts/@monitor.TotalAttempts</span>
-                </div>
-                <div class="stat">
-                    <span class="stat-label">Avg Latency:</span>
-                    <span class="stat-value">@(monitor.AverageLatency?.ToString("F0") ?? "-") ms</span>
-                </div>
-                <div class="stat">
-                    <span class="stat-label">Last Checked:</span>
-                    <span class="stat-value">@monitor.LastChecked?.ToString("u")</span>
-                </div>
-            </div>
-            @if (isAdminOrMod)
-            {
-                <div class="monitor-actions-row">
-                    <form asp-action="Check" method="post" style="display:inline">
-                        <input type="hidden" name="id" value="@monitor.Id" />
-                        <button class="button button-small" type="submit">🔍 Check Now</button>
-                    </form>
-                    <a href="@Url.Action("Edit", new { id = monitor.Id })" class="button button-small">✏️ Edit</a>
-                    <form asp-action="Remove" method="post" style="display:inline">
-                        <input type="hidden" name="id" value="@monitor.Id" />
-                        <button class="button button-small button-danger" type="submit">🗑️ Remove</button>
-                    </form>
-                </div>
-            }
-        </div>
+        }
     }
 </div>

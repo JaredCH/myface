@@ -1,0 +1,108 @@
+@model MyFace.Web.Models.UserActivityViewModel
+@inject MyFace.Web.Services.BBCodeFormatter Formatter
+@{
+    ViewData["Title"] = $"{Model.Username} - Recent Activity";
+    string activityTitle = $"{Model.Username}'s Recent Activity";
+}
+
+<div class="container mt-3">
+    <div style="display: flex; justify-content: space-between; align-items: center; gap: 1rem; flex-wrap: wrap; margin-bottom: 1rem;">
+        <div>
+            <h2 style="margin: 0;">@activityTitle</h2>
+            <p class="meta" style="margin: 0;">Posts, comments, threads, and news</p>
+        </div>
+        <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+            <a class="theme-button ghost" href="@Url.Action("Index", "User", new { username = Model.Username })">← Back to Profile</a>
+            @if (Model.IsSelf)
+            {
+                <a class="theme-button" href="@Url.Action("Index", "Mail", new { tab = "new", to = Model.Username })">✉️ Message Myself</a>
+            }
+            else if (User.Identity?.IsAuthenticated == true)
+            {
+                <a class="theme-button" href="@Url.Action("Index", "Mail", new { tab = "new", to = Model.Username })">✉️ Message</a>
+            }
+        </div>
+    </div>
+
+    <form method="get" asp-action="Activity" asp-route-username="@Model.Username" class="card" style="display: grid; gap: 0.5rem; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); align-items: end;">
+        <div>
+            <label for="q">Search keywords</label>
+            <input id="q" name="q" class="input" value="@Model.Query" placeholder="Search content, titles, news..." />
+        </div>
+        <div>
+            <label for="start">Start date</label>
+            <input id="start" name="start" class="input" type="date" value="@(Model.Start?.ToString("yyyy-MM-dd"))" />
+        </div>
+        <div>
+            <label for="end">End date</label>
+            <input id="end" name="end" class="input" type="date" value="@(Model.End?.ToString("yyyy-MM-dd"))" />
+        </div>
+        <div>
+            <label for="sort">Sort</label>
+            <select id="sort" name="sort" class="input">
+                <option value="newest" selected="@((Model.Sort ?? string.Empty).Equals("newest", StringComparison.OrdinalIgnoreCase))">Newest first</option>
+                <option value="oldest" selected="@((Model.Sort ?? string.Empty).Equals("oldest", StringComparison.OrdinalIgnoreCase))">Oldest first</option>
+                <option value="title" selected="@((Model.Sort ?? string.Empty).Equals("title", StringComparison.OrdinalIgnoreCase))">Title A→Z</option>
+            </select>
+        </div>
+        <div style="display: flex; gap: 0.5rem;">
+            <button type="submit" class="theme-button">Search</button>
+            <a class="theme-button ghost" href="@Url.Action("Activity", new { username = Model.Username })">Reset</a>
+        </div>
+    </form>
+
+    @if (Model.Items == null || !Model.Items.Any())
+    {
+        <div class="card" style="margin-top: 1rem;">
+            <p class="meta" style="margin: 0;">No activity found.</p>
+        </div>
+    }
+    else
+    {
+        <div style="display: grid; gap: 0.75rem; margin-top: 1rem;">
+            @foreach (var item in Model.Items)
+            {
+                var threadUrl = item.ThreadId.HasValue ? Url.Action("View", "Thread", new { id = item.ThreadId.Value }) : string.Empty;
+                if (item.PostId.HasValue && !string.IsNullOrEmpty(threadUrl))
+                {
+                    threadUrl += $"#post-{item.PostId.Value}";
+                }
+                var newsUrl = item.NewsId.HasValue ? Url.Action("News", "User", new { id = item.NewsId.Value }) : string.Empty;
+                var targetUrl = item.Type switch
+                {
+                    "Thread" when !string.IsNullOrEmpty(threadUrl) => threadUrl,
+                    "Comment" when !string.IsNullOrEmpty(threadUrl) => threadUrl,
+                    "News" when !string.IsNullOrEmpty(newsUrl) => newsUrl,
+                    _ => threadUrl ?? string.Empty
+                };
+                var chipColor = item.Type switch
+                {
+                    "Thread" => "#2f6fe4",
+                    "Comment" => "#10b981",
+                    "News" => "#f97316",
+                    _ => "#6b7280"
+                };
+
+                <div class="card" style="border-left: 4px solid @chipColor;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; gap: 0.5rem; flex-wrap: wrap;">
+                        <div style="display: inline-flex; gap: 0.4rem; align-items: center;">
+                            <span style="background: @chipColor; color: #fff; padding: 0.2rem 0.6rem; border-radius: 999px; font-weight: 700; font-size: 0.85rem;">@item.Type</span>
+                            <span class="meta" style="font-size: 0.85rem;">@item.CreatedAt.ToLocalTime().ToString("g")</span>
+                        </div>
+                        @if (!string.IsNullOrEmpty(targetUrl))
+                        {
+                            <a class="theme-button ghost" href="@targetUrl">Open</a>
+                        }
+                    </div>
+                    <h4 style="margin: 0.4rem 0 0.35rem 0;">@item.Title</h4>
+                    @if (!string.IsNullOrWhiteSpace(item.Content))
+                    {
+                        <div style="color: #475569; max-height: 200px; overflow: hidden;">
+                            @Formatter.Format(item.Content)
+                        </div>
+                    }
+                </div>
+            }
+        </div>
+    }
+</div>

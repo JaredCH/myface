@@ -41,6 +41,11 @@ if [ -f "$PUBLISH_DIR" ]; then
     rm -f "$PUBLISH_DIR"
 fi
 
+echo "--- running database migrations ---"
+dotnet ef database update \
+    --project "$ROOT/MyFace.Data/MyFace.Data.csproj" \
+    --context ApplicationDbContext
+
 dotnet publish "$ROOT/MyFace.Web/MyFace.Web.csproj" -c Release -o "$PUBLISH_DIR"
 
 if [ ! -f "$WEB_DLL" ]; then

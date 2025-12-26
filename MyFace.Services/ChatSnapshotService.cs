@@ -55,7 +55,8 @@ public class ChatSnapshotService
         foreach (var msg in messages)
         {
             var ts = msg.CreatedAt.ToUniversalTime().ToString("HH:mm");
-            var roleClass = msg.RoleSnapshot.ToLowerInvariant() switch
+            var role = (msg.RoleSnapshot ?? "User").ToLowerInvariant();
+            var roleClass = role switch
             {
                 "admin" => "role-admin",
                 "moderator" => "role-mod",

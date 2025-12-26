@@ -227,9 +227,126 @@ public class ForumService
             .ToListAsync();
     }
 
+    public async Task<List<UserActivityItem>> GetUserActivityAsync(int userId, string? search, DateTime? start, DateTime? end, string? sort)
+    {
+        var searchTerm = string.IsNullOrWhiteSpace(search) ? null : search.Trim().ToLower();
+        var startUtc = start?.ToUniversalTime();
+        var endUtc = end?.ToUniversalTime();
+
+        var postsQuery = _context.Posts
+            .Include(p => p.Thread)
+            .Where(p => p.UserId == userId && !p.IsDeleted && !p.IsAnonymous);
+
+        if (startUtc.HasValue)
+        {
+            postsQuery = postsQuery.Where(p => p.CreatedAt >= startUtc.Value);
+        }
+
+        if (endUtc.HasValue)
+        {
+            postsQuery = postsQuery.Where(p => p.CreatedAt <= endUtc.Value);
+        }
+
+        if (searchTerm != null)
+        {
+            postsQuery = postsQuery.Where(p =>
+                ((p.Content ?? string.Empty).ToLower().Contains(searchTerm)) ||
+                (p.Thread != null && p.Thread.Title.ToLower().Contains(searchTerm)));
+        }
+
+        var postItems = await postsQuery
+            .Select(p => new UserActivityItem(
+                "Comment",
+                p.Thread != null ? p.Thread.Title : "Thread",
+                p.Content,
+                p.CreatedAt,
+                p.ThreadId,
+                p.Id,
+                null))
+            .ToListAsync();
+
+        var threadsQuery = _context.Threads
+            .Where(t => t.UserId == userId);
+
+        if (startUtc.HasValue)
+        {
+            threadsQuery = threadsQuery.Where(t => t.CreatedAt >= startUtc.Value);
+        }
+
+        if (endUtc.HasValue)
+        {
+            threadsQuery = threadsQuery.Where(t => t.CreatedAt <= endUtc.Value);
+        }
+
+        if (searchTerm != null)
+        {
+            threadsQuery = threadsQuery.Where(t => t.Title.ToLower().Contains(searchTerm));
+        }
+
+        var threadItems = await threadsQuery
+            .Select(t => new UserActivityItem(
+                "Thread",
+                t.Title,
+                string.Empty,
+                t.CreatedAt,
+                t.Id,
+                null,
+                null))
+            .ToListAsync();
+
+        var newsQuery = _context.UserNews
+            .Where(n => n.UserId == userId);
+
+        if (startUtc.HasValue)
+        {
+            newsQuery = newsQuery.Where(n => n.CreatedAt >= startUtc.Value);
+        }
+
+        if (endUtc.HasValue)
+        {
+            newsQuery = newsQuery.Where(n => n.CreatedAt <= endUtc.Value);
+        }
+
+        if (searchTerm != null)
+        {
+            newsQuery = newsQuery.Where(n =>
+                n.Title.ToLower().Contains(searchTerm) ||
+                n.Content.ToLower().Contains(searchTerm));
+        }
+
+        var newsItems = await newsQuery
+            .Select(n => new UserActivityItem(
+                "News",
+                n.Title,
+                n.Content,
+                n.CreatedAt,
+                null,
+                null,
+                n.Id))
+            .ToListAsync();
+
+        var items = postItems
+            .Concat(threadItems)
+            .Concat(newsItems)
+            .ToList();
+
+        var sortKey = string.IsNullOrWhiteSpace(sort) ? "newest" : sort.Trim().ToLower();
+        return sortKey switch
+        {
+            "oldest" => items.OrderBy(i => i.CreatedAt).ToList(),
+            "title" => items.OrderBy(i => i.Title).ToList(),
+            _ => items.OrderByDescending(i => i.CreatedAt).ToList()
+        };
+    }
+
     // Vote operations
     public async Task<bool> VoteAsync(int postId, int? userId, string? sessionId, int value)
     {
+        var targetUserId = await _context.Posts
+            .Where(p => p.Id == postId)
+            .Select(p => p.UserId)
+            .FirstOrDefaultAsync();
+
         Vote? existingVote = null;
         if (userId != null)
         {
@@ -276,7 +393,11 @@ public class ForumService
             TrackActivity("downvote", userId);
         
         await _context.SaveChangesAsync();
-        await UpdateUserVoteStatisticsAsync();
+
+        if (targetUserId.HasValue)
+        {
+            await UpdateUserVoteStatisticsAsync(targetUserId.Value);
+        }
         return true;
     }
 
@@ -292,6 +413,11 @@ public class ForumService
     // Thread voting
     public async Task<bool> VoteOnThreadAsync(int threadId, int? userId, string? sessionId, int value)
     {
+        var targetUserId = await _context.Threads
+            .Where(t => t.Id == threadId)
+            .Select(t => t.UserId)
+            .FirstOrDefaultAsync();
+
         Vote? existingVote = null;
         if (userId != null)
         {
@@ -338,7 +464,11 @@ public class ForumService
             TrackActivity("thread_downvote", userId);
         
         await _context.SaveChangesAsync();
-        await UpdateUserVoteStatisticsAsync();
+
+        if (targetUserId.HasValue)
+        {
+            await UpdateUserVoteStatisticsAsync(targetUserId.Value);
+        }
         return true;
     }
 
@@ -351,14 +481,46 @@ public class ForumService
         return votes.Sum(v => v.Value);
     }
 
-    // Update user vote statistics (simplified - don't load all data)
-    public async Task UpdateUserVoteStatisticsAsync()
+    public async Task<UserVoteStats> CalculateUserVoteStatsAsync(int userId)
     {
-        // Temporarily disabled for performance - will be calculated on demand
-        // This was causing major performance issues by loading all users/posts/threads
-        await Task.CompletedTask;
+        var threadUpvotes = await _context.Votes
+            .Where(v => v.ThreadId != null && v.Thread != null && v.Thread.UserId == userId)
+            .CountAsync(v => v.Value > 0);
+
+        var threadDownvotes = await _context.Votes
+            .Where(v => v.ThreadId != null && v.Thread != null && v.Thread.UserId == userId)
+            .CountAsync(v => v.Value < 0);
+
+        var commentUpvotes = await _context.Votes
+            .Where(v => v.PostId != null && v.Post != null && v.Post.UserId == userId)
+            .CountAsync(v => v.Value > 0);
+
+        var commentDownvotes = await _context.Votes
+            .Where(v => v.PostId != null && v.Post != null && v.Post.UserId == userId)
+            .CountAsync(v => v.Value < 0);
+
+        return new UserVoteStats(threadUpvotes, threadDownvotes, commentUpvotes, commentDownvotes);
     }
 
+    public async Task UpdateUserVoteStatisticsAsync(int userId)
+    {
+        var stats = await CalculateUserVoteStatsAsync(userId);
+        var user = await _context.Users.FindAsync(userId);
+        if (user == null)
+        {
+            return;
+        }
+
+        user.PostUpvotes = stats.ThreadUpvotes;
+        user.PostDownvotes = stats.ThreadDownvotes;
+        user.CommentUpvotes = stats.CommentUpvotes;
+        user.CommentDownvotes = stats.CommentDownvotes;
+
+        await _context.SaveChangesAsync();
+    }
+
+    public record UserActivityItem(string Type, string Title, string? Content, DateTime CreatedAt, int? ThreadId, int? PostId, int? NewsId);
+    public record UserVoteStats(int ThreadUpvotes, int ThreadDownvotes, int CommentUpvotes, int CommentDownvotes);
     // Wilson Score + Time Decay for Hot ranking
     public double CalculateHotScore(int upvotes, int downvotes, DateTime createdAt)
     {

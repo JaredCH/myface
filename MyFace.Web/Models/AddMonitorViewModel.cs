@@ -13,7 +13,7 @@ public class AddMonitorViewModel
     public string Description { get; set; } = string.Empty;
 
     [Required]
-    [StringLength(100)]
-    [RegularExpression(@"^https?://[a-z2-7]{16,56}\.onion.*$", ErrorMessage = "Must be a valid .onion URL")]
+    [StringLength(200)]
+    [RegularExpression(@"^https?://.+", ErrorMessage = "Must be a valid http(s) URL")]
     public string OnionUrl { get; set; } = string.Empty;
 }

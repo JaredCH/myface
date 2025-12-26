@@ -120,6 +120,11 @@ namespace MyFace.Data.Migrations
                     b.Property<double?>("ResponseTime")
                         .HasColumnType("double precision");
 
+                    b.Property<int>("ClickCount")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(0);
+
                     b.Property<string>("Status")
                         .IsRequired()
                         .HasMaxLength(50)
