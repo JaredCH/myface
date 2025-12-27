@@ -1,9 +1,10 @@
-# Tor state file last generated on 2025-12-27 15:44:32 local time
+# Tor state file last generated on 2025-12-27 15:44:44 local time
 # Other times below are in UTC
 # You *do not* need to edit this file.
 
 CircuitBuildTimeBin 235 1
 CircuitBuildTimeBin 285 1
+CircuitBuildTimeBin 385 1
 CircuitBuildTimeBin 415 1
 CircuitBuildTimeBin 435 2
 CircuitBuildTimeBin 445 7
@@ -39,7 +40,7 @@ CircuitBuildTimeBin 735 10
 CircuitBuildTimeBin 745 7
 CircuitBuildTimeBin 755 12
 CircuitBuildTimeBin 765 9
-CircuitBuildTimeBin 775 3
+CircuitBuildTimeBin 775 2
 CircuitBuildTimeBin 785 8
 CircuitBuildTimeBin 795 6
 CircuitBuildTimeBin 805 17
@@ -263,7 +264,7 @@ Dormant 0
 Guard in=default rsa_id=89992F82FD9F5FA17BC8316502F93C931259B228 nickname=richhomie sampled_on=2025-12-16T21:57:13 sampled_idx=0 sampled_by=0.4.8.10 listed=1 confirmed_on=2025-12-15T17:38:40 confirmed_idx=1 pb_use_attempts=84.097244 pb_use_successes=84.097244 pb_circ_attempts=179.003906 pb_circ_successes=174.621094 pb_successful_circuits_closed=172.949219 pb_collapsed_circuits=1.671875 pb_timeouts=3.332031
 Guard in=default rsa_id=70CDF3509A2063AF5C5C548F77793DACB6986AF9 nickname=Augustiner1328 sampled_on=2025-12-17T19:48:30 sampled_idx=1 sampled_by=0.4.8.10 unlisted_since=2025-12-25T14:20:51 listed=0 confirmed_on=2025-12-14T04:16:37 confirmed_idx=0 pb_use_attempts=98.489014 pb_use_successes=98.489014 pb_circ_attempts=207.960938 pb_circ_successes=203.179688 pb_successful_circuits_closed=200.625000 pb_collapsed_circuits=2.554688 pb_timeouts=7.101562
 Guard in=default rsa_id=706C539383A685A12FD0D38A099CECBF001ED708 nickname=CSGuardTorRelayTwo sampled_on=2025-12-19T13:46:27 sampled_idx=2 sampled_by=0.4.8.10 listed=1 confirmed_on=2025-12-22T04:19:15 confirmed_idx=2 pb_use_attempts=24.000000 pb_use_successes=24.000000 pb_circ_attempts=60.000000 pb_circ_successes=53.000000 pb_successful_circuits_closed=49.000000 pb_collapsed_circuits=4.000000 pb_timeouts=28.000000
-Guard in=default rsa_id=0BF171D0984EEF35B9ED9D7801941C833DD3853B nickname=spider sampled_on=2025-12-17T21:51:41 sampled_idx=3 sampled_by=0.4.8.10 listed=1 confirmed_on=2025-12-20T22:26:09 confirmed_idx=7 pb_circ_attempts=1.000000 pb_circ_successes=1.000000 pb_successful_circuits_closed=1.000000
+Guard in=default rsa_id=0BF171D0984EEF35B9ED9D7801941C833DD3853B nickname=spider sampled_on=2025-12-17T21:51:41 sampled_idx=3 sampled_by=0.4.8.10 listed=1 confirmed_on=2025-12-20T22:26:09 confirmed_idx=7 pb_circ_attempts=2.000000 pb_circ_successes=2.000000 pb_successful_circuits_closed=2.000000
 Guard in=default rsa_id=889944F540C155E7E32C909B9E1424677689AD4D nickname=Mowgli sampled_on=2025-12-20T00:00:00 sampled_idx=4 sampled_by=0.4.8.10 listed=1 confirmed_on=2025-12-22T16:25:31 confirmed_idx=4 pb_use_attempts=22.000000 pb_use_successes=22.000000 pb_circ_attempts=28.000000 pb_circ_successes=28.000000 pb_successful_circuits_closed=27.000000 pb_collapsed_circuits=1.000000
 Guard in=default rsa_id=E025B7DD8DE80B832B12BB4FF0C7876BA5929A11 nickname=Quetzalcoatl sampled_on=2025-12-14T06:13:00 sampled_idx=5 sampled_by=0.4.8.10 listed=1
 Guard in=default rsa_id=07895E6DE9B3CBCB74B6CCF1ABB14BF112FF36F7 nickname=hayzycomr sampled_on=2025-12-12T23:42:08 sampled_idx=6 sampled_by=0.4.8.10 listed=1
@@ -320,7 +321,6 @@ Guard in=default rsa_id=0E4F190C4A6F7DDF7F8C9A7842B85B4BBCF5F44B nickname=ForPri
 Guard in=default rsa_id=FD3517DFFC281F1430EBB6A62520595A8FF7B378 nickname=SrsTubesRelay sampled_on=2025-12-24T09:20:06 sampled_idx=57 sampled_by=0.4.8.10 listed=1
 Guard in=default rsa_id=DAE65AD32A074CECB30AD3FBB7504F0CDC616CD1 nickname=pablito sampled_on=2025-12-16T17:15:41 sampled_idx=58 sampled_by=0.4.8.10 listed=1
 Guard in=default rsa_id=E094CE3392E59129B44B01DB5C63AA52F5FF4566 nickname=ieditedtheconfig sampled_on=2025-12-16T04:43:42 sampled_idx=59 sampled_by=0.4.8.10 unlisted_since=2025-12-26T23:52:08 listed=0
-LastWritten 2025-12-27 15:44:32
-MinutesSinceUserActivity 4
+LastWritten 2025-12-27 15:44:44
 TorVersion Tor 0.4.8.10
 TotalBuildTimes 1000
