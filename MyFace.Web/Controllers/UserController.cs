@@ -140,12 +140,19 @@ public class UserController : Controller
         if (applyTheme == "load" && preset.HasValue)
         {
             backgroundColor = preset.Value.Background;
+            backgroundColorHex = preset.Value.Background;
             fontColor = preset.Value.Font;
+            fontColorHex = preset.Value.Font;
             accentColor = preset.Value.Accent;
+            accentColorHex = preset.Value.Accent;
             borderColor = preset.Value.Border;
+            borderColorHex = preset.Value.Border;
             buttonBackgroundColor = preset.Value.ButtonBg;
+            buttonBackgroundColorHex = preset.Value.ButtonBg;
             buttonTextColor = preset.Value.ButtonText;
+            buttonTextColorHex = preset.Value.ButtonText;
             buttonBorderColor = preset.Value.ButtonBorder;
+            buttonBorderColorHex = preset.Value.ButtonBorder;
         }
 
         var resolvedBackground = NormalizeHexOrFallback(backgroundColorHex, backgroundColor, "#0f172a");
@@ -184,12 +191,19 @@ public class UserController : Controller
         if (applyTheme == "load" && preset.HasValue)
         {
             backgroundColor = preset.Value.Background;
+            backgroundColorHex = preset.Value.Background;
             fontColor = preset.Value.Font;
+            fontColorHex = preset.Value.Font;
             accentColor = preset.Value.Accent;
+            accentColorHex = preset.Value.Accent;
             borderColor = preset.Value.Border;
+            borderColorHex = preset.Value.Border;
             buttonBackgroundColor = preset.Value.ButtonBg;
+            buttonBackgroundColorHex = preset.Value.ButtonBg;
             buttonTextColor = preset.Value.ButtonText;
+            buttonTextColorHex = preset.Value.ButtonText;
             buttonBorderColor = preset.Value.ButtonBorder;
+            buttonBorderColorHex = preset.Value.ButtonBorder;
         }
 
         var resolvedBackground = NormalizeHexOrFallback(backgroundColorHex, backgroundColor, user.BackgroundColor ?? "#0f172a");

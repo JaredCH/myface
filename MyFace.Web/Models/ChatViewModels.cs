@@ -18,6 +18,7 @@ public class ChatMessagesViewModel
     public string Room { get; set; } = string.Empty;
     public string SnapshotHtml { get; set; } = string.Empty;
     public bool Paused { get; set; }
+    public bool ShowMessageIds { get; set; }
 }
 
 public class ChatSectionModel

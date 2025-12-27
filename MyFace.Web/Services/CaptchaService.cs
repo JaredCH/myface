@@ -12,14 +12,14 @@ public class CaptchaChallenge
 
 public static class CaptchaSettings
 {
-    public const int MinPageViewsBeforeCaptcha = 15;
-    public const int MaxPageViewsBeforeCaptcha = 30;
+    public const int MinPageViewsBeforeCaptcha = 20;
+    public const int MaxPageViewsBeforeCaptcha = 40;
 
-    public const int AnonymousMinPageViews = 3;
-    public const int AnonymousMaxPageViews = 7;
+    public const int AnonymousMinPageViews = 10;
+    public const int AnonymousMaxPageViews = 20;
 
-    public const int AdminModMinPageViews = 30;
-    public const int AdminModMaxPageViews = 60;
+    public const int AdminModMinPageViews = 50;
+    public const int AdminModMaxPageViews = 75;
 
     public static int NextThreshold(System.Security.Claims.ClaimsPrincipal user)
     {
@@ -48,65 +48,19 @@ public class CaptchaService
 {
     private const int MathChallengeChancePercent = 5;
 
-    private static readonly string[] Adjectives = new[]
+    // Single word pool (distinct words) to produce thousands of unique 3-word phrases (nPk3 combinations)
+    private static readonly string[] WordPool = new[]
     {
-        "Red", "Blue", "Green", "Dark", "Bright", "Silent", "Hidden", "Lost", "Found", "Broken",
-        "Quantum", "Neural", "Cyber", "Analog", "Digital", "Solar", "Lunar", "Cosmic", 
-        "Static", "Dynamic", "Kinetic", "Sonic", "Optic", "Thermal", "Magnetic", "Electric"
-    };
-
-    private static readonly string[] Nouns = new[]
-    {
-        "lanterns", "keys", "doors", "wires", "clocks",
-        "panels", "tunnels", "mirrors", "signals", "ladders",
-        "folders", "screens", "valves", "circuits", "handles",
-        "paths", "markers", "windows", "rails", "switches",
-        "nodes", "buffers", "frames", "channels", "ports",
-        "alpha gates", "beta locks", "delta paths", "gamma nodes",
-        "echo panels", "foxtrot keys", "lambda rails",
-        "omega switches", "sigma buffers", "vector clocks",
-        "Orion markers", "Atlas doors", "Nova signals",
-        "Helix tunnels", "Cipher panels", "Apex valves",
-        "Vertex mirrors", "Pulse channels", "Flux nodes"
-    };
-
-    private static readonly string[] Templates = new[]
-    {
-        "Note: replies referencing {PHRASE} may be delayed.",
-        "Reminder: posts mentioning {PHRASE} are filtered.",
-        "Threads involving {PHRASE} may load more slowly.",
-        "Mentions of {PHRASE} are subject to review.",
-        "Posts discussing {PHRASE} may not appear immediately.",
-        "Some replies that reference {PHRASE} can be delayed.",
-        "Posts containing {PHRASE} may be temporarily held.",
-        "Threads that include {PHRASE} are rate-limited.",
-        "Replies mentioning {PHRASE} may require approval.",
-        "Discussions involving {PHRASE} may experience delays.",
-        "Please note that {PHRASE} references can slow replies.",
-        "Replies that include {PHRASE} may be queued.",
-        "Posts referencing {PHRASE} are monitored.",
-        "Threads mentioning {PHRASE} may be processed later.",
-        "Mentions of {PHRASE} may affect post timing.",
-        "Replies involving {PHRASE} are occasionally delayed.",
-        "Posts that reference {PHRASE} may be reviewed.",
-        "Threads containing {PHRASE} may load inconsistently.",
-        "Mentions of {PHRASE} can trigger moderation checks.",
-        "Replies mentioning {PHRASE} may not post instantly.",
-        "Posts involving {PHRASE} are sometimes delayed.",
-        "Threads referencing {PHRASE} may appear slower.",
-        "Replies that include {PHRASE} can be deferred.",
-        "Mentions of {PHRASE} may affect visibility.",
-        "Posts mentioning {PHRASE} may be queued briefly.",
-        "Replies referencing {PHRASE} are processed carefully.",
-        "Threads involving {PHRASE} may have slower updates.",
-        "Posts containing {PHRASE} are occasionally filtered.",
-        "Mentions of {PHRASE} may result in short delays.",
-        "Replies that reference {PHRASE} may be staged.",
-        "Threads mentioning {PHRASE} may update slowly.",
-        "Posts involving {PHRASE} can experience lag.",
-        "Replies containing {PHRASE} may post later.",
-        "Mentions of {PHRASE} may pause submissions.",
-        "Threads referencing {PHRASE} may load gradually."
+        "amber", "anchor", "apricot", "arch", "ash", "azure", "baker", "bamboo", "basil", "bay",
+        "beacon", "birch", "blade", "bluff", "brick", "bronze", "buck", "canyon", "cedar", "chess",
+        "chisel", "cobalt", "cobweb", "comet", "coral", "cotton", "cricket", "crown", "crystal", "delta",
+        "ember", "fir", "flint", "fog", "forest", "fox", "frost", "gale", "granite", "grove",
+        "harbor", "hazel", "heather", "ink", "iron", "ivory", "jungle", "kayak", "keystone", "lagoon",
+        "lantern", "linen", "lotus", "maple", "marble", "meadow", "mesa", "mint", "monsoon", "moose",
+        "moss", "navy", "nebula", "oak", "onyx", "opal", "orchid", "oyster", "papaya", "pebble",
+        "pine", "plume", "quartz", "quill", "raven", "reef", "ridge", "rose", "saffron", "sage",
+        "sand", "shale", "sienna", "silk", "slate", "smoke", "spruce", "starlit", "stone", "storm",
+        "sumac", "sunset", "thicket", "thistle", "tidal", "topaz", "umber", "velvet", "walnut", "willow"
     };
 
     public CaptchaChallenge GenerateChallenge()
@@ -117,29 +71,35 @@ public class CaptchaService
             return GenerateMathChallenge();
         }
         
-        return GenerateTextChallenge();
+        return GenerateWordOrderChallenge();
     }
 
-    private CaptchaChallenge GenerateTextChallenge()
+    private CaptchaChallenge GenerateWordOrderChallenge()
     {
-        var adjective = Adjectives[RandomNumberGenerator.GetInt32(Adjectives.Length)];
-        var noun = Nouns[RandomNumberGenerator.GetInt32(Nouns.Length)];
-        var phrase = $"{adjective} {noun}";
-        var template = Templates[RandomNumberGenerator.GetInt32(Templates.Length)];
-        var sentence = template.Replace("{PHRASE}", phrase);
+        // pick 3 distinct words to maximize combination count
+        var words = PickDistinctWords(WordPool, 3);
+        var phrase = string.Join(' ', words);
+
+        var position = RandomNumberGenerator.GetInt32(1, 4); // 1, 2, or 3
+        var ordinal = position switch
+        {
+            1 => "first",
+            2 => "second",
+            _ => "third"
+        };
 
         return new CaptchaChallenge
         {
-            Context = sentence,
-            Question = "What was the subject matter of the above sentence?",
-            Answer = phrase
+            Context = $"Phrase: {phrase}",
+            Question = $"What is the {ordinal} word in the phrase above?",
+            Answer = words[position - 1]
         };
     }
 
     private CaptchaChallenge GenerateMathChallenge()
     {
-        var a = RandomNumberGenerator.GetInt32(10, 45); // 10 to 44
-        var b = RandomNumberGenerator.GetInt32(10, 45); // 10 to 44
+        var a = RandomNumberGenerator.GetInt32(1, 11); // 1 to 10
+        var b = RandomNumberGenerator.GetInt32(1, 11); // 1 to 10
         var isAddition = RandomNumberGenerator.GetInt32(2) == 0;
 
         if (!isAddition && a < b)
@@ -179,6 +139,22 @@ public class CaptchaService
             Question = "Solve the math problem above.",
             Answer = result.ToString()
         };
+    }
+
+    private static string[] PickDistinctWords(string[] pool, int count)
+    {
+        // Fisher-Yates partial shuffle for distinct picks without allocations beyond span copy
+        var temp = (string[])pool.Clone();
+        var n = temp.Length;
+        for (int i = 0; i < count; i++)
+        {
+            var swapIndex = RandomNumberGenerator.GetInt32(i, n);
+            (temp[i], temp[swapIndex]) = (temp[swapIndex], temp[i]);
+        }
+
+        var result = new string[count];
+        Array.Copy(temp, result, count);
+        return result;
     }
 
     public bool Validate(string expected, string actual)

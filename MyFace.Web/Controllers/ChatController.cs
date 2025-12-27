@@ -57,7 +57,8 @@ public class ChatController : Controller
         {
             Room = room,
             SnapshotHtml = html,
-            Paused = _chatService.IsRoomPaused(room)
+            Paused = _chatService.IsRoomPaused(room),
+            ShowMessageIds = _chatService.IsModeratorOrAdmin(user)
         });
     }
 
