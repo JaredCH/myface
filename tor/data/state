@@ -1,153 +1,42 @@
-# Tor state file last generated on 2025-12-27 19:28:37 local time
+# Tor state file last generated on 2025-12-28 03:06:26 local time
 # Other times below are in UTC
 # You *do not* need to edit this file.
 
-CircuitBuildTimeBin 455 2
-CircuitBuildTimeBin 555 1
-CircuitBuildTimeBin 595 1
-CircuitBuildTimeBin 615 1
-CircuitBuildTimeBin 655 1
-CircuitBuildTimeBin 735 1
-CircuitBuildTimeBin 775 2
-CircuitBuildTimeBin 795 1
-CircuitBuildTimeBin 805 1
-CircuitBuildTimeBin 815 1
-CircuitBuildTimeBin 865 1
-CircuitBuildTimeBin 885 2
-CircuitBuildTimeBin 935 1
-CircuitBuildTimeBin 945 1
-CircuitBuildTimeBin 955 1
-CircuitBuildTimeBin 975 1
-CircuitBuildTimeBin 985 1
-CircuitBuildTimeBin 1005 4
-CircuitBuildTimeBin 1015 1
-CircuitBuildTimeBin 1025 3
-CircuitBuildTimeBin 1035 1
-CircuitBuildTimeBin 1045 2
-CircuitBuildTimeBin 1065 2
-CircuitBuildTimeBin 1085 1
-CircuitBuildTimeBin 1095 2
-CircuitBuildTimeBin 1105 3
-CircuitBuildTimeBin 1115 3
-CircuitBuildTimeBin 1125 5
-CircuitBuildTimeBin 1135 1
-CircuitBuildTimeBin 1155 1
-CircuitBuildTimeBin 1165 3
-CircuitBuildTimeBin 1175 1
-CircuitBuildTimeBin 1185 1
-CircuitBuildTimeBin 1195 3
-CircuitBuildTimeBin 1215 3
-CircuitBuildTimeBin 1225 5
+CircuitBuildTimeBin 1225 1
 CircuitBuildTimeBin 1235 1
-CircuitBuildTimeBin 1245 1
-CircuitBuildTimeBin 1255 1
-CircuitBuildTimeBin 1265 1
-CircuitBuildTimeBin 1275 2
-CircuitBuildTimeBin 1285 2
-CircuitBuildTimeBin 1305 2
-CircuitBuildTimeBin 1315 3
-CircuitBuildTimeBin 1335 2
-CircuitBuildTimeBin 1345 2
-CircuitBuildTimeBin 1355 1
-CircuitBuildTimeBin 1375 3
-CircuitBuildTimeBin 1405 1
-CircuitBuildTimeBin 1435 2
-CircuitBuildTimeBin 1445 1
-CircuitBuildTimeBin 1465 1
-CircuitBuildTimeBin 1475 1
-CircuitBuildTimeBin 1485 2
-CircuitBuildTimeBin 1495 2
-CircuitBuildTimeBin 1505 1
-CircuitBuildTimeBin 1515 1
-CircuitBuildTimeBin 1525 3
-CircuitBuildTimeBin 1535 3
-CircuitBuildTimeBin 1545 1
-CircuitBuildTimeBin 1555 1
-CircuitBuildTimeBin 1565 1
-CircuitBuildTimeBin 1575 1
-CircuitBuildTimeBin 1585 1
-CircuitBuildTimeBin 1605 2
-CircuitBuildTimeBin 1615 2
-CircuitBuildTimeBin 1625 1
-CircuitBuildTimeBin 1655 2
-CircuitBuildTimeBin 1675 1
-CircuitBuildTimeBin 1685 1
-CircuitBuildTimeBin 1695 2
-CircuitBuildTimeBin 1705 1
-CircuitBuildTimeBin 1715 1
-CircuitBuildTimeBin 1725 1
-CircuitBuildTimeBin 1745 2
-CircuitBuildTimeBin 1755 2
-CircuitBuildTimeBin 1785 1
-CircuitBuildTimeBin 1795 3
-CircuitBuildTimeBin 1875 2
-CircuitBuildTimeBin 1885 1
-CircuitBuildTimeBin 1915 2
-CircuitBuildTimeBin 1955 1
-CircuitBuildTimeBin 1985 1
-CircuitBuildTimeBin 1995 1
-CircuitBuildTimeBin 2005 2
-CircuitBuildTimeBin 2015 1
-CircuitBuildTimeBin 2035 1
-CircuitBuildTimeBin 2045 1
-CircuitBuildTimeBin 2075 1
-CircuitBuildTimeBin 2085 1
-CircuitBuildTimeBin 2115 2
-CircuitBuildTimeBin 2125 1
-CircuitBuildTimeBin 2145 1
-CircuitBuildTimeBin 2165 2
-CircuitBuildTimeBin 2185 1
-CircuitBuildTimeBin 2195 1
-CircuitBuildTimeBin 2205 2
-CircuitBuildTimeBin 2225 1
-CircuitBuildTimeBin 2285 1
-CircuitBuildTimeBin 2295 1
-CircuitBuildTimeBin 2335 1
-CircuitBuildTimeBin 2355 1
-CircuitBuildTimeBin 2395 1
-CircuitBuildTimeBin 2415 2
-CircuitBuildTimeBin 2425 1
-CircuitBuildTimeBin 2435 1
-CircuitBuildTimeBin 2495 1
-CircuitBuildTimeBin 2505 1
-CircuitBuildTimeBin 2515 2
-CircuitBuildTimeBin 2525 1
-CircuitBuildTimeBin 2545 1
-CircuitBuildTimeBin 2555 1
-CircuitBuildTimeBin 2565 1
-CircuitBuildTimeBin 2605 1
-CircuitBuildTimeBin 2615 3
-CircuitBuildTimeBin 2635 2
-CircuitBuildTimeBin 2645 1
-CircuitBuildTimeBin 2665 1
-CircuitBuildTimeBin 2685 1
-CircuitBuildTimeBin 2805 1
-CircuitBuildTimeBin 2815 1
-CircuitBuildTimeBin 2875 1
-CircuitBuildTimeBin 2915 1
-CircuitBuildTimeBin 3005 1
-CircuitBuildTimeBin 3025 1
-CircuitBuildTimeBin 3035 1
-CircuitBuildTimeBin 3185 1
-CircuitBuildTimeBin 3445 1
-CircuitBuildTimeBin 3525 1
-CircuitBuildTimeBin 3595 1
-CircuitBuildTimeBin 3645 1
-CircuitBuildTimeBin 3855 1
-CircuitBuildTimeBin 3865 1
-CircuitBuildTimeBin 3875 1
-CircuitBuildTimeBin 3905 1
-CircuitBuildTimeBin 3925 1
-CircuitBuildTimeBin 4055 1
-CircuitBuildTimeBin 4095 1
-CircuitBuildTimeBin 5045 1
-CircuitBuildTimeBin 5515 1
-CircuitBuildAbandonedCount 1
+CircuitBuildTimeBin 9405 1
+CircuitBuildTimeBin 12205 1
+CircuitBuildTimeBin 13215 1
+CircuitBuildTimeBin 15715 1
+CircuitBuildTimeBin 15875 1
+CircuitBuildTimeBin 16065 1
+CircuitBuildTimeBin 17565 1
+CircuitBuildTimeBin 19385 1
+CircuitBuildTimeBin 19775 1
+CircuitBuildTimeBin 20605 1
+CircuitBuildTimeBin 22055 1
+CircuitBuildTimeBin 22315 2
+CircuitBuildTimeBin 22585 1
+CircuitBuildTimeBin 23645 1
+CircuitBuildTimeBin 24305 1
+CircuitBuildTimeBin 24325 1
+CircuitBuildTimeBin 24665 1
+CircuitBuildTimeBin 25335 1
+CircuitBuildTimeBin 25755 1
+CircuitBuildTimeBin 26745 1
+CircuitBuildTimeBin 26755 2
+CircuitBuildTimeBin 27735 1
+CircuitBuildTimeBin 27745 1
+CircuitBuildTimeBin 27965 1
+CircuitBuildTimeBin 30105 1
+CircuitBuildTimeBin 32375 1
+CircuitBuildTimeBin 32385 2
+CircuitBuildTimeBin 37935 1
 Dormant 0
-Guard in=default rsa_id=89992F82FD9F5FA17BC8316502F93C931259B228 nickname=richhomie sampled_on=2025-12-16T21:57:13 sampled_idx=0 sampled_by=0.4.8.10 listed=1 confirmed_on=2025-12-15T17:38:40 confirmed_idx=1 pb_use_attempts=94.548622 pb_use_successes=94.548622 pb_circ_attempts=160.001953 pb_circ_successes=156.310547 pb_successful_circuits_closed=154.974609 pb_collapsed_circuits=1.335938 pb_timeouts=3.166016
+Guard in=default rsa_id=89992F82FD9F5FA17BC8316502F93C931259B228 nickname=richhomie sampled_on=2025-12-16T21:57:13 sampled_idx=0 sampled_by=0.4.8.10 listed=1 confirmed_on=2025-12-15T17:38:40 confirmed_idx=1 pb_use_attempts=84.137156 pb_use_successes=84.137156 pb_circ_attempts=220.500977 pb_circ_successes=216.155273 pb_successful_circuits_closed=215.487305 pb_collapsed_circuits=0.667969 pb_timeouts=3.083008
 Guard in=default rsa_id=70CDF3509A2063AF5C5C548F77793DACB6986AF9 nickname=Augustiner1328 sampled_on=2025-12-17T19:48:30 sampled_idx=1 sampled_by=0.4.8.10 unlisted_since=2025-12-25T14:20:51 listed=0 confirmed_on=2025-12-14T04:16:37 confirmed_idx=0 pb_use_attempts=98.489014 pb_use_successes=98.489014 pb_circ_attempts=207.960938 pb_circ_successes=203.179688 pb_successful_circuits_closed=200.625000 pb_collapsed_circuits=2.554688 pb_timeouts=7.101562
-Guard in=default rsa_id=706C539383A685A12FD0D38A099CECBF001ED708 nickname=CSGuardTorRelayTwo sampled_on=2025-12-19T13:46:27 sampled_idx=2 sampled_by=0.4.8.10 listed=1 confirmed_on=2025-12-22T04:19:15 confirmed_idx=2 pb_use_attempts=54.000000 pb_use_successes=54.000000 pb_circ_attempts=199.000000 pb_circ_successes=189.000000 pb_successful_circuits_closed=185.000000 pb_collapsed_circuits=4.000000 pb_timeouts=30.000000
-Guard in=default rsa_id=0BF171D0984EEF35B9ED9D7801941C833DD3853B nickname=spider sampled_on=2025-12-17T21:51:41 sampled_idx=3 sampled_by=0.4.8.10 listed=1 confirmed_on=2025-12-20T22:26:09 confirmed_idx=7 pb_circ_attempts=2.000000 pb_circ_successes=2.000000 pb_successful_circuits_closed=2.000000
+Guard in=default rsa_id=706C539383A685A12FD0D38A099CECBF001ED708 nickname=CSGuardTorRelayTwo sampled_on=2025-12-19T13:46:27 sampled_idx=2 sampled_by=0.4.8.10 listed=1 confirmed_on=2025-12-22T04:19:15 confirmed_idx=2 pb_use_attempts=84.000000 pb_use_successes=84.000000 pb_circ_attempts=272.000000 pb_circ_successes=260.500000 pb_successful_circuits_closed=256.000000 pb_collapsed_circuits=4.500000 pb_timeouts=16.500000
+Guard in=default rsa_id=0BF171D0984EEF35B9ED9D7801941C833DD3853B nickname=spider sampled_on=2025-12-17T21:51:41 sampled_idx=3 sampled_by=0.4.8.10 listed=1 confirmed_on=2025-12-20T22:26:09 confirmed_idx=7 pb_use_attempts=16.000000 pb_use_successes=16.000000 pb_circ_attempts=49.000000 pb_circ_successes=49.000000 pb_successful_circuits_closed=49.000000
 Guard in=default rsa_id=889944F540C155E7E32C909B9E1424677689AD4D nickname=Mowgli sampled_on=2025-12-20T00:00:00 sampled_idx=4 sampled_by=0.4.8.10 listed=1 confirmed_on=2025-12-22T16:25:31 confirmed_idx=4 pb_use_attempts=22.000000 pb_use_successes=22.000000 pb_circ_attempts=28.000000 pb_circ_successes=28.000000 pb_successful_circuits_closed=27.000000 pb_collapsed_circuits=1.000000
 Guard in=default rsa_id=E025B7DD8DE80B832B12BB4FF0C7876BA5929A11 nickname=Quetzalcoatl sampled_on=2025-12-14T06:13:00 sampled_idx=5 sampled_by=0.4.8.10 listed=1
 Guard in=default rsa_id=07895E6DE9B3CBCB74B6CCF1ABB14BF112FF36F7 nickname=hayzycomr sampled_on=2025-12-12T23:42:08 sampled_idx=6 sampled_by=0.4.8.10 listed=1
@@ -203,8 +92,8 @@ Guard in=default rsa_id=07D8ECD7305722EE37FA0A408BC0D2034B9BE07A nickname=merc s
 Guard in=default rsa_id=0E4F190C4A6F7DDF7F8C9A7842B85B4BBCF5F44B nickname=ForPrivacyNET sampled_on=2025-12-15T02:00:44 sampled_idx=56 sampled_by=0.4.8.10 listed=1
 Guard in=default rsa_id=FD3517DFFC281F1430EBB6A62520595A8FF7B378 nickname=SrsTubesRelay sampled_on=2025-12-24T09:20:06 sampled_idx=57 sampled_by=0.4.8.10 listed=1
 Guard in=default rsa_id=DAE65AD32A074CECB30AD3FBB7504F0CDC616CD1 nickname=pablito sampled_on=2025-12-16T17:15:41 sampled_idx=58 sampled_by=0.4.8.10 listed=1
-Guard in=default rsa_id=E094CE3392E59129B44B01DB5C63AA52F5FF4566 nickname=ieditedtheconfig sampled_on=2025-12-16T04:43:42 sampled_idx=59 sampled_by=0.4.8.10 unlisted_since=2025-12-26T23:52:08 listed=0
-LastWritten 2025-12-27 19:28:37
-MinutesSinceUserActivity 1
+Guard in=default rsa_id=E094CE3392E59129B44B01DB5C63AA52F5FF4566 nickname=ieditedtheconfig sampled_on=2025-12-16T04:43:42 sampled_idx=59 sampled_by=0.4.8.10 listed=1
+LastWritten 2025-12-28 03:06:26
+MinutesSinceUserActivity 2
 TorVersion Tor 0.4.8.10
-TotalBuildTimes 205
+TotalBuildTimes 33
