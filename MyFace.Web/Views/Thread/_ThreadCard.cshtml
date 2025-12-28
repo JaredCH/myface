@@ -1,10 +1,20 @@
 @model MyFace.Core.Entities.Thread
 @inject MyFace.Web.Services.BBCodeFormatter Formatter
 @using System.Security.Claims
+@using System.Linq
+@using MyFace.Core.Entities
 @{
     var userRole = User.FindFirstValue(ClaimTypes.Role);
     var isAdminOrMod = userRole == "Admin" || userRole == "Moderator";
     var firstPost = Model.Posts.OrderBy(p => p.CreatedAt).FirstOrDefault();
+    var gallerySource = Model.Posts
+        .OrderBy(p => p.CreatedAt)
+        .FirstOrDefault(p => p.Images != null && p.Images.Any());
+    var galleryImages = (gallerySource?.Images ?? Enumerable.Empty<PostImage>())
+        .OrderBy(i => i.DisplayOrder)
+        .ThenBy(i => i.Id)
+        .Take(3)
+        .ToList();
 }
 <div class="card thread-card">
     <h2 class="thread-title"><a href="@Url.Action("View", new { id = Model.Id })">@Model.Title</a></h2>
@@ -19,6 +29,18 @@
         }
     </p>
     <div class="preview clamp-5">@Formatter.Format(firstPost?.Content ?? "")</div>
+    @if (galleryImages.Any())
+    {
+        <div class="thread-card-gallery" aria-label="Thread preview images">
+            @foreach (var image in galleryImages)
+            {
+                var thumb = string.IsNullOrWhiteSpace(image.ThumbnailPath) ? image.OriginalPath : image.ThumbnailPath;
+                <a href="@image.OriginalPath" target="_blank" rel="noopener" class="thread-card-thumb">
+                    <img src="@thumb" alt="Thread attachment preview" loading="lazy" />
+                </a>
+            }
+        </div>
+    }
     <div class="card-footer">
         <a class="button" href="@Url.Action("View", new { id = Model.Id })">View Thread</a>
         <span class="meta">@Model.Posts.Count post(s)</span>

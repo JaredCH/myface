@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using Microsoft.AspNetCore.Http;
 
 namespace MyFace.Web.Models;
 
@@ -13,4 +14,7 @@ public class CreateThreadViewModel
     public string Content { get; set; } = string.Empty;
 
     public bool PostAsAnonymous { get; set; }
+
+    [Display(Name = "Preview Images")]
+    public List<IFormFile> Images { get; set; } = new();
 }

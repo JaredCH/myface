@@ -1,6 +1,9 @@
+@using System.Collections.Generic
+@using System.Linq
+@using System.Security.Claims
+@using MyFace.Core.Entities
 @model MyFace.Core.Entities.Thread
 @inject MyFace.Web.Services.BBCodeFormatter Formatter
-@using System.Security.Claims
 @{
     ViewData["Title"] = Model.Title;
     var postScores = (Dictionary<int, int>)ViewBag.PostScores;
@@ -12,11 +15,10 @@
     var reportThreshold = (int)(ViewBag.ReportHideThreshold ?? 2);
     var threadOwnerRole = Model.User?.Role ?? "User";
     var canEditThread = (currentUserId.HasValue && Model.UserId == currentUserId) || isAdmin || (isMod && threadOwnerRole == "User");
-    // Simple server-side pagination inside the view (excluding main post, which is always shown)
     var pageParam = ViewContext.HttpContext.Request.Query["page"].ToString();
     var currPage = int.TryParse(pageParam, out var p) && p > 0 ? p : 1;
     const int pageSize = 25;
-    var ordered = Model.Posts.OrderBy(p => p.IsSticky ? 0 : 1).ThenBy(p => p.CreatedAt).ToList();
+    var ordered = Model.Posts.OrderBy(q => q.IsSticky ? 0 : 1).ThenBy(q => q.CreatedAt).ToList();
     var mainPost = ordered.FirstOrDefault();
     var visibleMainPost = mainPost;
     var replies = ordered.Skip(mainPost != null ? 1 : 0).ToList();
@@ -26,18 +28,21 @@
         {
             visibleMainPost = null;
         }
-        replies = replies.Where(p => !p.IsReportHidden).ToList();
+        replies = replies.Where(q => !q.IsReportHidden).ToList();
     }
     var total = replies.Count;
     var skip = (currPage - 1) * pageSize;
     var pagePosts = replies.Skip(skip).Take(pageSize).ToList();
     var hasPrev = currPage > 1;
     var hasNext = skip + pagePosts.Count < total;
+    var heroImages = visibleMainPost?.Images?.OrderBy(i => i.DisplayOrder).Take(2).ToList() ?? new List<PostImage>();
 }
-
+<div class="thread-test-return">
+    <a href="@Url.Action("Index", "Thread")" class="thread-action">← Back to threads</a>
+</div>
 @if (visibleMainPost != null || (!isAdminOrMod && mainPost != null))
 {
-    <div class="card thread-shell">
+    <div class="card thread-shell thread-shell--test">
         <div class="thread-shell-header">
             <div class="thread-shell-title-row">
                 <h1>@Model.Title</h1>
@@ -67,11 +72,24 @@
             </div>
         </div>
 
+        @if (heroImages.Any())
+        {
+            <div class="thread-hero-gallery" aria-label="Thread preview images">
+                @foreach (var hero in heroImages)
+                {
+                    <a href="@hero.OriginalPath" target="_blank" rel="noopener" class="thread-hero-tile">
+                        <img src="@hero.OriginalPath" alt="Preview image" loading="lazy" />
+                    </a>
+                }
+            </div>
+        }
+
         @if (visibleMainPost != null)
         {
             <div class="thread-shell-body">
                 @Formatter.Format(visibleMainPost.Content)
             </div>
+            @await Html.PartialAsync("_PostImageGallery", visibleMainPost.Images ?? Enumerable.Empty<PostImage>())
         }
         else
         {
@@ -126,7 +144,7 @@
 @foreach (var post in pagePosts)
 {
     var isOP = post.UserId == Model.UserId;
-    <div class="post-card @(isOP ? "post-op" : "")" id="post-@post.Id">
+    <div class="post-card @(isOP ? "post-op" : string.Empty)" id="post-@post.Id">
         @if (post.IsSticky)
         {
             <div class="post-pinned">📌 Pinned Reply</div>
@@ -144,6 +162,7 @@
             <div class="post-op-badge" style="background: #444; color: #fff;">⚠️ Reported @post.ReportCount</div>
         }
         <div class="post-content">@Formatter.Format(post.Content)</div>
+        @await Html.PartialAsync("_PostImageGallery", post.Images)
         <div class="post-footer">
             <div class="post-meta">
                 <span class="meta">@post.CreatedAt.ToString("u") by 
@@ -234,36 +253,46 @@
     }
 </div>
 
-<div class="reply-section">
+<div class="reply-section reply-section--test">
     <h2 id="reply">💬 Reply</h2>
     @if (Context.Request.Query["error"] == "CaptchaFailed")
     {
         <div class="error-message">Incorrect security check answer. Please try again.</div>
     }
-    <form asp-action="Reply" method="post">
-        <input type="hidden" name="threadId" value="@Model.Id" />
+    @if (TempData["ThreadReplyError"] is string replyError && !string.IsNullOrWhiteSpace(replyError))
+    {
+        <div class="error-message">@replyError</div>
+    }
+    <form asp-action="Reply" method="post" enctype="multipart/form-data">
+        @Html.AntiForgeryToken()
+        <input type="hidden" name="ThreadId" value="@Model.Id" />
         <label for="content">Content</label>
-        <textarea id="content" name="content" rows="6"></textarea>
-        
+        <textarea id="content" name="Content" rows="6" class="input"></textarea>
+
         @await Html.PartialAsync("_BBCodeHelp")
-        
-        <label class="checkbox-label"><input type="checkbox" name="postAsAnonymous" /> Post as Anonymous</label>
-        
-        <div class="captcha-box">
-            <strong>@Html.Raw(ViewBag.CaptchaContext)</strong>
+
+        <label class="checkbox-label"><input type="checkbox" name="PostAsAnonymous" /> Post as Anonymous</label>
+
+        <label for="ReplyImages">Attach up to two images</label>
+        <div class="lux-upload compact" aria-describedby="reply-upload-help">
+            <p class="lux-upload-copy">Select images directly; the browser will display their filenames once chosen.</p>
+            <input id="ReplyImages" type="file" name="Images"
+                   accept="image/png,image/jpeg,image/webp,image/gif"
+                   multiple
+                   class="lux-file-input"
+                   aria-describedby="reply-upload-help" />
+            <p id="reply-upload-help" class="lux-upload-hint">Only the first two files are persisted. Images larger than 6&nbsp;MB are rejected.</p>
         </div>
-        <details style="background: #0f172a08; border: 1px solid #cbd5e1; border-radius: 6px; padding: 0.75rem 1rem; margin: 0.5rem 0 1rem;">
-            <summary style="cursor: pointer; font-weight: 600;">How to complete this captcha</summary>
-            <ul style="margin: 0.5rem 0 0 1.25rem; padding: 0; list-style: disc;">
-                <li>Read the phrase above.</li>
-                <li>The question will ask for the first, second, or third word — type that one word.</li>
-                <li>Occasionally you’ll see simple math (1–10); enter the result.</li>
-                <li>Case is ignored; no punctuation needed.</li>
-            </ul>
-        </details>
-        <div class="form-group">
-            <label for="captchaAnswer">@ViewBag.CaptchaQuestion</label>
-            <input name="captchaAnswer" id="captchaAnswer" class="input" required autocomplete="off" />
+
+        @{ var captchaHelpText = "Read the phrase above, then answer the requested word position or simple math. Case insensitive, no punctuation."; }
+        <div class="captcha-box">
+            <div class="captcha-code">@Html.Raw(ViewBag.CaptchaContext)</div>
+            <label class="captcha-question" for="captchaAnswer">@ViewBag.CaptchaQuestion</label>
+            <input name="captchaAnswer" id="captchaAnswer" class="input captcha-input" required autocomplete="off" />
+            <button type="button"
+                    class="captcha-help"
+                    title="@captchaHelpText"
+                    aria-label="How to complete this captcha">?</button>
         </div>
 
         <div class="form-actions">

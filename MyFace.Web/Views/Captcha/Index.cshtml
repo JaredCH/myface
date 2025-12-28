@@ -7,37 +7,29 @@
     <h1>Security Check</h1>
     <p>Please complete this check to continue.</p>
 
-    <div style="background: var(--accent-light); padding: 1rem; border-left: 4px solid var(--accent); margin: 1rem 0; color: var(--fg);">
-        <strong>@Html.Raw(ViewBag.Context)</strong>
-    </div>
-
-    <details style="background: #0f172a08; border: 1px solid #cbd5e1; border-radius: 6px; padding: 0.75rem 1rem; margin: 0.5rem 0 1rem;">
-        <summary style="cursor: pointer; font-weight: 600;">How to complete this captcha</summary>
-        <ul style="margin: 0.5rem 0 0 1.25rem; padding: 0; list-style: disc;">
-            <li>Read the phrase above.</li>
-            <li>The question asks for the first, second, or third word — type just that single word.</li>
-            <li>Occasionally you’ll see simple math (numbers 1–10); enter the result.</li>
-            <li>Case does not matter; no punctuation needed.</li>
-        </ul>
-    </details>
-
     <form asp-action="Verify" method="post">
         <input type="hidden" name="returnUrl" value="@ViewBag.ReturnUrl" />
-        
-        <div class="form-group">
-            <label for="answer">@ViewBag.Question</label>
-            <input name="answer" id="answer" class="input" required autocomplete="off" />
-        </div>
-
-        @if (!ViewData.ModelState.IsValid)
-        {
-            <div style="color: red; margin: 1rem 0;">
-                @foreach (var error in ViewData.ModelState.Values.SelectMany(v => v.Errors))
+        @{ var captchaHelpText = "Read the phrase above, then answer the requested word position or simple math. Case insensitive, no punctuation."; }
+        <div class="form-captcha">
+            <div class="captcha-box">
+                <div class="captcha-code">@Html.Raw(ViewBag.Context)</div>
+                <label class="captcha-question" for="answer">@ViewBag.Question</label>
+                <input name="answer" id="answer" class="input captcha-input" required autocomplete="off" />
+                @if (!ViewData.ModelState.IsValid)
                 {
-                    <p>@error.ErrorMessage</p>
+                    <div class="validation" style="margin-top: 0.5rem;">
+                        @foreach (var error in ViewData.ModelState.Values.SelectMany(v => v.Errors))
+                        {
+                            <p style="margin: 0;">@error.ErrorMessage</p>
+                        }
+                    </div>
                 }
+                <button type="button"
+                        class="captcha-help"
+                        title="@captchaHelpText"
+                        aria-label="How to complete this captcha">?</button>
             </div>
-        }
+        </div>
 
         <button type="submit" class="button">Verify</button>
     </form>

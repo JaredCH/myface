@@ -1,4 +1,5 @@
 using System.Security.Claims;
+using System.Threading;
 using Microsoft.AspNetCore.Mvc;
 using MyFace.Services;
 using MyFace.Web.Models;
@@ -10,11 +11,13 @@ public class ThreadController : Controller
 {
     private readonly ForumService _forumService;
     private readonly CaptchaService _captchaService;
+    private readonly ThreadImageStorageService _imageStorageService;
 
-    public ThreadController(ForumService forumService, CaptchaService captchaService)
+    public ThreadController(ForumService forumService, CaptchaService captchaService, ThreadImageStorageService imageStorageService)
     {
         _forumService = forumService;
         _captchaService = captchaService;
+        _imageStorageService = imageStorageService;
     }
 
     public async Task<IActionResult> Index(int page = 1)
@@ -51,11 +54,8 @@ public class ThreadController : Controller
     [HttpGet]
     public IActionResult Create()
     {
-        var challenge = _captchaService.GenerateChallenge();
-        HttpContext.Session.SetString("ThreadCaptchaAnswer", challenge.Answer);
-        ViewBag.CaptchaContext = challenge.Context;
-        ViewBag.CaptchaQuestion = challenge.Question;
-        return View();
+        PrepareCreateCaptcha();
+        return View(new CreateThreadViewModel());
     }
 
     [HttpGet]
@@ -97,32 +97,55 @@ public class ThreadController : Controller
 
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Create(CreateThreadViewModel model, string captchaAnswer)
+    public async Task<IActionResult> Create(CreateThreadViewModel model, string captchaAnswer, CancellationToken cancellationToken)
     {
         var expected = HttpContext.Session.GetString("ThreadCaptchaAnswer");
         if (!_captchaService.Validate(expected, captchaAnswer))
         {
             ModelState.AddModelError("Captcha", "Incorrect security check answer.");
-            var challenge = _captchaService.GenerateChallenge();
-            HttpContext.Session.SetString("ThreadCaptchaAnswer", challenge.Answer);
-            ViewBag.CaptchaContext = challenge.Context;
-            ViewBag.CaptchaQuestion = challenge.Question;
+            PrepareCreateCaptcha();
             return View(model);
         }
         HttpContext.Session.Remove("ThreadCaptchaAnswer");
 
+        var imageCount = model.Images?.Count ?? 0;
+        if (imageCount > 2)
+        {
+            ModelState.AddModelError("Images", "You can attach up to two images.");
+        }
+
         if (!ModelState.IsValid)
         {
+            PrepareCreateCaptcha();
             return View(model);
+        }
+
+        List<StoredImageResult> uploads = new();
+        if (model.Images?.Any() == true)
+        {
+            try
+            {
+                uploads = (await _imageStorageService.SaveImagesAsync(model.Images, cancellationToken)).ToList();
+            }
+            catch (InvalidOperationException ex)
+            {
+                ModelState.AddModelError("Images", ex.Message);
+                PrepareCreateCaptcha();
+                return View(model);
+            }
         }
 
         int? userId = GetCurrentUserId();
         bool isAnonymous = model.PostAsAnonymous || userId == null;
 
         var thread = await _forumService.CreateThreadAsync(model.Title, userId, isAnonymous);
-        
-        // Create first post
-        await _forumService.CreatePostAsync(thread.Id, model.Content, userId, isAnonymous);
+        var post = await _forumService.CreatePostAsync(thread.Id, model.Content, userId, isAnonymous);
+
+        var order = 0;
+        foreach (var upload in uploads)
+        {
+            await _forumService.AddPostImageAsync(post.Id, upload.OriginalUrl, upload.ThumbnailUrl, upload.ContentType, upload.Width, upload.Height, upload.FileSize, order++);
+        }
 
         return RedirectToAction("View", new { id = thread.Id });
     }
@@ -197,39 +220,56 @@ public class ThreadController : Controller
         ViewBag.PostScores = postScores;
 
         // Generate Captcha for Reply
-        var challenge = _captchaService.GenerateChallenge();
-        HttpContext.Session.SetString("ReplyCaptchaAnswer", challenge.Answer);
-        ViewBag.CaptchaContext = challenge.Context;
-        ViewBag.CaptchaQuestion = challenge.Question;
+        PrepareReplyCaptcha();
 
         return View(thread);
     }
 
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Reply(int threadId, string content, string captchaAnswer, bool postAsAnonymous = false)
+    public async Task<IActionResult> Reply(ThreadReplyViewModel model, string captchaAnswer, CancellationToken cancellationToken)
     {
         var expected = HttpContext.Session.GetString("ReplyCaptchaAnswer");
         if (!_captchaService.Validate(expected, captchaAnswer))
         {
-            // Since we are redirecting back to View, we can't easily show the error without TempData
-            // But TempData might be lost if we regenerate the captcha in View()
-            // For now, let's just fail silently or redirect with error param
-            return RedirectToAction("View", new { id = threadId, error = "CaptchaFailed" });
+            return RedirectToAction("View", new { id = model.ThreadId, error = "CaptchaFailed" });
         }
         HttpContext.Session.Remove("ReplyCaptchaAnswer");
 
-        if (string.IsNullOrWhiteSpace(content))
+        if (!ModelState.IsValid)
         {
-            return RedirectToAction("View", new { id = threadId });
+            TempData["ThreadReplyError"] = "Reply content is required.";
+            return RedirectToAction("View", new { id = model.ThreadId });
+        }
+
+        if ((model.Images?.Count ?? 0) > 2)
+        {
+            TempData["ThreadReplyError"] = "You can attach up to two images.";
+            return RedirectToAction("View", new { id = model.ThreadId });
+        }
+
+        List<StoredImageResult> uploads = new();
+        try
+        {
+            uploads = (await _imageStorageService.SaveImagesAsync(model.Images, cancellationToken)).ToList();
+        }
+        catch (InvalidOperationException ex)
+        {
+            TempData["ThreadReplyError"] = ex.Message;
+            return RedirectToAction("View", new { id = model.ThreadId });
         }
 
         int? userId = GetCurrentUserId();
-        bool isAnonymous = postAsAnonymous || userId == null;
+        bool isAnonymous = model.PostAsAnonymous || userId == null;
+        var post = await _forumService.CreatePostAsync(model.ThreadId, model.Content, userId, isAnonymous);
 
-        await _forumService.CreatePostAsync(threadId, content, userId, isAnonymous);
+        var order = 0;
+        foreach (var upload in uploads)
+        {
+            await _forumService.AddPostImageAsync(post.Id, upload.OriginalUrl, upload.ThumbnailUrl, upload.ContentType, upload.Width, upload.Height, upload.FileSize, order++);
+        }
 
-        return RedirectToAction("View", new { id = threadId });
+        return RedirectToAction("View", new { id = model.ThreadId });
     }
 
     [HttpPost]
@@ -430,5 +470,21 @@ public class ThreadController : Controller
             return userId;
         }
         return null;
+    }
+
+    private void PrepareCreateCaptcha()
+    {
+        var challenge = _captchaService.GenerateChallenge();
+        HttpContext.Session.SetString("ThreadCaptchaAnswer", challenge.Answer);
+        ViewBag.CaptchaContext = challenge.Context;
+        ViewBag.CaptchaQuestion = challenge.Question;
+    }
+
+    private void PrepareReplyCaptcha()
+    {
+        var challenge = _captchaService.GenerateChallenge();
+        HttpContext.Session.SetString("ReplyCaptchaAnswer", challenge.Answer);
+        ViewBag.CaptchaContext = challenge.Context;
+        ViewBag.CaptchaQuestion = challenge.Question;
     }
 }

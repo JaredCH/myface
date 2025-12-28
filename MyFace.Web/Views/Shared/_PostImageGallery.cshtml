@@ -10,8 +10,11 @@
 <div class="post-image-gallery" aria-label="Attached images">
     @foreach (var image in images)
     {
+        var thumbnail = string.IsNullOrWhiteSpace(image.ThumbnailPath)
+            ? image.OriginalPath
+            : image.ThumbnailPath;
         <a href="@image.OriginalPath" target="_blank" rel="noopener" class="post-image-frame">
-            <img src="@image.ThumbnailPath" alt="Attachment preview" loading="lazy" />
+            <img src="@thumbnail" alt="Attachment preview" loading="lazy" />
         </a>
     }
 </div>

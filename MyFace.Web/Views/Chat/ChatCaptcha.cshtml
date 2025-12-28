@@ -10,11 +10,15 @@
     <style>
         body { background: #f8fafc; color: #0f172a; font-family: monospace; padding: 1rem; }
         .box { border: 1px solid #cbd5e1; background: #ffffff; padding: 1rem; border-radius: 6px; max-width: 520px; margin: 0 auto; }
-        .question { margin: 0.75rem 0; }
-        .context { margin-bottom: 0.75rem; padding: 0.5rem; border: 1px dashed #cbd5e1; background: #f1f5f9; }
+        .captcha-panel { background: linear-gradient(135deg, #f97316, #ea580c); color: #fff7ed; border-radius: 10px; padding: 1rem 1.25rem; margin: 1rem 0; box-shadow: 0 12px 28px rgba(15,23,42,0.35); border: 1px solid rgba(250, 204, 21, 0.5); position: relative; }
+        .captcha-panel-code { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; font-size: 1.1rem; letter-spacing: 0.08em; text-transform: uppercase; background: rgba(15, 23, 42, 0.35); padding: 0.75rem 0.9rem; border-radius: 8px; margin-bottom: 0.85rem; box-shadow: inset 0 0 0 1px rgba(15, 23, 42, 0.35); }
+        .captcha-panel-question { display: block; margin-bottom: 0.35rem; font-weight: 700; letter-spacing: 0.02em; }
+        .captcha-panel-input { width: 100%; padding: 0.45rem 0.65rem; border: 1px solid rgba(255,255,255,0.5); border-radius: 8px; background: rgba(15,23,42,0.25); color: #fff; font-family: inherit; }
+        .captcha-panel-input::placeholder { color: rgba(248, 250, 252, 0.65); }
+        .captcha-panel-input:focus { outline: none; border-color: #fde68a; box-shadow: 0 0 0 3px rgba(253, 230, 138, 0.35); }
+        .captcha-help { position: absolute; bottom: 0.85rem; right: 0.85rem; width: 32px; height: 32px; border-radius: 50%; border: 1px solid rgba(255,255,255,0.6); background: transparent; color: #fff; font-weight: 700; cursor: help; }
+        .captcha-help:hover { background: rgba(15,23,42,0.25); }
         .error { background: #fdecec; color: #7f1d1d; border: 1px solid #f5c2c7; padding: 0.5rem 0.75rem; border-radius: 4px; margin-bottom: 0.75rem; }
-        label { display: block; margin-bottom: 0.25rem; font-weight: 600; }
-        input[type="text"] { width: 100%; padding: 0.45rem; border: 1px solid #cbd5e1; border-radius: 4px; font-family: monospace; }
         .actions { margin-top: 0.75rem; display: flex; gap: 0.5rem; align-items: center; }
         button { padding: 0.45rem 0.9rem; border: 1px solid #0f172a; background: #0f172a; color: #ffffff; border-radius: 4px; cursor: pointer; }
         button:hover { background: #1f2a48; }
@@ -29,23 +33,17 @@
         {
             <div class="error">@Model.Error</div>
         }
-        <div class="context">@Html.Raw(Model.ContextHtml)</div>
-        <div class="question">@Model.Question</div>
-        <details style="background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 6px; padding: 0.5rem 0.75rem; margin: 0.25rem 0 0.75rem;">
-            <summary style="cursor: pointer; font-weight: 700;">How to complete this captcha</summary>
-            <ul style="margin: 0.4rem 0 0 1.2rem; padding: 0;">
-                <li>Read the phrase above.</li>
-                <li>The question will ask for the first, second, or third word — type that one word.</li>
-                <li>Occasionally you’ll see simple math (1–10); enter the result.</li>
-                <li>Case is ignored; no punctuation needed.</li>
-            </ul>
-        </details>
         <form method="post" asp-action="SolveCaptcha" asp-controller="Chat">
             @Html.AntiForgeryToken()
             <input type="hidden" name="room" value="@Model.Room" />
             <input type="hidden" name="content" value="@Model.Content" />
-            <label for="answer">Answer</label>
-            <input id="answer" name="answer" type="text" autocomplete="off" />
+            @{ var captchaHelpText = "Read the phrase above, then answer the requested word position or simple math. Case insensitive, no punctuation."; }
+            <div class="captcha-panel">
+                <div class="captcha-panel-code">@Html.Raw(Model.ContextHtml)</div>
+                <label class="captcha-panel-question" for="answer">@Model.Question</label>
+                <input id="answer" name="answer" type="text" autocomplete="off" class="captcha-panel-input" />
+                <button type="button" class="captcha-help" title="@captchaHelpText" aria-label="How to complete this captcha">?</button>
+            </div>
             <div class="actions">
                 <button type="submit">Submit</button>
                 <span class="meta">Attempts remaining: @Model.AttemptsRemaining</span>
