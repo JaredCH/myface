@@ -138,3 +138,4 @@
 /home/server/myface/MyFace.Web/bin/Debug/net8.0/System.Text.Encodings.Web.dll
 /home/server/myface/MyFace.Web/bin/Debug/net8.0/System.Text.Json.dll
 /home/server/myface/MyFace.Web/bin/Debug/net8.0/runtimes/browser/lib/net8.0/System.Text.Encodings.Web.dll
+/home/server/myface/MyFace.Web/bin/Debug/net8.0/SixLabors.ImageSharp.dll

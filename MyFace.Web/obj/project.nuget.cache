@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "dgSpecHash": "OaV6dn4a/aI=",
+  "dgSpecHash": "zlubb340FNk=",
   "success": true,
   "projectFilePath": "/home/server/myface/MyFace.Web/MyFace.Web.csproj",
   "expectedPackageFiles": [
@@ -47,6 +47,7 @@
     "/home/server/.nuget/packages/mono.texttemplating/2.2.1/mono.texttemplating.2.2.1.nupkg.sha512",
     "/home/server/.nuget/packages/npgsql/8.0.3/npgsql.8.0.3.nupkg.sha512",
     "/home/server/.nuget/packages/npgsql.entityframeworkcore.postgresql/8.0.4/npgsql.entityframeworkcore.postgresql.8.0.4.nupkg.sha512",
+    "/home/server/.nuget/packages/sixlabors.imagesharp/3.1.4/sixlabors.imagesharp.3.1.4.nupkg.sha512",
     "/home/server/.nuget/packages/system.codedom/4.4.0/system.codedom.4.4.0.nupkg.sha512",
     "/home/server/.nuget/packages/system.collections.immutable/6.0.0/system.collections.immutable.6.0.0.nupkg.sha512",
     "/home/server/.nuget/packages/system.composition/6.0.0/system.composition.6.0.0.nupkg.sha512",
@@ -101,6 +102,46 @@
       "warningLevel": 1,
       "message": "MyFace.Data depends on Microsoft.Extensions.Configuration.Json (>= 8.0.4) but Microsoft.Extensions.Configuration.Json 8.0.4 was not found. An approximate best match of Microsoft.Extensions.Configuration.Json 9.0.0 was resolved.",
       "libraryId": "Microsoft.Extensions.Configuration.Json",
+      "targetGraphs": [
+        "net8.0"
+      ]
+    },
+    {
+      "code": "NU1903",
+      "level": "Warning",
+      "warningLevel": 1,
+      "message": "Package 'SixLabors.ImageSharp' 3.1.4 has a known high severity vulnerability, https://github.com/advisories/GHSA-2cmq-823j-5qj8",
+      "libraryId": "SixLabors.ImageSharp",
+      "targetGraphs": [
+        "net8.0"
+      ]
+    },
+    {
+      "code": "NU1903",
+      "level": "Warning",
+      "warningLevel": 1,
+      "message": "Package 'SixLabors.ImageSharp' 3.1.4 has a known high severity vulnerability, https://github.com/advisories/GHSA-63p8-c4ww-9cg7",
+      "libraryId": "SixLabors.ImageSharp",
+      "targetGraphs": [
+        "net8.0"
+      ]
+    },
+    {
+      "code": "NU1902",
+      "level": "Warning",
+      "warningLevel": 1,
+      "message": "Package 'SixLabors.ImageSharp' 3.1.4 has a known moderate severity vulnerability, https://github.com/advisories/GHSA-qxrv-gp6x-rc23",
+      "libraryId": "SixLabors.ImageSharp",
+      "targetGraphs": [
+        "net8.0"
+      ]
+    },
+    {
+      "code": "NU1902",
+      "level": "Warning",
+      "warningLevel": 1,
+      "message": "Package 'SixLabors.ImageSharp' 3.1.4 has a known moderate severity vulnerability, https://github.com/advisories/GHSA-rxmq-m78w-7wmc",
+      "libraryId": "SixLabors.ImageSharp",
       "targetGraphs": [
         "net8.0"
       ]

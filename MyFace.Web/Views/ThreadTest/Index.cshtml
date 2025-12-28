@@ -1,0 +1,130 @@
+@model List<MyFace.Core.Entities.Thread>
+@inject MyFace.Web.Services.BBCodeFormatter Formatter
+@using System.Security.Claims
+@using MyFace.Core.Entities
+@{
+    ViewData["Title"] = "Thread Test Lab";
+    var userRole = User.FindFirstValue(ClaimTypes.Role);
+    var isAdminOrMod = userRole == "Admin" || userRole == "Moderator";
+    var hotThreads = ViewBag.HotThreads as List<MyFace.Core.Entities.Thread> ?? new List<MyFace.Core.Entities.Thread>();
+    var newThreads = ViewBag.NewThreads as List<MyFace.Core.Entities.Thread> ?? new List<MyFace.Core.Entities.Thread>();
+    var newsThreads = ViewBag.NewsThreads as List<MyFace.Core.Entities.Thread> ?? new List<MyFace.Core.Entities.Thread>();
+    var announcementsThreads = ViewBag.AnnouncementsThreads as List<MyFace.Core.Entities.Thread> ?? new List<MyFace.Core.Entities.Thread>();
+    var reportedPosts = ViewBag.ReportedPosts as List<Post> ?? new List<Post>();
+    var reportThreshold = (int)(ViewBag.ReportHideThreshold ?? 2);
+    var requestedTab = Context.Request.Query["tab"].ToString();
+    var defaultTab = string.IsNullOrEmpty(requestedTab) ? "hot" : requestedTab;
+    if (!isAdminOrMod && defaultTab == "moderation")
+    {
+        defaultTab = "hot";
+    }
+}
+<div class="thread-test-banner">
+    <div>
+        <strong>Thread Visual Lab</strong>
+        <p>Previewing dual-image threads. Only content created here surfaces thumbnails.</p>
+    </div>
+    <span class="thread-test-badge">beta</span>
+</div>
+<div class="thread-actions">
+    <a href="@Url.Action("Create", "ThreadTest")" class="thread-action primary">New Thread (test)</a>
+    <a href="@Url.Action("Threads","Rss")" class="thread-action">RSS</a>
+    <a href="@Url.Action("Index", "Thread")" class="thread-action">Back to classic</a>
+</div>
+
+<div class="tabs">
+    <input type="radio" name="tabset" id="tab-hot" @(defaultTab == "hot" ? "checked" : "") />
+    <label for="tab-hot">🔥 Hot</label>
+
+    <input type="radio" name="tabset" id="tab-new" @(defaultTab == "new" ? "checked" : "") />
+    <label for="tab-new">🆕 New</label>
+
+    <input type="radio" name="tabset" id="tab-news" @(defaultTab == "news" ? "checked" : "") />
+    <label for="tab-news">📰 News</label>
+
+    <input type="radio" name="tabset" id="tab-announcements" @(defaultTab == "announcements" ? "checked" : "") />
+    <label for="tab-announcements">📢 Announcements</label>
+
+    @if (isAdminOrMod)
+    {
+        <input type="radio" name="tabset" id="tab-moderation" @(defaultTab == "moderation" ? "checked" : "") />
+        <label for="tab-moderation">🛡️ Moderation (@reportedPosts.Count)</label>
+    }
+
+    <div class="tab-panels">
+        <section class="tab-panel panel-hot">
+            @foreach (var thread in hotThreads)
+            {
+                @await Html.PartialAsync("_ThreadCardTest", thread)
+            }
+        </section>
+
+        <section class="tab-panel panel-new">
+            @foreach (var thread in newThreads)
+            {
+                @await Html.PartialAsync("_ThreadCardTest", thread)
+            }
+        </section>
+
+        <section class="tab-panel panel-news">
+            @foreach (var thread in newsThreads)
+            {
+                @await Html.PartialAsync("_ThreadCardTest", thread)
+            }
+        </section>
+
+        <section class="tab-panel panel-announcements">
+            @foreach (var thread in announcementsThreads)
+            {
+                @await Html.PartialAsync("_ThreadCardTest", thread)
+            }
+        </section>
+
+        @if (isAdminOrMod)
+        {
+            <section class="tab-panel panel-moderation">
+                @if (!reportedPosts.Any())
+                {
+                    <p style="color: var(--text-muted);">No reported posts right now.</p>
+                }
+                else
+                {
+                    foreach (var post in reportedPosts)
+                    {
+                        <div class="post-card" style="border: 1px solid var(--border-color);">
+                            <div class="post-meta" style="display: flex; justify-content: space-between; align-items: center;">
+                                <div>
+                                    <strong>@(post.Thread?.Title ?? "Thread")</strong>
+                                    <span class="meta">· Post #@post.Id · Reports: @post.ReportCount / @reportThreshold</span>
+                                    @if (post.IsReportHidden)
+                                    {
+                                        <span class="post-op-badge" style="margin-left: 8px; background: #5a1f1f; color: #ffe3e3;">Hidden</span>
+                                    }
+                                    @if (post.WasModerated)
+                                    {
+                                        <span class="post-op-badge" style="margin-left: 8px; background: #2c3e50; color: #dce4ec;">Previously moderated</span>
+                                    }
+                                </div>
+                                <div style="display: flex; gap: 8px;">
+                                    <form method="post" action="@Url.Action("RestoreReportedPost", "Thread", new { postId = post.Id })">
+                                        @Html.AntiForgeryToken()
+                                        <input type="hidden" name="returnToModeration" value="true" />
+                                        <button type="submit" class="btn-mod">✅ Restore</button>
+                                    </form>
+                                    <form method="post" action="@Url.Action("AdminDeletePost", "Thread", new { postId = post.Id })">
+                                        @Html.AntiForgeryToken()
+                                        <input type="hidden" name="returnToModeration" value="true" />
+                                        <button type="submit" class="btn-mod btn-delete">🗑️ Delete</button>
+                                    </form>
+                                </div>
+                            </div>
+                            <div class="post-content" style="margin-top: 8px;">
+                                @Formatter.Format(post.Content)
+                            </div>
+                        </div>
+                    }
+                }
+            </section>
+        }
+    </div>
+</div>

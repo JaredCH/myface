@@ -22,4 +22,5 @@ public class Post
     public User? User { get; set; }
     public User? EditedByUser { get; set; }
     public ICollection<Vote> Votes { get; set; } = new List<Vote>();
+    public ICollection<PostImage> Images { get; set; } = new List<PostImage>();
 }

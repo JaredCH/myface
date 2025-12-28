@@ -52,6 +52,7 @@ public class ForumService
             .Include(t => t.User)
                 .ThenInclude(u => u.PGPVerifications)
             .Include(t => t.Posts)
+                .ThenInclude(p => p.Images)
             .OrderByDescending(t => t.IsPinned)
             .ThenByDescending(t => t.CreatedAt)
             .Skip(skip)
@@ -64,6 +65,8 @@ public class ForumService
         return await _context.Threads
             .Include(t => t.User)
                 .ThenInclude(u => u.PGPVerifications)
+            .Include(t => t.Posts)
+                .ThenInclude(p => p.Images)
             .Include(t => t.Posts)
                 .ThenInclude(p => p.User)
                     .ThenInclude(u => u.PGPVerifications)
@@ -80,6 +83,7 @@ public class ForumService
         return await _context.Threads
             .Include(t => t.User)
             .Include(t => t.Posts)
+                .ThenInclude(p => p.Images)
             .FirstOrDefaultAsync(t => t.Id == id);
     }
 
@@ -92,6 +96,7 @@ public class ForumService
     {
         return await _context.Posts
             .Include(p => p.User)
+            .Include(p => p.Images)
             .FirstOrDefaultAsync(p => p.Id == postId);
     }
 
@@ -117,6 +122,26 @@ public class ForumService
         TrackActivity("comment", userId);
         await _context.SaveChangesAsync();
         return post;
+    }
+
+    public async Task<PostImage> AddPostImageAsync(int postId, string originalPath, string thumbnailPath, string contentType, int width, int height, long fileSize, int displayOrder)
+    {
+        var image = new PostImage
+        {
+            PostId = postId,
+            OriginalPath = originalPath,
+            ThumbnailPath = thumbnailPath,
+            ContentType = contentType,
+            Width = width,
+            Height = height,
+            FileSize = fileSize,
+            DisplayOrder = displayOrder,
+            CreatedAt = DateTime.UtcNow
+        };
+
+        _context.PostImages.Add(image);
+        await _context.SaveChangesAsync();
+        return image;
     }
 
     public async Task<bool> ReportPostAsync(int postId)

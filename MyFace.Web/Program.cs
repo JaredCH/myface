@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.EntityFrameworkCore;
 using MyFace.Data;
 using MyFace.Services;
+using MyFace.Web.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -42,6 +43,7 @@ builder.Services.AddHostedService<MyFace.Web.Services.OnionMonitorWorker>();
 builder.Services.AddMemoryCache();
 builder.Services.AddScoped<MyFace.Services.ChatService>();
 builder.Services.AddSingleton<MyFace.Services.ChatSnapshotService>();
+builder.Services.AddSingleton<ThreadImageStorageService>();
 
 // HttpClient for Tor/Onion monitoring
 builder.Services.AddHttpClient("TorClient")

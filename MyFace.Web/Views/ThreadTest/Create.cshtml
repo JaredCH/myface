@@ -1,0 +1,80 @@
+@model MyFace.Web.Models.ThreadTestCreateViewModel
+@{
+    ViewData["Title"] = "Create Experimental Thread";
+}
+<div class="thread-test-form">
+    <div class="thread-form-lede">
+        <div>
+            <p class="eyebrow">Preview feature</p>
+            <h1>Launch a visual-first thread</h1>
+            <p class="lede">Attach up to two hero images. They will become smart thumbnails on the test feed and immersive galleries inside the thread.</p>
+        </div>
+        <span class="thread-test-badge">beta</span>
+    </div>
+
+    <form asp-action="Create" method="post" enctype="multipart/form-data">
+        <div class="thread-test-grid">
+            <div>
+                <label asp-for="Title"></label>
+                <input asp-for="Title" class="input" placeholder="Thread headline" />
+                <span asp-validation-for="Title" class="validation"></span>
+
+                <label asp-for="Content"></label>
+                <textarea asp-for="Content" rows="8" class="input" placeholder="Tell the story..."></textarea>
+                <span asp-validation-for="Content" class="validation"></span>
+
+                @await Html.PartialAsync("_BBCodeHelp")
+
+                <label class="checkbox-label">
+                    <input type="checkbox" asp-for="PostAsAnonymous" /> Post as Anonymous
+                </label>
+            </div>
+            <div>
+                <label asp-for="Images">Preview images</label>
+                <div class="lux-upload" aria-describedby="threadtest-upload-help">
+                    <p class="lux-upload-copy">
+                        Choose up to two images (PNG, JPG, GIF, or WebP). Larger files are resized server-side; only the first two selections are stored.
+                    </p>
+                    <input asp-for="Images" id="ThreadTestImages" type="file"
+                           accept="image/png,image/jpeg,image/webp,image/gif"
+                           multiple
+                           class="lux-file-input"
+                           aria-describedby="threadtest-upload-help" />
+                    <p id="threadtest-upload-help" class="lux-upload-hint">
+                        Your browser lists the selected filenames above. You can multi-select with Ctrl/Cmd.
+                    </p>
+                    <span asp-validation-for="Images" class="validation"></span>
+                </div>
+            </div>
+        </div>
+
+        <div class="form-captcha">
+            <div class="captcha-box">
+                <strong>@Html.Raw(ViewBag.CaptchaContext)</strong>
+            </div>
+            <details class="captcha-guide">
+                <summary>How to complete this captcha</summary>
+                <ul>
+                    <li>Read the phrase above.</li>
+                    <li>Answer the specific prompt (word or simple math).</li>
+                    <li>No punctuation, case insensitive.</li>
+                </ul>
+            </details>
+            <div class="form-group">
+                <label for="captchaAnswer">@ViewBag.CaptchaQuestion</label>
+                <input name="captchaAnswer" id="captchaAnswer" class="input" required autocomplete="off" />
+                @if (ViewData.ModelState["Captcha"] != null && ViewData.ModelState["Captcha"].Errors.Count > 0)
+                {
+                    <span class="validation">@ViewData.ModelState["Captcha"].Errors[0].ErrorMessage</span>
+                }
+            </div>
+        </div>
+
+        <div class="form-actions">
+            <button type="submit" class="button button-primary">Publish to test feed</button>
+            <a href="@Url.Action("Index", "ThreadTest")" class="button button-secondary">Cancel</a>
+        </div>
+    </form>
+</div>
+
+

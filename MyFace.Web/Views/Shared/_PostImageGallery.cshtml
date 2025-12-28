@@ -1,0 +1,17 @@
+@using System.Linq
+@model IEnumerable<MyFace.Core.Entities.PostImage>
+@{
+    var images = Model?.OrderBy(i => i.DisplayOrder).ToList() ?? new List<MyFace.Core.Entities.PostImage>();
+}
+@if (!images.Any())
+{
+    return;
+}
+<div class="post-image-gallery" aria-label="Attached images">
+    @foreach (var image in images)
+    {
+        <a href="@image.OriginalPath" target="_blank" rel="noopener" class="post-image-frame">
+            <img src="@image.ThumbnailPath" alt="Attachment preview" loading="lazy" />
+        </a>
+    }
+</div>

@@ -306,3 +306,293 @@ label { display: block; margin-top: .75rem; font-weight: 600; color: var(--fg); 
 .mail-unread a {
   font-weight: 700;
 }
+
+/* Thread test lab styles */
+.thread-test-banner {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.85rem 1rem;
+  background: linear-gradient(135deg, rgba(47,111,228,0.12), rgba(16,185,129,0.12));
+  border: 1px solid var(--border);
+  border-radius: 0.75rem;
+  margin-bottom: 0.85rem;
+}
+.thread-test-badge {
+  text-transform: uppercase;
+  font-size: 0.68rem;
+  letter-spacing: 1px;
+  padding: 0.2rem 0.6rem;
+  border-radius: 999px;
+  background: var(--accent);
+  color: #fff;
+  font-weight: 700;
+}
+.thread-card--test {
+  position: relative;
+  overflow: hidden;
+}
+.thread-card--test .thread-card-main {
+  display: flex;
+  flex-direction: column;
+}
+.thread-card-gallery {
+  display: flex;
+  gap: 0.45rem;
+  margin-top: 0.65rem;
+}
+.thread-card-thumb {
+  width: 92px;
+  height: 72px;
+  border-radius: 0.45rem;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  box-shadow: 0 3px 10px rgba(0,0,0,0.12);
+  transition: transform 0.2s ease;
+}
+.thread-card-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.thread-card-thumb:hover {
+  transform: translateY(-2px);
+}
+.thread-card-footer {
+  flex-wrap: wrap;
+}
+.thread-test-form {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: 0.85rem;
+  padding: 1.25rem;
+  box-shadow: 0 12px 24px rgba(15,23,42,0.12);
+}
+.thread-form-lede {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.25rem;
+}
+.thread-form-lede .eyebrow {
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  font-size: 0.7rem;
+  color: var(--muted);
+  margin: 0;
+}
+.thread-form-lede h1 {
+  margin: 0.15rem 0;
+}
+.thread-form-lede .lede {
+  margin: 0;
+  color: var(--muted);
+}
+.thread-test-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1rem;
+}
+.lux-upload {
+  border: 1px dashed var(--border);
+  border-radius: 0.9rem;
+  padding: 1rem;
+  background: var(--bg);
+}
+.lux-upload-copy {
+  margin: 0 0 0.75rem;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+.lux-upload-hint {
+  margin: 0.5rem 0 0;
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+.lux-upload.compact {
+  padding: 0.75rem;
+}
+.lux-file-input {
+  width: 100%;
+  border: 1px dashed var(--border);
+  border-radius: 0.75rem;
+  padding: 0.75rem;
+  background: #fff;
+  color: var(--text);
+  font-size: 0.95rem;
+  cursor: pointer;
+}
+.lux-file-input:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(47,111,228,0.15);
+}
+.lux-file-input::file-selector-button {
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  border-radius: 0.4rem;
+  padding: 0.35rem 0.85rem;
+  margin-right: 0.75rem;
+  cursor: pointer;
+  font-weight: 600;
+}
+.lux-file-input::-webkit-file-upload-button {
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  border-radius: 0.4rem;
+  padding: 0.35rem 0.85rem;
+  margin-right: 0.75rem;
+  cursor: pointer;
+  font-weight: 600;
+}
+.lux-dropzone {
+  border: 1px solid var(--border);
+  border-radius: 0.75rem;
+  padding: 1rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+  background: #fff;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+.lux-dropzone.dragging {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(47,111,228,0.15);
+}
+.lux-preview-grid {
+  margin-top: 0.75rem;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 0.6rem;
+}
+.lux-preview-card {
+  position: relative;
+  border-radius: 0.75rem;
+  border: 1px solid var(--border);
+  padding: 0.6rem;
+  background: #fff;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  min-height: 140px;
+}
+.lux-preview-card img {
+  width: 100%;
+  height: 100px;
+  object-fit: cover;
+  border-radius: 0.55rem;
+}
+.lux-preview-card.empty {
+  align-items: center;
+  justify-content: center;
+  color: var(--muted);
+  font-weight: 600;
+  background: var(--sidebar-bg);
+}
+.lux-preview-card .button.remove {
+  align-self: flex-end;
+  font-size: 0.75rem;
+  padding: 0.2rem 0.5rem;
+}
+.lux-preview-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  font-size: 0.8rem;
+}
+.validation {
+  color: #dc2626;
+  font-size: 0.85rem;
+}
+.form-captcha {
+  margin-top: 1.25rem;
+}
+.captcha-guide {
+  background: #0f172a08;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  padding: 0.75rem 1rem;
+  margin: 0.5rem 0 1rem;
+}
+.captcha-guide summary {
+  cursor: pointer;
+  font-weight: 600;
+}
+.thread-shell--test {
+  border-width: 2px;
+}
+.thread-hero-gallery {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 0.65rem;
+  margin-bottom: 1rem;
+  align-items: start;
+}
+.thread-hero-tile {
+  border-radius: 0.9rem;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  box-shadow: 0 10px 30px rgba(15,23,42,0.18);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #030712;
+}
+.thread-hero-tile img {
+  width: auto;
+  height: auto;
+  max-width: 100%;
+  max-height: 420px;
+  object-fit: contain;
+  display: block;
+}
+.post-image-gallery {
+  margin: 0.75rem 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+.post-image-frame {
+  flex: 1 1 160px;
+  max-width: 220px;
+  min-height: 120px;
+  border-radius: 0.6rem;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  box-shadow: 0 6px 16px rgba(15,23,42,0.12);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #030712;
+}
+.post-image-frame img {
+  width: auto;
+  height: auto;
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  display: block;
+}
+.reply-section--test .lux-upload {
+  margin: 0.75rem 0 1rem;
+}
+.thread-test-return {
+  margin-bottom: 0.5rem;
+}
+
+@media (max-width: 640px) {
+  .thread-form-lede {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+  .thread-test-grid {
+    grid-template-columns: 1fr;
+  }
+  .thread-hero-tile img {
+    max-height: 280px;
+  }
+}

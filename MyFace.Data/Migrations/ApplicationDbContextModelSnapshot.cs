@@ -322,6 +322,56 @@ namespace MyFace.Data.Migrations
                     b.ToTable("Posts");
                 });
 
+            modelBuilder.Entity("MyFace.Core.Entities.PostImage", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("ContentType")
+                        .IsRequired()
+                        .HasMaxLength(128)
+                        .HasColumnType("character varying(128)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+                    b.Property<int>("DisplayOrder")
+                        .HasColumnType("integer");
+
+                    b.Property<long>("FileSize")
+                        .HasColumnType("bigint");
+
+                    b.Property<int>("Height")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("OriginalPath")
+                        .IsRequired()
+                        .HasMaxLength(512)
+                        .HasColumnType("character varying(512)");
+
+                    b.Property<int>("PostId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("ThumbnailPath")
+                        .IsRequired()
+                        .HasMaxLength(512)
+                        .HasColumnType("character varying(512)");
+
+                    b.Property<int>("Width")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("PostId");
+
+                    b.ToTable("PostImages");
+                });
+
             modelBuilder.Entity("MyFace.Core.Entities.PrivateMessage", b =>
                 {
                     b.Property<int>("Id")
@@ -758,6 +808,17 @@ namespace MyFace.Data.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("MyFace.Core.Entities.PostImage", b =>
+                {
+                    b.HasOne("MyFace.Core.Entities.Post", "Post")
+                        .WithMany("Images")
+                        .HasForeignKey("PostId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Post");
+                });
+
             modelBuilder.Entity("MyFace.Core.Entities.PrivateMessage", b =>
                 {
                     b.HasOne("MyFace.Core.Entities.User", "Recipient")
@@ -850,6 +911,8 @@ namespace MyFace.Data.Migrations
 
             modelBuilder.Entity("MyFace.Core.Entities.Post", b =>
                 {
+                    b.Navigation("Images");
+
                     b.Navigation("Votes");
                 });
 

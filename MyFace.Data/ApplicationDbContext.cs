@@ -13,6 +13,7 @@ public class ApplicationDbContext : DbContext
     public DbSet<User> Users { get; set; }
     public DbSet<MyFace.Core.Entities.Thread> Threads { get; set; }
     public DbSet<Post> Posts { get; set; }
+    public DbSet<PostImage> PostImages { get; set; }
     public DbSet<Vote> Votes { get; set; }
     public DbSet<OnionStatus> OnionStatuses { get; set; }
     public DbSet<PGPVerification> PGPVerifications { get; set; }
@@ -72,6 +73,21 @@ public class ApplicationDbContext : DbContext
                 .WithMany(u => u.Posts)
                 .HasForeignKey(e => e.UserId)
                 .OnDelete(DeleteBehavior.SetNull);
+        });
+
+        // PostImage configuration
+        modelBuilder.Entity<PostImage>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.OriginalPath).HasMaxLength(512).IsRequired();
+            entity.Property(e => e.ThumbnailPath).HasMaxLength(512).IsRequired();
+            entity.Property(e => e.ContentType).HasMaxLength(128).IsRequired();
+            entity.Property(e => e.CreatedAt).HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+            entity.HasOne(e => e.Post)
+                .WithMany(p => p.Images)
+                .HasForeignKey(e => e.PostId)
+                .OnDelete(DeleteBehavior.Cascade);
         });
 
         // Vote configuration
