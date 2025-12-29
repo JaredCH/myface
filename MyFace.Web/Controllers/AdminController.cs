@@ -1,7 +1,8 @@
 using Microsoft.AspNetCore.Mvc;
-using MyFace.Services;
-using MyFace.Web.Services;
 using System.Security.Claims;
+using MyFace.Services;
+using MyFace.Web.Models.Admin;
+using MyFace.Web.Services;
 
 namespace MyFace.Web.Controllers;
 
@@ -10,11 +11,13 @@ public class AdminController : Controller
 {
     private readonly UserService _userService;
     private readonly VisitTrackingService _visitTracking;
+    private readonly UploadScanLogService _uploadScanLogService;
 
-    public AdminController(UserService userService, VisitTrackingService visitTracking)
+    public AdminController(UserService userService, VisitTrackingService visitTracking, UploadScanLogService uploadScanLogService)
     {
         _userService = userService;
         _visitTracking = visitTracking;
+        _uploadScanLogService = uploadScanLogService;
     }
 
     public async Task<IActionResult> Index()
@@ -107,5 +110,37 @@ public class AdminController : Controller
         await _userService.DeleteUserAsync(userId);
         TempData["Success"] = $"User {(string.IsNullOrWhiteSpace(user.Username) ? user.LoginName : user.Username)} deleted.";
         return RedirectToAction("Index");
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> Logs([FromQuery] UploadLogFilterModel? filter, int page = 1)
+    {
+        filter ??= new UploadLogFilterModel();
+
+        var query = new UploadScanLogQuery
+        {
+            EventType = "ThreadImage",
+            Source = filter.Origin,
+            ScanStatus = filter.Status,
+            Blocked = filter.Blocked,
+            Username = filter.Username,
+            SessionId = filter.SessionId,
+            Threat = filter.Threat,
+            FromDateUtc = filter.From?.ToUniversalTime(),
+            ToDateUtc = filter.To?.ToUniversalTime()
+        };
+
+        var result = await _uploadScanLogService.GetLogsAsync(query, page, 40);
+        var viewModel = new UploadLogsViewModel
+        {
+            Entries = result.Items,
+            Filter = filter,
+            Page = result.Page,
+            TotalPages = result.TotalPages,
+            TotalCount = result.TotalCount
+        };
+
+        ViewBag.PageSize = result.PageSize;
+        return View(viewModel);
     }
 }

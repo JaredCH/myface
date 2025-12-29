@@ -2,7 +2,10 @@ using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.EntityFrameworkCore;
 using MyFace.Data;
 using MyFace.Services;
+using MyFace.Services.Networking;
 using MyFace.Web.Services;
+using System.Net;
+using System.Net.Security;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -31,31 +34,53 @@ else
 // Register services
 builder.Services.AddScoped<UserService>();
 builder.Services.AddScoped<ForumService>();
+builder.Services.AddSingleton<MonitorLogService>();
 builder.Services.AddScoped<OnionStatusService>();
 builder.Services.AddScoped<ReputationService>();
 builder.Services.AddScoped<VisitTrackingService>();
 builder.Services.AddScoped<RateLimitService>();
 builder.Services.AddScoped<MailService>();
+builder.Services.AddScoped<UploadScanLogService>();
 builder.Services.AddScoped<MyFace.Web.Services.BBCodeFormatter>();
 builder.Services.AddSingleton<MyFace.Web.Services.CaptchaService>();
 builder.Services.AddHostedService<MyFace.Web.Services.OnionMonitorWorker>();
 builder.Services.AddMemoryCache();
 builder.Services.AddScoped<MyFace.Services.ChatService>();
 builder.Services.AddSingleton<MyFace.Services.ChatSnapshotService>();
-builder.Services.AddSingleton<ThreadImageStorageService>();
+builder.Services.AddScoped<ThreadImageStorageService>();
+builder.Services.Configure<MalwareScannerOptions>(builder.Configuration.GetSection("Uploads:MalwareScanner"));
+builder.Services.AddSingleton<IMalwareScanner, ShellMalwareScanner>();
+builder.Services.AddSingleton(new Socks5ProxyConnector("127.0.0.1", 9052));
 
 // HttpClient for Tor/Onion monitoring
 builder.Services.AddHttpClient("TorClient")
-    .ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler
+    .ConfigurePrimaryHttpMessageHandler(sp =>
     {
-        UseProxy = true,
-        // NOTE: .NET HttpClientHandler does not support SOCKS5 directly.
-        // Use an HTTP proxy like Privoxy that forwards to Tor's SOCKS.
-        Proxy = new System.Net.WebProxy("http://127.0.0.1:8118"),
-        AllowAutoRedirect = true,
-        MaxAutomaticRedirections = 5,
-        // Ignore SSL errors for self-signed .onion certificates
-        ServerCertificateCustomValidationCallback = (message, cert, chain, errors) => true
+        var connector = sp.GetRequiredService<Socks5ProxyConnector>();
+        var handler = new SocketsHttpHandler
+        {
+            AllowAutoRedirect = true,
+            MaxAutomaticRedirections = 5,
+            AutomaticDecompression = DecompressionMethods.All,
+            ConnectTimeout = TimeSpan.FromSeconds(60),
+            ConnectCallback = async (context, cancellationToken) =>
+            {
+                var target = context.DnsEndPoint ??
+                    new DnsEndPoint(
+                        context.InitialRequestMessage?.RequestUri?.Host
+                            ?? throw new InvalidOperationException("Missing request host."),
+                        context.InitialRequestMessage?.RequestUri?.Port ?? 80);
+
+                return await connector.ConnectAsync(target, cancellationToken);
+            }
+        };
+
+        handler.SslOptions = new SslClientAuthenticationOptions
+        {
+            RemoteCertificateValidationCallback = (_, _, _, _) => true
+        };
+
+        return handler;
     });
 
 // Authentication

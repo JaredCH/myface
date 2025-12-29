@@ -7,6 +7,10 @@
 
 <h1>Admin Panel</h1>
 
+<div class="panel-actions" style="margin-bottom: 1rem;">
+    <a class="btn btn-info" asp-action="Logs">View Upload Security Log</a>
+</div>
+
 @if (TempData["Success"] != null)
 {
     <div class="alert-success">@TempData["Success"]</div>

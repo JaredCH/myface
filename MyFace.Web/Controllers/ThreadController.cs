@@ -1,4 +1,7 @@
+using System;
 using System.Security.Claims;
+using System.Security.Cryptography;
+using System.Text;
 using System.Threading;
 using Microsoft.AspNetCore.Mvc;
 using MyFace.Services;
@@ -120,12 +123,16 @@ public class ThreadController : Controller
             return View(model);
         }
 
+        int? userId = GetCurrentUserId();
+        bool isAnonymous = model.PostAsAnonymous || userId == null;
+
         List<StoredImageResult> uploads = new();
         if (model.Images?.Any() == true)
         {
             try
             {
-                uploads = (await _imageStorageService.SaveImagesAsync(model.Images, cancellationToken)).ToList();
+                var uploadContext = BuildUploadContext("ThreadCreate", userId, isAnonymous);
+                uploads = (await _imageStorageService.SaveImagesAsync(model.Images, uploadContext, cancellationToken)).ToList();
             }
             catch (InvalidOperationException ex)
             {
@@ -134,9 +141,6 @@ public class ThreadController : Controller
                 return View(model);
             }
         }
-
-        int? userId = GetCurrentUserId();
-        bool isAnonymous = model.PostAsAnonymous || userId == null;
 
         var thread = await _forumService.CreateThreadAsync(model.Title, userId, isAnonymous);
         var post = await _forumService.CreatePostAsync(thread.Id, model.Content, userId, isAnonymous);
@@ -248,28 +252,33 @@ public class ThreadController : Controller
             return RedirectToAction("View", new { id = model.ThreadId });
         }
 
-        List<StoredImageResult> uploads = new();
-        try
-        {
-            uploads = (await _imageStorageService.SaveImagesAsync(model.Images, cancellationToken)).ToList();
-        }
-        catch (InvalidOperationException ex)
-        {
-            TempData["ThreadReplyError"] = ex.Message;
+            int? userId = GetCurrentUserId();
+            bool isAnonymous = model.PostAsAnonymous || userId == null;
+
+            List<StoredImageResult> uploads = new();
+            try
+            {
+                if (model.Images?.Any() == true)
+                {
+                    var uploadContext = BuildUploadContext("ThreadReply", userId, isAnonymous);
+                    uploads = (await _imageStorageService.SaveImagesAsync(model.Images, uploadContext, cancellationToken)).ToList();
+                }
+            }
+            catch (InvalidOperationException ex)
+            {
+                TempData["ThreadReplyError"] = ex.Message;
+                return RedirectToAction("View", new { id = model.ThreadId });
+            }
+
+            var post = await _forumService.CreatePostAsync(model.ThreadId, model.Content, userId, isAnonymous);
+
+            var order = 0;
+            foreach (var upload in uploads)
+            {
+                await _forumService.AddPostImageAsync(post.Id, upload.OriginalUrl, upload.ThumbnailUrl, upload.ContentType, upload.Width, upload.Height, upload.FileSize, order++);
+            }
+
             return RedirectToAction("View", new { id = model.ThreadId });
-        }
-
-        int? userId = GetCurrentUserId();
-        bool isAnonymous = model.PostAsAnonymous || userId == null;
-        var post = await _forumService.CreatePostAsync(model.ThreadId, model.Content, userId, isAnonymous);
-
-        var order = 0;
-        foreach (var upload in uploads)
-        {
-            await _forumService.AddPostImageAsync(post.Id, upload.OriginalUrl, upload.ThumbnailUrl, upload.ContentType, upload.Width, upload.Height, upload.FileSize, order++);
-        }
-
-        return RedirectToAction("View", new { id = model.ThreadId });
     }
 
     [HttpPost]
@@ -470,6 +479,40 @@ public class ThreadController : Controller
             return userId;
         }
         return null;
+    }
+
+    private ImageUploadContext BuildUploadContext(string origin, int? userId, bool isAnonymous)
+    {
+        var sessionId = HttpContext.Session.Id;
+        if (string.IsNullOrWhiteSpace(sessionId))
+        {
+            sessionId = Guid.NewGuid().ToString("N");
+        }
+
+        var username = User.Identity?.Name ?? User.FindFirstValue(ClaimTypes.Name);
+        var userAgent = Request.Headers.UserAgent.ToString();
+
+        return new ImageUploadContext(
+            userId,
+            string.IsNullOrWhiteSpace(username) ? null : username,
+            isAnonymous,
+            sessionId,
+            HashIpAddress(HttpContext.Connection.RemoteIpAddress?.ToString()),
+            origin,
+            string.IsNullOrWhiteSpace(userAgent) ? null : userAgent);
+    }
+
+    private static string? HashIpAddress(string? rawIp)
+    {
+        if (string.IsNullOrWhiteSpace(rawIp))
+        {
+            return null;
+        }
+
+        using var sha256 = SHA256.Create();
+        var bytes = Encoding.UTF8.GetBytes(rawIp);
+        var hash = sha256.ComputeHash(bytes);
+        return Convert.ToHexString(hash);
     }
 
     private void PrepareCreateCaptcha()

@@ -1,5 +1,6 @@
 using Microsoft.Extensions.Hosting;
 using MyFace.Services;
+using System.Diagnostics;
 
 namespace MyFace.Web.Services;
 
@@ -14,20 +15,33 @@ public class OnionMonitorWorker : BackgroundService
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        // Run every 5 minutes
         while (!stoppingToken.IsCancellationRequested)
         {
             using var scope = _services.CreateScope();
             var svc = scope.ServiceProvider.GetRequiredService<OnionStatusService>();
+            var log = scope.ServiceProvider.GetRequiredService<MonitorLogService>();
+            var stopwatch = Stopwatch.StartNew();
+
             try
             {
                 await svc.CheckAllAsync(stoppingToken);
             }
-            catch
+            catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested)
             {
-                // swallow errors in MVP
+                break;
             }
-            await Task.Delay(TimeSpan.FromMinutes(5), stoppingToken);
+            catch (Exception ex)
+            {
+                log.Append($"Monitor sweep failed: {ex.Message}");
+            }
+            finally
+            {
+                stopwatch.Stop();
+                var process = Process.GetCurrentProcess();
+                var workingSetMb = process.WorkingSet64 / (1024d * 1024d);
+                var cpuSeconds = process.TotalProcessorTime.TotalSeconds;
+                log.Append($"Resource snapshot -> duration {stopwatch.Elapsed.TotalSeconds:F1}s, working set {workingSetMb:F1} MB, CPU total {cpuSeconds:F1}s, threads {process.Threads.Count}.");
+            }
         }
     }
 }

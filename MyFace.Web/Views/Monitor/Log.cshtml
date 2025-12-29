@@ -1,0 +1,355 @@
+@model IReadOnlyList<MyFace.Services.MonitorLogEntry>
+@using System.Linq
+
+@{
+    ViewData["Title"] = "Monitor Log";
+    IReadOnlyList<MyFace.Services.MonitorLogEntry> entries = Model ?? Array.Empty<MyFace.Services.MonitorLogEntry>();
+}
+
+@functions {
+    private static (string Action, string Result, string Url) ParseMonitorLogMessage(string? message)
+    {
+        if (string.IsNullOrWhiteSpace(message))
+        {
+            return ("—", "—", string.Empty);
+        }
+
+        var trimmed = message.Trim();
+        var tokens = trimmed.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+        var action = tokens.Length > 0 ? tokens[0] : trimmed;
+
+        if (tokens.Length > 1 && char.IsLower(tokens[1][0]))
+        {
+            action = string.Join(' ', tokens.Take(2));
+        }
+
+        var colonIdx = trimmed.IndexOf(':');
+        var arrowIdx = trimmed.IndexOf("->", StringComparison.Ordinal);
+        var resultStart = -1;
+
+        if (colonIdx >= 0)
+        {
+            resultStart = colonIdx + 1;
+        }
+
+        if (arrowIdx >= 0 && (resultStart == -1 || arrowIdx < colonIdx || colonIdx < 0))
+        {
+            resultStart = arrowIdx + 2;
+        }
+
+        var result = resultStart > 0 && resultStart < trimmed.Length
+            ? trimmed[resultStart..].Trim()
+            : trimmed;
+
+        string url = string.Empty;
+        foreach (var token in tokens)
+        {
+            var cleaned = token.TrimEnd('.', ',', ';', ')', ']', '}' ).TrimStart('(', '[', '{');
+            if (cleaned.StartsWith("http://", StringComparison.OrdinalIgnoreCase) ||
+                cleaned.StartsWith("https://", StringComparison.OrdinalIgnoreCase) ||
+                cleaned.Contains(".onion", StringComparison.OrdinalIgnoreCase) ||
+                cleaned.Contains(".i2p", StringComparison.OrdinalIgnoreCase))
+            {
+                url = cleaned;
+                break;
+            }
+        }
+
+        return (action, string.IsNullOrWhiteSpace(result) ? trimmed : result, url);
+    }
+
+    private static string ComposePlainLogLine(MyFace.Services.MonitorLogEntry entry)
+    {
+        var parsed = ParseMonitorLogMessage(entry.Message);
+        var timestamp = entry.Timestamp.ToLocalTime();
+        var urlSegment = string.IsNullOrWhiteSpace(parsed.Url) ? string.Empty : $" | {parsed.Url}";
+        return $"{timestamp:yyyy-MM-dd HH:mm:ss} | {parsed.Action} | {parsed.Result}{urlSegment}";
+    }
+
+    private static string DetectStatus(string? value)
+    {
+        if (string.IsNullOrWhiteSpace(value)) return "unknown";
+        var normalized = value.Trim().ToLowerInvariant();
+        if (normalized.Contains("online")) return "online";
+        if (normalized.Contains("degraded") || normalized.Contains("warn") || normalized.Contains("partial")) return "degraded";
+        if (normalized.Contains("offline") || normalized.Contains("failed") || normalized.Contains("error")) return "offline";
+        return "unknown";
+    }
+
+    private static string Shorten(string? value, int maxLength)
+    {
+        if (string.IsNullOrWhiteSpace(value)) return "—";
+        var trimmed = value.Trim();
+        return trimmed.Length <= maxLength ? trimmed : trimmed[..maxLength] + "…";
+    }
+
+    private static string ShortenUrlForDisplay(string? url, int visibleChars = 7)
+    {
+        if (string.IsNullOrWhiteSpace(url)) return "—";
+        var trimmed = url.Trim();
+        if (trimmed.StartsWith("http://", StringComparison.OrdinalIgnoreCase)) trimmed = trimmed[7..];
+        else if (trimmed.StartsWith("https://", StringComparison.OrdinalIgnoreCase)) trimmed = trimmed[8..];
+        trimmed = trimmed.TrimStart('/');
+        if (trimmed.StartsWith("www.", StringComparison.OrdinalIgnoreCase)) trimmed = trimmed[4..];
+        if (trimmed.Length <= visibleChars) return trimmed;
+        return trimmed[..visibleChars] + "…";
+    }
+}
+
+@{
+    var formattedLines = entries.Select(ComposePlainLogLine).ToList();
+    var buffer = formattedLines.Any()
+        ? string.Join("\n", formattedLines)
+        : "Buffer empty. Worker has not emitted entries yet.";
+    var bufferRows = Math.Clamp(formattedLines.Count + 4, 10, 40);
+}
+
+<style>
+    .log-dashboard {
+        max-width: 1080px;
+        margin: 0 auto;
+        padding: 2rem 1.25rem 3.5rem;
+        font-family: 'IBM Plex Mono', 'Space Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem;
+    }
+    .log-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 0.75rem;
+    }
+    .log-meta {
+        display: flex;
+        flex-direction: column;
+        gap: 0.3rem;
+        color: #0f172a;
+    }
+    .log-meta .eyebrow {
+        text-transform: uppercase;
+        letter-spacing: 0.2em;
+        font-size: 0.7rem;
+        margin: 0;
+        color: #94a3b8;
+    }
+    .log-meta h1 {
+        margin: 0;
+        font-size: 1.6rem;
+        color: #0f172a;
+    }
+    .log-meta span {
+        font-size: 0.9rem;
+        color: #475569;
+    }
+    .log-actions {
+        display: flex;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+    }
+    .log-actions a {
+        border: 1px solid #0f172a;
+        color: #0f172a;
+        padding: 0.4rem 0.95rem;
+        border-radius: 999px;
+        font-weight: 600;
+        text-decoration: none;
+    }
+    .log-panel,
+    .log-raw {
+        border: 1px solid rgba(15, 23, 42, 0.12);
+        border-radius: 16px;
+        padding: 0.9rem 1rem 1.1rem;
+        background: #fff;
+        box-shadow: 0 16px 40px rgba(15, 23, 42, 0.06);
+    }
+    .log-panel header,
+    .log-raw header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 0.75rem;
+        margin-bottom: 0.85rem;
+        flex-wrap: wrap;
+    }
+    .log-panel header h2,
+    .log-raw header h2 {
+        margin: 0;
+        font-size: 1rem;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: #0f172a;
+    }
+    .log-panel header span,
+    .log-raw header span {
+        color: #94a3b8;
+        font-size: 0.85rem;
+    }
+    .log-table-head,
+    .log-row {
+        display: grid;
+        grid-template-columns: 120px 200px minmax(0, 1fr) 120px;
+        gap: 0.6rem;
+        padding: 0.35rem 0;
+        border-bottom: 1px solid rgba(15, 23, 42, 0.08);
+        align-items: center;
+        font-size: 0.78rem;
+        line-height: 1.1;
+    }
+    .log-table-head {
+        text-transform: uppercase;
+        letter-spacing: 0.18em;
+        font-size: 0.68rem;
+        color: #94a3b8;
+    }
+    .log-row:last-child {
+        border-bottom: none;
+    }
+    .log-row span,
+    .log-row a {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    .log-row-time { color: #0f172a; font-weight: 600; font-size: 0.75rem; }
+    .log-row-action { font-weight: 600; color: #0f172a; }
+    .log-row-result-text {
+        display: flex;
+        align-items: center;
+        gap: 0.35rem;
+        color: #0f172a;
+        font-size: 0.76rem;
+        white-space: nowrap;
+        overflow: hidden;
+    }
+    .log-row-result-text .result-text {
+        display: inline-block;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    .log-row-url a { color: #0f172a; text-decoration: underline; }
+    .status-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.25rem;
+        padding: 0.05rem 0.45rem;
+        border-radius: 999px;
+        border: 1px solid transparent;
+        font-size: 0.65rem;
+        text-transform: uppercase;
+        letter-spacing: 0.15em;
+        margin-right: 0.35rem;
+    }
+    .status-pill.online { background: rgba(34,197,94,0.18); border-color: rgba(34,197,94,0.35); color: #15803d; }
+    .status-pill.degraded { background: rgba(249,115,22,0.18); border-color: rgba(249,115,22,0.35); color: #c2410c; }
+    .status-pill.offline { background: rgba(239,68,68,0.18); border-color: rgba(239,68,68,0.35); color: #b91c1c; }
+    .status-pill.unknown { background: rgba(148,163,184,0.18); border-color: rgba(148,163,184,0.35); color: #475569; }
+    .log-empty-row {
+        padding: 0.75rem 0;
+        color: #94a3b8;
+        font-style: italic;
+    }
+    .log-raw textarea {
+        width: 100%;
+        border: 1px solid rgba(15, 23, 42, 0.15);
+        border-radius: 12px;
+        padding: 0.85rem;
+        font-family: inherit;
+        font-size: 0.8rem;
+        line-height: 1.25;
+        color: #0f172a;
+        resize: vertical;
+        background: #f8fafc;
+        box-sizing: border-box;
+        overflow: auto;
+    }
+    .log-raw textarea:focus {
+        outline: none;
+        border-color: #2563eb;
+        box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.2);
+    }
+    @@media (max-width: 720px) {
+        .log-table-head,
+        .log-row {
+            grid-template-columns: 1fr;
+        }
+        .log-actions {
+            width: 100%;
+        }
+        .log-actions a {
+            width: 100%;
+            text-align: center;
+        }
+    }
+</style>
+
+<div class="log-dashboard">
+    <div class="log-header">
+        <div class="log-meta">
+            <p class="eyebrow">Network telemetry</p>
+            <h1>Monitor log</h1>
+            <span>@entries.Count entries captured</span>
+        </div>
+        <div class="log-actions">
+            <a asp-action="Log">Refresh</a>
+            <a asp-action="Index">Back to monitor</a>
+        </div>
+    </div>
+
+    <section class="log-panel">
+        <header>
+            <h2>Structured view</h2>
+            <span>Tap any line to highlight then copy</span>
+        </header>
+        <div class="log-table-head">
+            <span>Timestamp</span>
+            <span>Action</span>
+            <span>Result</span>
+            <span>URL</span>
+        </div>
+        @if (entries.Count == 0)
+        {
+            <div class="log-empty-row">Buffer empty. Worker has not emitted entries yet.</div>
+        }
+        else
+        {
+            foreach (var entry in entries)
+            {
+                var localTime = entry.Timestamp.ToLocalTime();
+                var parsed = ParseMonitorLogMessage(entry.Message);
+                var hasLink = !string.IsNullOrWhiteSpace(parsed.Url) && parsed.Url.Contains("://", StringComparison.Ordinal);
+                var statusKey = DetectStatus(parsed.Result);
+                var shortAction = Shorten(parsed.Action, 28);
+                var shortResult = Shorten(parsed.Result, 60);
+                var urlDisplay = ShortenUrlForDisplay(parsed.Url);
+                <div class="log-row">
+                    <span class="log-row-time" title="@localTime.ToString("yyyy-MM-dd HH:mm:ss")">@localTime:HH:mm:ss</span>
+                    <span class="log-row-action" title="@parsed.Action">@shortAction</span>
+                    <span class="log-row-result-text" title="@parsed.Result">
+                        <span class="status-pill @statusKey">@statusKey.ToUpperInvariant()</span>
+                        <span class="result-text">@shortResult</span>
+                    </span>
+                    <span class="log-row-url">
+                        @if (hasLink)
+                        {
+                            <a href="@parsed.Url" rel="noopener" title="@parsed.Url">@urlDisplay</a>
+                        }
+                        else
+                        {
+                            @(string.IsNullOrWhiteSpace(parsed.Url) ? "—" : urlDisplay)
+                        }
+                    </span>
+                </div>
+            }
+        }
+    </section>
+
+    <section class="log-raw">
+        <header>
+            <h2>Raw stream</h2>
+            <span>Optimized for bulk copy/paste</span>
+        </header>
+        <textarea readonly rows="@bufferRows">@buffer</textarea>
+    </section>
+</div>

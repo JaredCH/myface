@@ -1,3 +1,4 @@
+@using System.Linq
 @using Microsoft.Extensions.Configuration
 @inject IConfiguration Configuration
 @model List<MyFace.Core.Entities.OnionStatus>
@@ -7,19 +8,7 @@
     var admins = Configuration.GetSection("Admins").Get<string[]>() ?? Array.Empty<string>();
     var mods = Configuration.GetSection("Moderators").Get<string[]>() ?? Array.Empty<string>();
     var isAdminOrMod = !string.IsNullOrEmpty(username) && (admins.Contains(username) || mods.Contains(username));
-    var categoryOrder = new[]
-    {
-        "Cryptocurrency & Financial",
-        "Directories & Search Engines",
-        "Email & Communication",
-        "Forums & Communities",
-        "Government & Agencies",
-        "Information & Libraries",
-        "Markets & Shops",
-        "News & Leaks",
-        "Privacy, Hosting & Software",
-        "Utilities, Tools & File Sharing"
-    };
+    var categoryOrder = new[] { "Markets", "Shops", "Forums", "Services" };
     string Slugify(string value)
     {
         if (string.IsNullOrWhiteSpace(value)) return "other";
@@ -27,6 +16,52 @@
         var compact = string.Join("", chars).Replace("--", "-").Trim('-');
         return string.IsNullOrWhiteSpace(compact) ? "other" : compact;
     }
+    string NormalizeStatus(string? status)
+    {
+        if (string.IsNullOrWhiteSpace(status)) return "offline";
+        var normalized = status.Trim().ToUpperInvariant();
+        return normalized switch
+        {
+            "ONLINE" or "UP" => "online",
+            "DEGRADED" or "WARN" or "PARTIAL" => "degraded",
+            _ => "offline"
+        };
+    }
+    string StatusChipText(string normalized) => normalized switch
+    {
+        "online" => "Online",
+        "degraded" => "Degraded",
+        _ => "Offline"
+    };
+    string FormatLatency(double? latency) => latency.HasValue ? $"{latency.Value:F0} ms" : "n/a";
+    string FormatLastChecked(DateTime? timestamp) => timestamp?.ToLocalTime().ToString("yyyy-MM-dd HH:mm:ss") ?? "n/a";
+    string FormatReachability(MyFace.Core.Entities.OnionStatus monitor)
+        => monitor.TotalAttempts > 0 ? $"{monitor.ReachableAttempts}/{monitor.TotalAttempts}" : "0/0";
+    string CategoryStateClass(int online, int degraded, int offline)
+    {
+        if (offline > online + degraded) return "category-shell-alert";
+        if (online > 0 && offline == 0) return "category-shell-stable";
+        return "category-shell-muted";
+    }
+    string NormalizeServiceDisplay(string? name)
+    {
+        if (string.IsNullOrWhiteSpace(name)) return "Unknown";
+        var trimmed = name.Trim();
+        var parts = trimmed.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+        if (parts.Length > 1 && int.TryParse(parts[^1], out _))
+        {
+            return string.Join(' ', parts[..^1]);
+        }
+        return trimmed;
+    }
+    string NormalizeServiceKey(string? name) => NormalizeServiceDisplay(name).ToLowerInvariant();
+    string RollupStatus(IEnumerable<MyFace.Core.Entities.OnionStatus> monitors)
+    {
+        if (monitors.Any(m => NormalizeStatus(m.Status) == "online")) return "online";
+        if (monitors.Any(m => NormalizeStatus(m.Status) == "degraded")) return "degraded";
+        return "offline";
+    }
+    string MirrorLabel(int index) => index == 0 ? "Primary" : $"Mirror {index}";
     var groups = Model
         .GroupBy(m => string.IsNullOrWhiteSpace(m.Description) ? "Other" : m.Description)
         .OrderBy(g => Array.IndexOf(categoryOrder, g.Key) >= 0 ? Array.IndexOf(categoryOrder, g.Key) : int.MaxValue)
@@ -42,76 +77,131 @@
             <button class="button" type="submit">🔄 Check All</button>
         </form>
     }
+    <a href="@Url.Action("Log")" class="button">🗒️ Monitor Log</a>
 </div>
 
-<div class="monitor-category-nav">
-    @foreach (var group in groups)
-    {
-        var anchor = Slugify(group.Key);
-        <a href="@("#" + anchor)" class="category-chip"># @group.Key</a>
-    }
-</div>
-
-<div class="monitor-list">
-    @foreach (var group in groups)
-    {
-        var anchor = Slugify(group.Key);
-        <h2 id="@anchor" class="monitor-category-heading">@group.Key</h2>
-        @foreach (var monitor in group)
+@if (groups.Any())
+{
+    <div class="monitor-category-nav">
+        @foreach (var group in groups)
         {
-            <div class="monitor-card">
-                <div class="monitor-header">
-                    <div class="monitor-title">
-                        <div class="monitor-title-row">
-                            <h3>@monitor.Name</h3>
-                            <span class="category-pill">@group.Key</span>
-                        </div>
-                        <a href="@Url.Action("Go", "Monitor", new { id = monitor.Id })" class="monitor-link">🔗 @monitor.OnionUrl</a>
-                    </div>
-                    <div class="monitor-status">
-                        @if (monitor.Status == "Online")
-                        {
-                            <span class="status-badge status-online">● @monitor.Status</span>
-                        }
-                        else if (monitor.Status == "DEGRADED")
-                        {
-                            <span class="status-badge status-degraded">● @monitor.Status</span>
-                        }
-                        else
-                        {
-                            <span class="status-badge status-offline">● @monitor.Status</span>
-                        }
-                    </div>
-                </div>
-                <div class="monitor-stats">
-                    <div class="stat">
-                        <span class="stat-label">Reachability:</span>
-                        <span class="stat-value">@monitor.ReachableAttempts/@monitor.TotalAttempts</span>
-                    </div>
-                    <div class="stat">
-                        <span class="stat-label">Avg Latency:</span>
-                        <span class="stat-value">@(monitor.AverageLatency?.ToString("F0") ?? "-") ms</span>
-                    </div>
-                    <div class="stat">
-                        <span class="stat-label">Last Checked:</span>
-                        <span class="stat-value">@monitor.LastChecked?.ToString("u")</span>
-                    </div>
-                </div>
-                @if (isAdminOrMod)
-                {
-                    <div class="monitor-actions-row">
-                        <form asp-action="Check" method="post" style="display:inline">
-                            <input type="hidden" name="id" value="@monitor.Id" />
-                            <button class="button button-small" type="submit">🔍 Check Now</button>
-                        </form>
-                        <a href="@Url.Action("Edit", new { id = monitor.Id })" class="button button-small">✏️ Edit</a>
-                        <form asp-action="Remove" method="post" style="display:inline">
-                            <input type="hidden" name="id" value="@monitor.Id" />
-                            <button class="button button-small button-danger" type="submit">🗑️ Remove</button>
-                        </form>
-                    </div>
-                }
-            </div>
+            var anchor = "category-" + Slugify(group.Key);
+            <a href="@("#" + anchor)" class="category-chip"># @group.Key</a>
         }
-    }
-</div>
+    </div>
+
+    <div class="category-grid">
+        @foreach (var group in groups)
+        {
+            var anchor = "category-" + Slugify(group.Key);
+            var onlineCount = group.Count(m => NormalizeStatus(m.Status) == "online");
+            var degradedCount = group.Count(m => NormalizeStatus(m.Status) == "degraded");
+            var offlineCount = group.Count(m => NormalizeStatus(m.Status) == "offline");
+            var shellState = CategoryStateClass(onlineCount, degradedCount, offlineCount);
+            var rollups = group
+                .GroupBy(m => NormalizeServiceKey(m.Name))
+                .Select(g =>
+                {
+                    var ordered = g.OrderBy(x => x.Id).ToList();
+                    var primary = ordered.First();
+                    return new
+                    {
+                        DisplayName = NormalizeServiceDisplay(primary.Name),
+                        Items = ordered,
+                        Primary = primary
+                    };
+                })
+                .OrderBy(r => r.DisplayName)
+                .ToList();
+            <details id="@anchor" class="category-shell @shellState">
+                <summary class="category-summary">
+                    <div>
+                        <p class="category-label">Category</p>
+                        <p class="category-name">@group.Key</p>
+                        <p class="category-count">@group.Count() sites</p>
+                    </div>
+                    <div class="summary-status-group">
+                        <span class="count-pill status-online">@onlineCount online</span>
+                        <span class="count-pill status-degraded">@degradedCount degraded</span>
+                        <span class="count-pill status-offline">@offlineCount offline</span>
+                    </div>
+                </summary>
+                <div class="category-body">
+                    <div class="site-grid">
+                        @foreach (var rollup in rollups)
+                        {
+                            var toggleId = $"site-panel-{rollup.Primary.Id}";
+                            var rollupStatus = RollupStatus(rollup.Items);
+                            var primarySafeLink = Url.Action("Go", "Monitor", new { id = rollup.Primary.Id }) ?? "#";
+                            <div class="site-panel-wrapper">
+                                <input type="checkbox" class="site-panel-toggle" id="@toggleId" />
+                                <div class="site-panel">
+                                    <div class="site-header">
+                                        <div class="site-title-block">
+                                            <span class="status-chip status-@rollupStatus">@StatusChipText(rollupStatus)</span>
+                                            <span class="site-name">@rollup.DisplayName</span>
+                                            <span class="site-url-inline">
+                                                <span class="site-label">Primary address</span>
+                                                <a class="site-url-link" href="@primarySafeLink" rel="noopener">@rollup.Primary.OnionUrl</a>
+                                            </span>
+                                        </div>
+                                        <div class="site-header-controls">
+                                            <span class="link-count-pill">@rollup.Items.Count link@(rollup.Items.Count == 1 ? "" : "s")</span>
+                                            <a class="button button-ghost" href="@primarySafeLink">Visit</a>
+                                            <label class="site-toggle" for="@toggleId" aria-label="Toggle details">
+                                                <span class="toggle-icon"></span>
+                                            </label>
+                                        </div>
+                                    </div>
+                                    <div class="site-body">
+                                        <div class="mirror-link-list">
+                                            @for (var i = 0; i < rollup.Items.Count; i++)
+                                            {
+                                                var entry = rollup.Items[i];
+                                                var entrySafeLink = Url.Action("Go", "Monitor", new { id = entry.Id }) ?? "#";
+                                                var entryStatus = NormalizeStatus(entry.Status);
+                                                <div class="mirror-link-row">
+                                                    <div class="mirror-link-main">
+                                                        <span class="mirror-chip">@MirrorLabel(i)</span>
+                                                        <a class="mirror-link" href="@entrySafeLink" rel="noopener">@entry.OnionUrl</a>
+                                                    </div>
+                                                    <div class="mirror-link-meta">
+                                                        <span class="status-dot status-@entryStatus" title="@StatusChipText(entryStatus)"></span>
+                                                        <span class="mirror-meta-text">@FormatLastChecked(entry.LastChecked)</span>
+                                                        <span class="mirror-meta-text">@FormatLatency(entry.AverageLatency)</span>
+                                                        <span class="mirror-meta-text">Reach: @FormatReachability(entry)</span>
+                                                    </div>
+                                                    @if (isAdminOrMod)
+                                                    {
+                                                        <div class="mirror-link-actions">
+                                                            <form asp-action="Check" method="post">
+                                                                <input type="hidden" name="id" value="@entry.Id" />
+                                                                <button type="submit" class="mirror-action-link">Check</button>
+                                                            </form>
+                                                            <a class="mirror-action-link" href="@Url.Action("Edit", new { id = entry.Id })">Edit</a>
+                                                            <form asp-action="Remove" method="post">
+                                                                <input type="hidden" name="id" value="@entry.Id" />
+                                                                <button type="submit" class="mirror-action-link danger">Remove</button>
+                                                            </form>
+                                                        </div>
+                                                    }
+                                                </div>
+                                            }
+                                        </div>
+                                        <p class="mirror-note-inline">Open in Tor Browser. Click-through logs aggregate uptime only.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </details>
+        }
+    </div>
+}
+else
+{
+    <div class="card">
+        <p>No monitored services yet. Add a service to begin tracking.</p>
+    </div>
+}

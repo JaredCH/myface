@@ -25,6 +25,7 @@ public class ApplicationDbContext : DbContext
     public DbSet<LoginAttempt> LoginAttempts { get; set; }
     public DbSet<ChatMessage> ChatMessages { get; set; }
     public DbSet<PrivateMessage> PrivateMessages { get; set; }
+    public DbSet<UploadScanLog> UploadScanLogs { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -236,6 +237,25 @@ public class ApplicationDbContext : DbContext
                 .WithMany()
                 .HasForeignKey(e => e.RecipientId)
                 .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        // UploadScanLog configuration
+        modelBuilder.Entity<UploadScanLog>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.EventType).HasMaxLength(64).IsRequired();
+            entity.Property(e => e.Source).HasMaxLength(64).IsRequired();
+            entity.Property(e => e.SessionId).HasMaxLength(64).IsRequired();
+            entity.Property(e => e.OriginalFileName).HasMaxLength(255).IsRequired();
+            entity.Property(e => e.ContentType).HasMaxLength(128).IsRequired();
+            entity.Property(e => e.ScanEngine).HasMaxLength(64).IsRequired();
+            entity.Property(e => e.ScanStatus).HasMaxLength(32).IsRequired();
+            entity.Property(e => e.CreatedAt).HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+            entity.HasIndex(e => e.CreatedAt);
+            entity.HasIndex(e => new { e.EventType, e.CreatedAt });
+            entity.HasIndex(e => new { e.Source, e.CreatedAt });
+            entity.HasIndex(e => new { e.UserId, e.CreatedAt });
         });
     }
 }

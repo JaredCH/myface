@@ -35,6 +35,12 @@ for svc in nginx tor privoxy; do
     check_service "$svc" || exit 1
 done
 
+echo "--- ensuring bundled tor hidden service ---"
+if ! "$ROOT/start-tor.sh"; then
+    echo "[fail] unable to start project tor instance" >&2
+    exit 1
+fi
+
 echo "--- publishing MyFace.Web (Release) ---"
 if [ -f "$PUBLISH_DIR" ]; then
     echo "[cleanup] removing stale file at $PUBLISH_DIR"

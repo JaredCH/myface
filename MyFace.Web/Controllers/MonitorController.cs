@@ -1,16 +1,19 @@
 using Microsoft.AspNetCore.Mvc;
 using MyFace.Services;
 using MyFace.Web.Models;
+using System.Linq;
 
 namespace MyFace.Web.Controllers;
 
 public class MonitorController : Controller
 {
     private readonly OnionStatusService _statusService;
+    private readonly MonitorLogService _monitorLog;
 
-    public MonitorController(OnionStatusService statusService)
+    public MonitorController(OnionStatusService statusService, MonitorLogService monitorLog)
     {
         _statusService = statusService;
+        _monitorLog = monitorLog;
     }
 
     public async Task<IActionResult> Index()
@@ -18,6 +21,17 @@ public class MonitorController : Controller
         await _statusService.EnsureSeedDataAsync();
         var monitors = await _statusService.GetAllAsync();
         return View(monitors);
+    }
+
+    [HttpGet]
+    public IActionResult Log()
+    {
+        var entries = _monitorLog
+            .GetEntries()
+            .OrderByDescending(e => e.Timestamp)
+            .Take(1000)
+            .ToList();
+        return View(entries);
     }
 
     [HttpGet("/monitor/go/{id}")]

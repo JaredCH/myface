@@ -1,0 +1,230 @@
+@using System.Collections.Generic
+@using System.Linq
+@using Microsoft.AspNetCore.WebUtilities
+@model MyFace.Web.Models.Admin.UploadLogsViewModel
+@{
+    ViewData["Title"] = "Upload Security Log";
+    var filter = Model.Filter ?? new MyFace.Web.Models.Admin.UploadLogFilterModel();
+    var statusOptions = new[] { "", "Clean", "Malicious", "Skipped", "Error" };
+    var originOptions = new[] { "", "ThreadCreate", "ThreadReply" };
+    var totalPages = Math.Max(Model.TotalPages, 1);
+    var currentPage = Math.Clamp(Model.Page, 1, totalPages);
+
+    string BadgeClass(MyFace.Core.Entities.UploadScanLog entry) => entry.ScanStatus switch
+    {
+        "Malicious" => "badge-danger",
+        "Error" => "badge-warning",
+        "Skipped" => "badge-muted",
+        _ => "badge-success"
+    };
+    string BlockBadge(bool blocked) => blocked ? "badge-danger" : "badge-success";
+
+    string BuildPageUrl(int targetPage)
+    {
+        var baseUrl = Url.Action("Logs") ?? "/Admin/Logs";
+        var query = new Dictionary<string, string?>
+        {
+            ["page"] = targetPage.ToString(),
+            ["Filter.Status"] = filter.Status,
+            ["Filter.Origin"] = filter.Origin,
+            ["Filter.Blocked"] = filter.Blocked?.ToString()?.ToLowerInvariant(),
+            ["Filter.Username"] = filter.Username,
+            ["Filter.Threat"] = filter.Threat,
+            ["Filter.SessionId"] = filter.SessionId,
+            ["Filter.From"] = filter.From?.ToString("o"),
+            ["Filter.To"] = filter.To?.ToString("o")
+        };
+
+        var sanitized = new Dictionary<string, string?>(StringComparer.OrdinalIgnoreCase);
+        foreach (var kvp in query)
+        {
+            if (!string.IsNullOrWhiteSpace(kvp.Value))
+            {
+                sanitized[kvp.Key] = kvp.Value;
+            }
+        }
+
+        return QueryHelpers.AddQueryString(baseUrl, sanitized);
+    }
+}
+
+<h1 class="admin-title">Upload Security Log</h1>
+<div class="panel-actions" style="margin-bottom: 1rem; display: flex; gap: 0.5rem; flex-wrap: wrap;">
+    <a class="btn" asp-action="Index">⟵ Back to Admin</a>
+    <span class="text-muted" style="align-self: center; font-size: 0.9rem;">@Model.TotalCount entries</span>
+</div>
+
+<form method="get" class="filter-grid">
+    <div>
+        <label>Status</label>
+        <select name="Filter.Status" class="input">
+            @foreach (var status in statusOptions)
+            {
+                var label = string.IsNullOrEmpty(status) ? "Any" : status;
+                <option value="@status" selected="@((filter.Status == status) ? "selected" : null)">@label</option>
+            }
+        </select>
+    </div>
+    <div>
+        <label>Origin</label>
+        <select name="Filter.Origin" class="input">
+            @foreach (var origin in originOptions)
+            {
+                var label = string.IsNullOrEmpty(origin) ? "Any" : origin;
+                <option value="@origin" selected="@((filter.Origin == origin) ? "selected" : null)">@label</option>
+            }
+        </select>
+    </div>
+    <div>
+        <label>Blocked?</label>
+        <select name="Filter.Blocked" class="input">
+            <option value="" selected="@((filter.Blocked == null) ? "selected" : null)">Any</option>
+            <option value="true" selected="@((filter.Blocked == true) ? "selected" : null)">Yes</option>
+            <option value="false" selected="@((filter.Blocked == false) ? "selected" : null)">No</option>
+        </select>
+    </div>
+    <div>
+        <label>User</label>
+        <input type="text" name="Filter.Username" value="@filter.Username" class="input" placeholder="username" />
+    </div>
+    <div>
+        <label>Threat</label>
+        <input type="text" name="Filter.Threat" value="@filter.Threat" class="input" placeholder="signature" />
+    </div>
+    <div>
+        <label>Session ID</label>
+        <input type="text" name="Filter.SessionId" value="@filter.SessionId" class="input" />
+    </div>
+    <div>
+        <label>From (UTC)</label>
+        <input type="datetime-local" name="Filter.From" value="@(filter.From?.ToString("yyyy-MM-ddTHH:mm"))" class="input" />
+    </div>
+    <div>
+        <label>To (UTC)</label>
+        <input type="datetime-local" name="Filter.To" value="@(filter.To?.ToString("yyyy-MM-ddTHH:mm"))" class="input" />
+    </div>
+    <div style="align-self: end; display: flex; gap: 0.5rem;">
+        <button type="submit" class="btn btn-info">Apply Filters</button>
+        <a class="btn btn-muted" asp-action="Logs">Reset</a>
+    </div>
+</form>
+
+@if (!Model.Entries.Any())
+{
+    <div class="alert-info" style="margin-top: 1rem;">No log entries found.</div>
+}
+else
+{
+    <div class="table-responsive" style="margin-top: 1rem;">
+        <table class="table" style="min-width: 1000px;">
+            <thead>
+                <tr>
+                    <th>Timestamp (UTC)</th>
+                    <th>Origin</th>
+                    <th>User</th>
+                    <th>Scan Result</th>
+                    <th>File</th>
+                    <th>Processing</th>
+                </tr>
+            </thead>
+            <tbody>
+            @foreach (var entry in Model.Entries)
+            {
+                <tr>
+                    <td>
+                        <div>@entry.CreatedAt.ToString("yyyy-MM-dd HH:mm:ss")</div>
+                        <div class="text-muted" style="font-size: 0.8rem;">Session: @entry.SessionId</div>
+                    </td>
+                    <td>
+                        <div><strong>@entry.Source</strong></div>
+                        <div class="text-muted" style="font-size: 0.8rem;">@entry.EventType</div>
+                    </td>
+                    <td>
+                        @if (entry.UserId.HasValue)
+                        {
+                            <div><strong>@entry.UsernameSnapshot</strong> (#@entry.UserId)</div>
+                        }
+                        else
+                        {
+                            <div><strong>Anonymous</strong></div>
+                        }
+                        <div class="text-muted" style="font-size: 0.8rem;">@((entry.IsAnonymous ? "Hidden" : "Visible"))</div>
+                    </td>
+                    <td>
+                        <div><span class="badge @BadgeClass(entry)">@entry.ScanStatus</span></div>
+                        @if (!string.IsNullOrWhiteSpace(entry.ThreatName))
+                        {
+                            <div class="text-danger" style="font-size: 0.85rem;">@entry.ThreatName</div>
+                        }
+                        <div class="text-muted" style="font-size: 0.8rem;">@entry.ScanEngine</div>
+                        <div class="text-muted" style="font-size: 0.8rem;">@entry.ScannerMessage</div>
+                        <div style="margin-top: 0.25rem;"><span class="badge @BlockBadge(entry.Blocked)">@((entry.Blocked ? "Blocked" : "Allowed"))</span></div>
+                    </td>
+                    <td>
+                        <div>@entry.OriginalFileName</div>
+                        <div class="text-muted" style="font-size: 0.8rem;">@entry.ContentType</div>
+                        <div class="text-muted" style="font-size: 0.8rem;">@entry.Width x @entry.Height px</div>
+                        <div class="text-muted" style="font-size: 0.8rem;">@String.Format("{0:0.##} MB", entry.FileSize / 1024f / 1024f)</div>
+                        @if (!string.IsNullOrWhiteSpace(entry.StoragePath))
+                        {
+                            <div style="font-size: 0.8rem;"><a href="@entry.StoragePath" target="_blank">open</a></div>
+                        }
+                    </td>
+                    <td>
+                        <div class="text-muted" style="font-size: 0.85rem;">Scan: @entry.ScanDurationMs ms</div>
+                        <div class="text-muted" style="font-size: 0.85rem;">Total: @entry.ProcessingDurationMs ms</div>
+                        @if (!string.IsNullOrWhiteSpace(entry.FailureReason))
+                        {
+                            <div class="text-danger" style="font-size: 0.8rem;">@entry.FailureReason</div>
+                        }
+                    </td>
+                </tr>
+            }
+            </tbody>
+        </table>
+    </div>
+
+    <div class="pagination" style="margin-top: 1rem; display: flex; justify-content: space-between; align-items: center;">
+        <div>Page @currentPage of @totalPages</div>
+        <div style="display: flex; gap: 0.5rem;">
+            @if (currentPage > 1)
+            {
+                <a class="btn btn-muted" href="@BuildPageUrl(currentPage - 1)">Prev</a>
+            }
+            @if (currentPage < totalPages)
+            {
+                <a class="btn btn-muted" href="@BuildPageUrl(currentPage + 1)">Next</a>
+            }
+        </div>
+    </div>
+}
+
+<style>
+    .filter-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+        gap: 0.75rem 1rem;
+        padding: 1rem;
+        background: var(--card-bg, #111);
+        border-radius: 6px;
+    }
+    .filter-grid label {
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: var(--text-muted);
+    }
+    .badge {
+        display: inline-block;
+        padding: 0.2rem 0.45rem;
+        border-radius: 50px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+    .badge-success { background: #144d2c; color: #5fe18c; }
+    .badge-danger { background: #4d1414; color: #ff7b7b; }
+    .badge-warning { background: #4d3b14; color: #ffd27b; }
+    .badge-muted { background: #2a2a2a; color: #bbb; }
+</style>
