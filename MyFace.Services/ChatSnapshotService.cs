@@ -28,7 +28,7 @@ public class ChatSnapshotService
     public async Task<string> GetSnapshotAsync(string room, CancellationToken ct = default)
     {
         var key = CacheKey(room);
-        if (_cache.TryGetValue(key, out string cached))
+        if (_cache.TryGetValue(key, out string? cached) && cached is not null)
         {
             return cached;
         }
@@ -47,8 +47,6 @@ public class ChatSnapshotService
             .AsNoTracking()
             .ToListAsync(ct);
 
-        messages.Reverse(); // oldest first for display
-
         var sb = new StringBuilder();
         sb.Append("<div class=\"chat-lines\">");
 
@@ -63,13 +61,16 @@ public class ChatSnapshotService
                 _ => msg.IsVerifiedSnapshot ? "role-verified" : "role-user"
             };
 
-            var name = System.Web.HttpUtility.HtmlEncode(msg.UsernameSnapshot);
+            var rawName = string.IsNullOrWhiteSpace(msg.UsernameSnapshot) ? "user" : msg.UsernameSnapshot;
+            var displayName = System.Web.HttpUtility.HtmlEncode(rawName);
+            var normalizedName = rawName.ToLowerInvariant();
+            var usernameAttr = System.Web.HttpUtility.HtmlAttributeEncode(normalizedName);
             var content = msg.Content;
             content = RenderMentions(content);
 
             sb.Append("<div class=\"line\">");
             sb.Append($"<span class=\"ts\">[{ts}]</span> ");
-            sb.Append($"<span class=\"user {roleClass}\">@{name}</span> ");
+            sb.Append($"<span class=\"user {roleClass}\" data-username=\"{usernameAttr}\">@{displayName}</span> ");
             sb.Append($"<span class=\"msg\">{content}</span> ");
             sb.Append($"<span class=\"meta\">#");
             sb.Append(msg.Id);
@@ -94,6 +95,5 @@ public class ChatSnapshotService
             @"@([a-zA-Z0-9_]+)",
             "<span class=\\\"mention\\\">@$1</span>");
     }
-
     private static string CacheKey(string room) => $"chat:snapshot:{room}";
 }

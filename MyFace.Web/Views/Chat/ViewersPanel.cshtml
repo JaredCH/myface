@@ -1,0 +1,117 @@
+@model MyFace.Web.Models.ChatViewersViewModel
+@{
+    Layout = null;
+}
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="refresh" content="5" />
+    <style>
+        :root {
+            --viewer-bg: rgba(5, 10, 24, 0.9);
+            --viewer-border: rgba(59, 130, 246, 0.35);
+            --viewer-muted: #94a3b8;
+            --viewer-text: #f8fafc;
+            --viewer-accent: #38bdf8;
+            --viewer-success: #34d399;
+            --viewer-warning: #fcd34d;
+            --viewer-danger: #fb7185;
+        }
+        html, body { height: 100%; }
+        body {
+            margin: 0;
+            font-family: 'JetBrains Mono', 'Iosevka', 'Ubuntu Mono', monospace;
+            font-size: 12px;
+            color: var(--viewer-text);
+            background: transparent;
+            display: flex;
+        }
+        .viewer-panel { display: flex; flex-direction: column; gap: 0.55rem; flex: 1; overflow-y: auto; padding-right: 0.25rem; }
+        .viewer-card {
+            border: 1px solid var(--viewer-border);
+            border-radius: 14px;
+            padding: 0.6rem 0.7rem;
+            background: var(--viewer-bg);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 0.6rem;
+            box-shadow: 0 16px 35px rgba(2, 6, 23, 0.7);
+        }
+        .viewer-card::before {
+            content: '';
+            width: 6px;
+            align-self: stretch;
+            border-radius: 999px;
+            background: linear-gradient(180deg, rgba(56, 189, 248, 0.6), rgba(15, 23, 42, 0.4));
+            opacity: 0.6;
+            display: block;
+        }
+        .viewer-info { display: flex; flex-direction: column; gap: 0.15rem; flex: 1; }
+        .viewer-name { font-weight: 600; font-size: 0.82rem; letter-spacing: 0.05em; color: var(--viewer-text); }
+        .viewer-meta { font-size: 0.62rem; color: var(--viewer-muted); text-transform: uppercase; letter-spacing: 0.12em; }
+        .viewer-pill {
+            border: 1px solid rgba(56, 189, 248, 0.45);
+            color: var(--viewer-accent);
+            padding: 0.22rem 0.55rem;
+            border-radius: 999px;
+            font-size: 0.62rem;
+            text-transform: uppercase;
+            letter-spacing: 0.14em;
+            font-weight: 700;
+        }
+        .viewer-card.admin { border-color: rgba(251, 113, 133, 0.5); }
+        .viewer-card.admin::before { background: linear-gradient(180deg, rgba(251, 113, 133, 0.7), rgba(15, 23, 42, 0.4)); }
+        .viewer-card.admin .viewer-pill { border-color: rgba(251, 113, 133, 0.8); color: var(--viewer-danger); }
+        .viewer-card.moderator { border-color: rgba(59, 130, 246, 0.6); }
+        .viewer-card.moderator::before { background: linear-gradient(180deg, rgba(59, 130, 246, 0.7), rgba(15, 23, 42, 0.4)); }
+        .viewer-card.verified { border-color: rgba(52, 211, 153, 0.5); }
+        .viewer-card.verified::before { background: linear-gradient(180deg, rgba(52, 211, 153, 0.7), rgba(15, 23, 42, 0.4)); }
+        .viewer-card.self { box-shadow: 0 0 0 1px rgba(56, 189, 248, 0.5), 0 18px 40px rgba(15, 23, 42, 0.9); }
+        .viewer-pill.self { border-color: rgba(56, 189, 248, 0.9); color: #e0f2fe; }
+        .viewer-time { font-variant-numeric: tabular-nums; }
+        .empty-state {
+            border: 1px dashed var(--viewer-border);
+            border-radius: 14px;
+            padding: 0.7rem;
+            text-align: center;
+            color: var(--viewer-muted);
+            font-size: 0.7rem;
+            letter-spacing: 0.16em;
+            text-transform: uppercase;
+            background: rgba(2, 6, 23, 0.8);
+        }
+    </style>
+</head>
+<body>
+    <div class="viewer-panel">
+        @if (Model.Viewers.Count == 0)
+        {
+            <div class="empty-state">No active viewers</div>
+        }
+        else
+        {
+            @foreach (var viewer in Model.Viewers)
+            {
+                var normalized = (viewer.Role ?? "user").ToLowerInvariant();
+                var tier = normalized switch
+                {
+                    "admin" => "admin",
+                    "moderator" => "moderator",
+                    _ when viewer.Verified => "verified",
+                    _ => "user"
+                };
+                var classes = viewer.IsSelf ? $"{tier} self" : tier;
+                <div class="viewer-card @classes">
+                    <div class="viewer-info">
+                        <span class="viewer-name">@viewer.DisplayName</span>
+                        <span class="viewer-meta">last seen @viewer.LastSeenUtc.ToString("HH:mm:ss") UTC</span>
+                    </div>
+                    <span class="viewer-pill @(viewer.IsSelf ? "self" : string.Empty)">@tier@(viewer.IsSelf ? " · you" : string.Empty)</span>
+                </div>
+            }
+        }
+    </div>
+</body>
+</html>

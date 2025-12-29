@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using MyFace.Core.Entities;
 using MyFace.Services;
 using MyFace.Web.Models;
+using MyFace.Web.Services;
 
 namespace MyFace.Web.Controllers;
 
@@ -14,13 +15,15 @@ public class ChatController : Controller
     private readonly ChatSnapshotService _snapshotService;
     private readonly MyFace.Data.ApplicationDbContext _db;
     private readonly MyFace.Web.Services.CaptchaService _captchaService;
+    private readonly ChatPresenceService _presenceService;
 
-    public ChatController(ChatService chatService, ChatSnapshotService snapshotService, MyFace.Data.ApplicationDbContext db, MyFace.Web.Services.CaptchaService captchaService)
+    public ChatController(ChatService chatService, ChatSnapshotService snapshotService, MyFace.Data.ApplicationDbContext db, MyFace.Web.Services.CaptchaService captchaService, ChatPresenceService presenceService)
     {
         _chatService = chatService;
         _snapshotService = snapshotService;
         _db = db;
         _captchaService = captchaService;
+        _presenceService = presenceService;
     }
 
     [HttpGet]
@@ -52,13 +55,31 @@ public class ChatController : Controller
         if (!_chatService.CanViewRoom(user, room)) return Forbid();
 
         await _chatService.EnsureSchemaAsync();
-        var html = await _snapshotService.GetSnapshotAsync(room);
+        var snapshot = await _snapshotService.GetSnapshotAsync(room);
         return View("Messages", new ChatMessagesViewModel
         {
             Room = room,
-            SnapshotHtml = html,
+            SnapshotHtml = snapshot,
             Paused = _chatService.IsRoomPaused(room),
-            ShowMessageIds = _chatService.IsModeratorOrAdmin(user)
+            ShowMessageIds = _chatService.IsModeratorOrAdmin(user),
+            ViewerUsername = user?.Username?.ToLowerInvariant() ?? string.Empty
+        });
+    }
+
+    [HttpGet]
+    [AllowAnonymous]
+    public async Task<IActionResult> ViewersPanel()
+    {
+        var user = await GetCurrentUserAsync();
+        var session = HttpContext.Session;
+        if (!session.IsAvailable)
+        {
+            await session.LoadAsync();
+        }
+        var viewers = _presenceService.Touch("ChatPage", user, session.Id);
+        return View("ViewersPanel", new ChatViewersViewModel
+        {
+            Viewers = viewers
         });
     }
 

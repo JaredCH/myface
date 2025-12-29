@@ -1,6 +1,8 @@
 @model MyFace.Web.Models.ChatMessagesViewModel
 @{
     Layout = null;
+    var viewerHandle = (Model.ViewerUsername ?? string.Empty).ToLowerInvariant();
+    var hasViewerHandle = !string.IsNullOrWhiteSpace(viewerHandle);
 }
 <!DOCTYPE html>
 <html>
@@ -8,30 +10,125 @@
     <meta charset="utf-8" />
     <meta http-equiv="refresh" content="5" />
     <style>
-        body { margin: 0.5rem; background: #f6f7fb; color: #1f2933; font-family: monospace; font-size: 12.6px; }
-        .chat-lines { display: flex; flex-direction: column; gap: 6px; }
-        .line { white-space: pre-wrap; word-break: break-word; overflow-wrap: anywhere; }
-        .ts { color: #64748b; margin-right: 4px; }
-        .user { margin-right: 4px; }
-        .user.role-admin { color: #b91c1c; }
-        .user.role-mod { color: #2f6fe4; }
-        .user.role-verified { color: #15803d; }
-        .user.role-user { color: #0f172a; }
-        .mention { color: #c2410c; }
-        .msg { color: #0f172a; }
-        .meta { color: #475569; margin-left: 6px; font-size: 12px; }
-        .paused { color: #b45309; margin-bottom: 6px; background: #fef3c7; padding: 4px 6px; border: 1px solid #fcd34d; border-radius: 4px; }
-    @if (!Model.ShowMessageIds)
-    {
-        <text>.meta { display: none; }</text>
-    }
+        :root {
+            --irc-bg: #050913;
+            --irc-panel: rgba(6, 12, 25, 0.82);
+            --irc-border: rgba(59, 130, 246, 0.35);
+            --irc-text: #e2e8f0;
+            --irc-muted: #94a3b8;
+            --irc-highlight: #38bdf8;
+            --irc-danger: #fb7185;
+            --irc-gold: #fcd34d;
+        }
+        html, body { height: 100%; }
+        body {
+            margin: 0;
+            padding: 0.75rem;
+            font-family: 'JetBrains Mono', 'Iosevka', 'Ubuntu Mono', monospace;
+            font-size: 13px;
+            background: radial-gradient(circle at top, #0f172a 0%, #020617 50%, #01030a 100%);
+            color: var(--irc-text);
+        }
+        .irc-shell {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            height: 100%;
+            border: 1px solid var(--irc-border);
+            border-radius: 16px;
+            padding: 0.75rem;
+            background: rgba(2, 6, 23, 0.85);
+            box-shadow: 0 15px 35px rgba(2, 6, 23, 0.8);
+        }
+        .irc-header, .irc-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            font-size: 0.75rem;
+            color: var(--irc-muted);
+        }
+        .irc-room {
+            font-weight: 700;
+            color: var(--irc-highlight);
+            font-size: 0.95rem;
+        }
+        .irc-footer { border-top: 1px dashed rgba(148, 163, 184, 0.2); padding-top: 0.4rem; }
+        .irc-main {
+            flex: 1;
+            display: flex;
+            min-height: 0;
+        }
+        .irc-log {
+            flex: 1;
+            border: 1px solid var(--irc-border);
+            border-radius: 14px;
+            background: var(--irc-panel);
+            padding: 0.75rem;
+            overflow-y: auto;
+            min-width: 0;
+        }
+        .chat-lines { display: flex; flex-direction: column; gap: 0.35rem; }
+        .line {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.4rem;
+            align-items: baseline;
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
+        .ts { color: var(--irc-muted); }
+        .user { color: #f8fafc; }
+        .user.role-admin { color: #ef4444; }
+        .user.role-mod { color: #3b82f6; }
+        .user.role-verified,
+        .user.role-user { color: #f8fafc; }
+        .mention { color: var(--irc-gold); }
+        .msg { color: var(--irc-text); flex: 1; }
+        .meta { color: var(--irc-muted); font-size: 0.75rem; }
+        .paused-banner {
+            background: rgba(234, 179, 8, 0.18);
+            border: 1px dashed rgba(250, 204, 21, 0.6);
+            color: var(--irc-gold);
+            padding: 0.45rem 0.65rem;
+            border-radius: 10px;
+            margin-bottom: 0.6rem;
+        }
+        @@media (max-width: 720px) {
+            body { padding: 0.35rem; }
+            .irc-shell { border-radius: 10px; }
+            .irc-main { flex-direction: column; }
+        }
+        @if (!Model.ShowMessageIds)
+        {
+            <text>.line .meta { display: none; }</text>
+        }
+        @if (hasViewerHandle)
+        {
+            <text>body[data-self="@viewerHandle"] .user[data-username="@viewerHandle"] { color: #22c55e !important; }</text>
+        }
     </style>
 </head>
-<body>
-    @if (Model.Paused)
-    {
-        <div class="paused">Chat is paused. Refreshes continue for visibility.</div>
-    }
-    @Html.Raw(Model.SnapshotHtml)
+<body data-self="@viewerHandle">
+    <div class="irc-shell">
+        <header class="irc-header">
+            <div class="irc-room">#@Model.Room</div>
+            <div>Auto-refresh · 5s</div>
+        </header>
+        <div class="irc-main">
+            <section class="irc-log" aria-live="polite">
+                @if (Model.Paused)
+                {
+                    <div class="paused-banner">Chat is paused. Messages remain visible.</div>
+                }
+                @Html.Raw(Model.SnapshotHtml)
+            </section>
+        </div>
+        <footer class="irc-footer">
+            <span>Newest messages appear on top.</span>
+            <span>UTC timestamps · No JavaScript</span>
+        </footer>
+    </div>
 </body>
 </html>

@@ -43,6 +43,7 @@ builder.Services.AddScoped<MailService>();
 builder.Services.AddScoped<UploadScanLogService>();
 builder.Services.AddScoped<MyFace.Web.Services.BBCodeFormatter>();
 builder.Services.AddSingleton<MyFace.Web.Services.CaptchaService>();
+builder.Services.AddSingleton<MyFace.Web.Services.ChatPresenceService>();
 builder.Services.AddHostedService<MyFace.Web.Services.OnionMonitorWorker>();
 builder.Services.AddMemoryCache();
 builder.Services.AddScoped<MyFace.Services.ChatService>();

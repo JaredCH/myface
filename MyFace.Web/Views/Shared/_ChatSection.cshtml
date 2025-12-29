@@ -1,71 +1,84 @@
 @model MyFace.Web.Models.ChatSectionModel
 
 <div class="chat-section">
-    <div class="chat-header"><strong>@Model.Title</strong> <span class="chat-note">@Model.Description</span></div>
+    <div class="irc-window">
+        <div class="irc-window-header">
+            <div>
+                <div class="irc-window-room">#@Model.Room</div>
+                <p class="chat-note">@Model.Description</p>
+            </div>
+            <div class="irc-status-pill @(Model.Paused ? "paused" : "live")">@(Model.Paused ? "paused" : "live")</div>
+        </div>
 
-    @if (!string.IsNullOrEmpty(Model.FlashInfo))
-    {
-        <div class="flash info">@Model.FlashInfo</div>
-    }
-    @if (!string.IsNullOrEmpty(Model.FlashError))
-    {
-        <div class="flash error">@Model.FlashError</div>
-    }
+        @if (!string.IsNullOrEmpty(Model.FlashInfo))
+        {
+            <div class="flash info">@Model.FlashInfo</div>
+        }
+        @if (!string.IsNullOrEmpty(Model.FlashError))
+        {
+            <div class="flash error">@Model.FlashError</div>
+        }
 
-    @if (!Model.UserCanView)
-    {
-        <p class="chat-note">You do not have access to view this room.</p>
-    }
-    else
-    {
-        <iframe class="chat-iframe" src="@Url.Action("Messages", "Chat", new { room = Model.Room })" title="@Model.Title chat" loading="lazy"></iframe>
-    }
+        <div class="irc-window-body">
+            @if (!Model.UserCanView)
+            {
+                <p class="chat-note">You do not have access to view this room.</p>
+            }
+            else
+            {
+                <div class="irc-viewport-wrap">
+                    <iframe class="irc-viewport" src="@Url.Action("Messages", "Chat", new { room = Model.Room })" title="@Model.Title chat" loading="lazy"></iframe>
+                </div>
+            }
+        </div>
 
-    @if (Model.Paused)
-    {
-        <div class="flash error">Chat is paused for this room.</div>
-    }
-
-    @if (Model.CanPost && Model.UserCanView && !Model.Paused)
-    {
-        <form class="chat-form" method="post" asp-action="Send" asp-controller="Chat">
-            @Html.AntiForgeryToken()
-            <input type="hidden" name="room" value="@Model.Room" />
-            <label for="msg-@Model.Room">Message</label>
-            <input type="text" name="content" id="msg-@Model.Room" maxlength="199" placeholder="Type a single line. Emojis and @@mentions are ok. No HTML." />
-            <button type="submit" class="button">Send</button>
-        </form>
-    }
-    else if (Model.UserCanView && !Model.CanPost)
-    {
-        <p class="chat-note">Posting is limited in this room.</p>
-    }
+        <div class="irc-window-compose">
+            @if (Model.Paused)
+            {
+                <p class="chat-note">Chat is paused. Messages remain visible but posting is disabled.</p>
+            }
+            else if (Model.CanPost && Model.UserCanView)
+            {
+                <form class="irc-compose-form" method="post" asp-action="Send" asp-controller="Chat">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="room" value="@Model.Room" />
+                    <label class="sr-only" for="msg-@Model.Room">Message</label>
+                    <input class="irc-input" type="text" name="content" id="msg-@Model.Room" maxlength="199" placeholder="Message (199 chars, no HTML)" />
+                    <button type="submit" class="button irc-send">Send</button>
+                </form>
+            }
+            else if (Model.UserCanView && !Model.CanPost)
+            {
+                <p class="chat-note">Posting is limited in this room.</p>
+            }
+        </div>
+    </div>
 
     @if (Model.IsModerator)
     {
-        <div class="chat-form" style="border-top:1px solid var(--border); padding-top:0.35rem; margin-top:0.35rem;">
-            <form method="post" asp-action="Pause" asp-controller="Chat" style="display:inline-block; margin-right:0.35rem;">
+        <div class="irc-mod-tools">
+            <form class="single-action" data-label="Pause room" method="post" asp-action="Pause" asp-controller="Chat">
                 @Html.AntiForgeryToken()
                 <input type="hidden" name="room" value="@Model.Room" />
                 <button type="submit" class="button">Pause</button>
             </form>
-            <form method="post" asp-action="Resume" asp-controller="Chat" style="display:inline-block; margin-right:0.35rem;">
+            <form class="single-action" data-label="Resume room" method="post" asp-action="Resume" asp-controller="Chat">
                 @Html.AntiForgeryToken()
                 <input type="hidden" name="room" value="@Model.Room" />
                 <button type="submit" class="button">Resume</button>
             </form>
-            <form method="post" asp-action="Delete" asp-controller="Chat" style="display:inline-block; margin-right:0.35rem;">
+            <form data-label="Delete message" method="post" asp-action="Delete" asp-controller="Chat">
                 @Html.AntiForgeryToken()
-                <input type="number" name="id" placeholder="Message id" min="1" style="width:6rem" />
+                <input type="number" name="id" placeholder="Message id" min="1" />
                 <button type="submit" class="button">Delete</button>
             </form>
-            <form method="post" asp-action="Mute" asp-controller="Chat" style="display:inline-block;">
+            <form data-label="Mute user" method="post" asp-action="Mute" asp-controller="Chat">
                 @Html.AntiForgeryToken()
-                <input type="text" name="username" placeholder="Username" style="width:8rem" />
-                <input type="number" name="minutes" value="60" min="1" max="10080" style="width:4.5rem" />
+                <input type="text" name="username" placeholder="Username" />
+                <input type="number" name="minutes" value="60" min="1" max="10080" />
                 <button type="submit" class="button">Mute</button>
             </form>
-            <p class="chat-note">Moderation tools: message ids are shown in feed (#123). Mute is temporary (minutes).</p>
+            <p class="chat-note">Moderation tools: message ids appear in the feed (#123). Mute duration is in minutes.</p>
         </div>
     }
 </div>

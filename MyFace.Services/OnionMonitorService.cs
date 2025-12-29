@@ -7,6 +7,7 @@ using System.Net.Http.Headers;
 using System.Diagnostics;
 using System.Security.Cryptography;
 using System.Text;
+using System.Text.RegularExpressions;
 
 namespace MyFace.Services;
 
@@ -39,6 +40,7 @@ public class OnionStatusService
         "service temporarily unavailable"
     };
     private static readonly int[] ChallengeStatusCodes = { 401, 403, 406, 407, 409, 412, 418, 421, 425, 429, 430, 503, 520, 521, 522, 523, 524 };
+    private static readonly Regex MultiWhitespace = new("\\s+", RegexOptions.Compiled);
 
     private record struct ProbeOutcome(int Id, int Reachable, int Attempts, double? AverageLatency, string Status, DateTime CheckedAt);
     private record struct ProbeAttemptResult(bool Success, double? LatencyMs, bool WasChallenged);
@@ -57,7 +59,7 @@ public class OnionStatusService
     public async Task EnsureSeedDataAsync()
     {
         var seeds = OnionMonitorSeedData.All
-            .Select(seed => (seed.Name, seed.Category, Url: NormalizeOnionUrl(seed.Url)?.ToString()))
+            .Select(seed => (seed.Name, Category: NormalizeCategoryLabel(seed.Category), Url: NormalizeOnionUrl(seed.Url)?.ToString()))
             .Where(seed => seed.Url is not null)
             .Select(seed => (seed.Name, seed.Category, Url: seed.Url!))
             .ToList();
@@ -119,19 +121,6 @@ public class OnionStatusService
             });
         }
 
-        var removals = existingEntities
-            .Where(entity =>
-            {
-                var key = NormalizeOnionUrl(entity.OnionUrl)?.ToString();
-                return string.IsNullOrWhiteSpace(key) || !seedUrls.Contains(key);
-            })
-            .ToList();
-
-        if (removals.Count > 0)
-        {
-            _context.OnionStatuses.RemoveRange(removals);
-        }
-
         if (_context.ChangeTracker.HasChanges())
         {
             await _context.SaveChangesAsync();
@@ -140,10 +129,14 @@ public class OnionStatusService
 
     public async Task<OnionStatus> AddAsync(string name, string description, string onionUrl)
     {
+        name = NormalizeLabel(name);
+        var category = await CanonicalizeCategoryAsync(description);
+        onionUrl = NormalizeUrlInput(onionUrl);
+
         var status = new OnionStatus
         {
             Name = name,
-            Description = description,
+            Description = category,
             OnionUrl = onionUrl,
             Status = "Unknown",
             LastChecked = null,
@@ -312,9 +305,9 @@ public class OnionStatusService
         var item = await _context.OnionStatuses.FindAsync(id);
         if (item == null) return false;
 
-        item.Name = name;
-        item.Description = description;
-        item.OnionUrl = onionUrl;
+        item.Name = NormalizeLabel(name);
+        item.Description = await CanonicalizeCategoryAsync(description);
+        item.OnionUrl = NormalizeUrlInput(onionUrl);
         
         await _context.SaveChangesAsync();
         return true;
@@ -323,6 +316,55 @@ public class OnionStatusService
     public async Task<OnionStatus?> GetByIdAsync(int id)
     {
         return await _context.OnionStatuses.FindAsync(id);
+    }
+
+    private async Task<string> CanonicalizeCategoryAsync(string? rawCategory)
+    {
+        var normalized = NormalizeCategoryLabel(rawCategory);
+        if (string.Equals(normalized, "Other", StringComparison.Ordinal))
+        {
+            return normalized;
+        }
+
+        var existing = await _context.OnionStatuses.AsNoTracking()
+            .Where(o => !string.IsNullOrEmpty(o.Description))
+            .Select(o => o.Description!)
+            .Distinct()
+            .ToListAsync();
+
+        var match = existing.FirstOrDefault(c => string.Equals(c, normalized, StringComparison.OrdinalIgnoreCase));
+        if (match is not null)
+        {
+            return match;
+        }
+
+        var seedMatch = OnionMonitorSeedData.All
+            .Select(s => s.Category)
+            .Where(c => !string.IsNullOrWhiteSpace(c))
+            .FirstOrDefault(c => string.Equals(NormalizeCategoryLabel(c), normalized, StringComparison.OrdinalIgnoreCase));
+
+        return seedMatch ?? normalized;
+    }
+
+    private static string NormalizeCategoryLabel(string? value)
+    {
+        var normalized = NormalizeLabel(value);
+        return string.IsNullOrEmpty(normalized) ? "Other" : normalized;
+    }
+
+    private static string NormalizeLabel(string? value)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            return string.Empty;
+        }
+
+        return MultiWhitespace.Replace(value.Trim(), " ");
+    }
+
+    private static string NormalizeUrlInput(string? value)
+    {
+        return string.IsNullOrWhiteSpace(value) ? string.Empty : value.Trim();
     }
 
     private async Task<ProbeOutcome?> ProbeAsync(OnionStatus item, CancellationToken cancellationToken)

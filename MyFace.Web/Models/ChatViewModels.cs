@@ -1,4 +1,6 @@
+using System.Collections.Generic;
 using MyFace.Core.Entities;
+using MyFace.Web.Services;
 
 namespace MyFace.Web.Models;
 
@@ -19,6 +21,12 @@ public class ChatMessagesViewModel
     public string SnapshotHtml { get; set; } = string.Empty;
     public bool Paused { get; set; }
     public bool ShowMessageIds { get; set; }
+    public string ViewerUsername { get; set; } = string.Empty;
+}
+
+public class ChatViewersViewModel
+{
+    public IReadOnlyList<ChatViewerPresence> Viewers { get; set; } = System.Array.Empty<ChatViewerPresence>();
 }
 
 public class ChatSectionModel

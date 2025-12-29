@@ -7,33 +7,37 @@
 }
 
 <style>
-.chat-section { border: 1px solid var(--border); padding: 0.75rem; margin-bottom: 1rem; background: #f8fafc; color: #0f172a; }
-.chat-header { font-family: monospace; font-size: 1rem; margin-bottom: 0.35rem; color: #0f172a; }
-.chat-form { margin: 0.35rem 0; }
-.chat-form input[type="text"] { width: 100%; height: 44px; font-family: monospace; font-size: 0.86rem; background: #ffffff; color: #0f172a; border: 1px solid var(--border); padding: 0.35rem; }
-.chat-form button { margin-top: 0.35rem; }
-.chat-iframe { width: 100%; height: 520px; border: 1px solid var(--border); background: #ffffff; }
-.chat-note { color: #475569; font-size: 0.9rem; }
-.flash { padding: 0.4rem 0.6rem; margin: 0.35rem 0; border-radius: 4px; }
-.flash.error { background: #fdecec; color: #7f1d1d; border: 1px solid #f5c2c7; }
-.flash.info { background: #e0f2fe; color: #0f172a; border: 1px solid #bae6fd; }
-
-.chat-tabs { border: 1px solid var(--border); background: #f8fafc; }
+:root {
+    --irc-shell: #010414;
+    --irc-panel: #081126;
+    --irc-glow: rgba(56, 189, 248, 0.35);
+    --irc-muted: #94a3b8;
+}
+body.chat-page-body { background: radial-gradient(circle at top, #020617 0%, #010414 60%, #000211 100%); color: #e2e8f0; }
+.chat-stage { display: flex; gap: 1.35rem; align-items: stretch; margin: 0.5rem auto 0; width: min(75vw, 1500px); min-height: max(520px, 75vh); height: auto; }
+.chat-stage-left { flex: 0 0 72%; max-width: 72%; display: flex; flex-direction: column; gap: 0.85rem; min-width: 0; min-height: 0; }
+.chat-stage-viewers { flex: 0 0 28%; max-width: 28%; min-width: 260px; min-height: 0; display: flex; }
+.chat-viewer-shell { border: 1px solid var(--irc-glow); background: linear-gradient(135deg, rgba(8, 13, 29, 0.95), rgba(3, 6, 18, 0.95)); border-radius: 24px; padding: 1.1rem; color: #e2e8f0; box-shadow: 0 25px 55px rgba(2, 6, 23, 0.85); flex: 1; display: flex; flex-direction: column; min-height: 0; }
+.chat-viewers-head { display: flex; justify-content: space-between; align-items: center; gap: 0.75rem; margin-bottom: 0.9rem; }
+.chat-viewers-title { font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.32em; color: #38bdf8; }
+.chat-viewers-refresh { font-size: 0.7rem; color: var(--irc-muted); letter-spacing: 0.1em; text-transform: uppercase; }
+.chat-viewers-frame { width: 100%; border: 1px solid rgba(56, 189, 248, 0.35); border-radius: 18px; flex: 1; min-height: 0; background: #020617; box-shadow: inset 0 0 30px rgba(2, 6, 23, 0.7); }
+.chat-viewers-footnote { font-size: 0.72rem; color: var(--irc-muted); text-transform: uppercase; letter-spacing: 0.08em; margin-top: 0.75rem; text-align: center; }
+.chat-tabs { border: 1px solid var(--border); background: linear-gradient(120deg, #0f172a, #0b1120); border-radius: 18px; color: #e2e8f0; padding: 0.5rem; flex: 1; display: flex; flex-direction: column; min-height: 0; box-sizing: border-box; }
 .chat-tab-input { display: none; }
-.chat-tab-labels { display: flex; gap: 0.25rem; padding: 0.35rem 0.5rem 0; flex-wrap: wrap; }
-.chat-tab-label { padding: 0.4rem 0.8rem; border: 1px solid var(--border); border-bottom: none; background: #e2e8f0; color: #0f172a; font-weight: 600; cursor: pointer; }
-.chat-tab-label:hover { background: #cbd5e1; }
-.chat-tab-label.active { background: #ffffff; border-bottom: 1px solid #ffffff; }
-.chat-panels { border-top: 1px solid var(--border); padding: 0.5rem; }
-.chat-panel { display: none; }
-.chat-panel.active { display: block; }
+.chat-tab-labels { display: flex; gap: 0.4rem; flex-wrap: wrap; padding: 0.25rem 0.25rem 0; }
+.chat-tab-label { padding: 0.45rem 1.1rem; border-radius: 999px; border: 1px solid rgba(148, 163, 184, 0.35); background: rgba(15, 23, 42, 0.6); color: #f8fafc; text-transform: uppercase; letter-spacing: 0.08em; cursor: pointer; font-size: 0.8rem; }
+.chat-tab-label:hover { border-color: rgba(56, 189, 248, 0.6); color: #38bdf8; }
+.chat-panels { border-top: 1px solid rgba(148, 163, 184, 0.3); margin-top: 0.5rem; padding-top: 0.75rem; flex: 1; min-height: 0; position: relative; }
+.chat-panel { display: none; min-height: 0; }
 
 /* Toggle panels without JS */
 #tab-public:checked ~ .chat-tab-labels label[for="tab-public"],
 #tab-verified:checked ~ .chat-tab-labels label[for="tab-verified"],
 #tab-shorts:checked ~ .chat-tab-labels label[for="tab-shorts"] {
-    border-bottom: 1px solid #ffffff;
-    background: #ffffff;
+    background: rgba(56, 189, 248, 0.15);
+    border-color: rgba(56, 189, 248, 0.65);
+    color: #38bdf8;
 }
 
 #tab-public:checked ~ .chat-panels .panel-public,
@@ -42,15 +46,55 @@
     display: block;
 }
 
+.chat-section { margin-bottom: 0; }
+.irc-window { border: 1px solid var(--irc-glow); background: var(--irc-panel); border-radius: 20px; padding: 1rem; color: #e2e8f0; font-family: 'JetBrains Mono', 'Iosevka', 'Ubuntu Mono', monospace; box-shadow: 0 20px 45px rgba(2, 6, 23, 0.8); display: flex; flex-direction: column; gap: 0.5rem; }
+.irc-window-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem; margin-bottom: 0.5rem; }
+.irc-window-room { font-size: 1rem; letter-spacing: 0.08em; text-transform: uppercase; color: #38bdf8; }
+.irc-status-pill { text-transform: uppercase; font-size: 0.75rem; letter-spacing: 0.1em; border: 1px solid rgba(148, 163, 184, 0.5); border-radius: 999px; padding: 0.2rem 0.9rem; }
+.irc-status-pill.live { border-color: rgba(74, 222, 128, 0.8); color: #4ade80; }
+.irc-status-pill.paused { border-color: rgba(234, 179, 8, 0.8); color: #fcd34d; }
+.chat-note { color: var(--irc-muted); font-size: 0.85rem; margin: 0.2rem 0 0; }
+.flash { padding: 0.5rem 0.75rem; border-radius: 10px; margin: 0.4rem 0; border: 1px solid transparent; font-size: 0.85rem; }
+.flash.info { background: rgba(59, 130, 246, 0.15); border-color: rgba(59, 130, 246, 0.4); color: #93c5fd; }
+.flash.error { background: rgba(248, 113, 113, 0.12); border-color: rgba(248, 113, 113, 0.45); color: #fecaca; }
+.irc-window-body { border: 1px solid rgba(148, 163, 184, 0.3); border-radius: 16px; background: rgba(5, 10, 23, 0.9); padding: 0.6rem; flex: 1; min-height: 320px; display: flex; flex-direction: column; overflow: hidden; }
+.irc-viewport-wrap { border-radius: 12px; overflow: hidden; border: 1px solid rgba(56, 189, 248, 0.25); box-shadow: inset 0 0 20px rgba(15, 23, 42, 0.4); flex: 1; min-height: 0; }
+.irc-viewport { width: 100%; height: 100%; min-height: 320px; border: none; display: block; background: #01030a; }
+.irc-window-compose { margin-top: 0.35rem; flex-shrink: 0; }
+.irc-compose-form { display: flex; gap: 0.6rem; align-items: center; background: rgba(15, 23, 42, 0.9); border-radius: 999px; padding: 0.35rem 0.5rem 0.35rem 1rem; border: 1px solid rgba(59, 130, 246, 0.35); width: 100%; box-sizing: border-box; }
+.irc-input { flex: 1; border: none; background: transparent; color: #f8fafc; font-size: 0.9rem; font-family: 'JetBrains Mono', 'Iosevka', 'Ubuntu Mono', monospace; min-width: 0; width: 100%; }
+.irc-input:focus { outline: none; }
+.irc-send { border-radius: 999px; padding: 0.35rem 1.1rem; background: #38bdf8; color: #04101f; border: none; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; }
+.irc-send:hover { background: #7dd3fc; }
+.irc-mod-tools { margin-top: 0.85rem; display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 0.65rem; }
+.irc-mod-tools form { border: 1px solid rgba(56, 189, 248, 0.35); border-radius: 16px; padding: 0.65rem; background: rgba(4, 9, 22, 0.92); box-shadow: inset 0 0 12px rgba(8, 16, 33, 0.45); display: flex; flex-direction: column; gap: 0.45rem; align-items: stretch; position: relative; width: 100%; box-sizing: border-box; }
+.irc-mod-tools form::before { content: attr(data-label); font-size: 0.64rem; text-transform: uppercase; letter-spacing: 0.15em; color: var(--irc-muted); display: block; margin-bottom: 0.15rem; }
+.irc-mod-tools form.single-action { flex-direction: column; align-items: flex-start; }
+.irc-mod-tools form.single-action::before { margin-right: 0; width: 100%; }
+.irc-mod-tools input { border-radius: 10px; border: 1px solid rgba(148, 163, 184, 0.45); background: rgba(15, 23, 42, 0.7); color: #e2e8f0; padding: 0.3rem 0.5rem; font-family: inherit; width: 100%; box-sizing: border-box; }
+.irc-mod-tools input[type="hidden"] { display: none; }
+.irc-mod-tools button { border-radius: 10px; padding: 0.4rem 0.6rem; text-transform: uppercase; letter-spacing: 0.1em; font-weight: 700; width: 100%; }
+.irc-mod-tools .chat-note { grid-column: 1 / -1; margin: 0.2rem 0 0; }
+.sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); border: 0; }
+
+@@media (max-width: 1100px) {
+    body.chat-page-body { overflow: auto; }
+    body.chat-page-body .main-content { padding: 0 0.5rem; }
+    .chat-stage { flex-direction: column; width: 100%; height: auto; }
+    .chat-stage-left,
+    .chat-stage-viewers { max-width: 100%; flex: 1 1 auto; height: auto; }
+    .chat-stage-viewers { position: static; }
+    .chat-viewer-shell { min-height: 320px; }
+    .chat-viewers-frame { min-height: 220px; }
+}
 @@media (max-width: 720px) {
-    .chat-iframe { height: 440px; }
-    .chat-tab-labels { padding: 0.25rem 0.35rem 0; }
-    .chat-tab-label { flex: 1 1 30%; text-align: center; }
+    .irc-viewport { min-height: 360px; }
+    .irc-window { padding: 0.85rem; }
+    .irc-compose-form { flex-direction: column; border-radius: 16px; }
+    .irc-send { width: 100%; }
+    .chat-tab-labels { justify-content: space-between; }
 }
 </style>
-
-<h1>Live Chat</h1>
-<p class="chat-note">No JavaScript. Messages update via meta-refresh inside the chat pane. Choose a tab to switch rooms.</p>
 
 @if (isMod)
 {
@@ -60,66 +104,81 @@
     if (!string.IsNullOrEmpty(adminErr)) { <div class="flash error">@adminErr</div>; }
 }
 
-<div class="chat-tabs">
-    <input class="chat-tab-input" type="radio" name="chat-tab" id="tab-public" checked />
-    <input class="chat-tab-input" type="radio" name="chat-tab" id="tab-verified" />
-    <input class="chat-tab-input" type="radio" name="chat-tab" id="tab-shorts" />
+<div class="chat-stage">
+    <div class="chat-stage-left">
+        <div class="chat-tabs">
+            <input class="chat-tab-input" type="radio" name="chat-tab" id="tab-public" checked />
+            <input class="chat-tab-input" type="radio" name="chat-tab" id="tab-verified" />
+            <input class="chat-tab-input" type="radio" name="chat-tab" id="tab-shorts" />
 
-    <div class="chat-tab-labels">
-        <label class="chat-tab-label" for="tab-public">Public</label>
-        <label class="chat-tab-label" for="tab-verified">Verified</label>
-        <label class="chat-tab-label" for="tab-shorts">Sigil Shorts</label>
+            <div class="chat-tab-labels">
+                <label class="chat-tab-label" for="tab-public">Public</label>
+                <label class="chat-tab-label" for="tab-verified">Verified</label>
+                <label class="chat-tab-label" for="tab-shorts">Sigil Shorts</label>
+            </div>
+
+            <div class="chat-panels">
+                <div class="chat-panel panel-public">
+                    @await Html.PartialAsync("_ChatSection", new MyFace.Web.Models.ChatSectionModel
+                    {
+                        Title = "Public",
+                        Room = MyFace.Services.ChatService.RoomPublic,
+                        Description = "Open room. Anyone can read and logged-in users can post.",
+                        CanPost = Model.PublicCanPost,
+                        Paused = Model.PublicPaused,
+                        FlashInfo = flash($"ChatInfo_{MyFace.Services.ChatService.RoomPublic}"),
+                        FlashError = flash($"ChatError_{MyFace.Services.ChatService.RoomPublic}"),
+                        IsModerator = isMod,
+                        UserCanView = true
+                    })
+                </div>
+
+                <div class="chat-panel panel-verified">
+                    @await Html.PartialAsync("_ChatSection", new MyFace.Web.Models.ChatSectionModel
+                    {
+                        Title = "Verified Members",
+                        Room = MyFace.Services.ChatService.RoomVerified,
+                        Description = "Only PGP-verified users and staff can read and post.",
+                        CanPost = Model.VerifiedCanPost,
+                        Paused = Model.VerifiedPaused,
+                        FlashInfo = flash($"ChatInfo_{MyFace.Services.ChatService.RoomVerified}"),
+                        FlashError = flash($"ChatError_{MyFace.Services.ChatService.RoomVerified}"),
+                        IsModerator = isMod,
+                        UserCanView = MyFace.Services.ChatService.RoomVerified == null ? false : (Model.CurrentUser != null && (Model.CurrentUser.PGPVerifications.Any(v => v.Verified) || isMod))
+                    })
+                </div>
+
+                <div class="chat-panel panel-shorts">
+                    @await Html.PartialAsync("_ChatSection", new MyFace.Web.Models.ChatSectionModel
+                    {
+                        Title = "Sigil Shorts",
+                        Room = MyFace.Services.ChatService.RoomSigilShorts,
+                        Description = "Read-only for everyone; only staff may post.",
+                        CanPost = Model.SigilShortsCanPost,
+                        Paused = Model.SigilShortsPaused,
+                        FlashInfo = flash($"ChatInfo_{MyFace.Services.ChatService.RoomSigilShorts}"),
+                        FlashError = flash($"ChatError_{MyFace.Services.ChatService.RoomSigilShorts}"),
+                        IsModerator = isMod,
+                        UserCanView = true
+                    })
+                </div>
+            </div>
+        </div>
+
+        @if (!isAuthed)
+        {
+            <p class="chat-note">Login is required to post. You can still read Public and Sigil Shorts.</p>
+        }
     </div>
 
-    <div class="chat-panels">
-        <div class="chat-panel panel-public">
-            @await Html.PartialAsync("_ChatSection", new MyFace.Web.Models.ChatSectionModel
-            {
-                Title = "Public",
-                Room = MyFace.Services.ChatService.RoomPublic,
-                Description = "Open room. Anyone can read and logged-in users can post.",
-                CanPost = Model.PublicCanPost,
-                Paused = Model.PublicPaused,
-                FlashInfo = flash($"ChatInfo_{MyFace.Services.ChatService.RoomPublic}"),
-                FlashError = flash($"ChatError_{MyFace.Services.ChatService.RoomPublic}"),
-                IsModerator = isMod,
-                UserCanView = true
-            })
+    <aside class="chat-stage-viewers" aria-label="Live chat viewers">
+        <div class="chat-viewer-shell">
+            <div class="chat-viewers-head">
+                <span class="chat-viewers-title">Live Viewers</span>
+                <span class="chat-viewers-refresh">auto-refresh · 5s</span>
+            </div>
+            <iframe class="chat-viewers-frame" src="@Url.Action("ViewersPanel", "Chat")" title="Live chat viewers" loading="lazy"></iframe>
+            <p class="chat-viewers-footnote">Counts signed-in users currently reading these chat panes.</p>
         </div>
-
-        <div class="chat-panel panel-verified">
-            @await Html.PartialAsync("_ChatSection", new MyFace.Web.Models.ChatSectionModel
-            {
-                Title = "Verified Members",
-                Room = MyFace.Services.ChatService.RoomVerified,
-                Description = "Only PGP-verified users and staff can read and post.",
-                CanPost = Model.VerifiedCanPost,
-                Paused = Model.VerifiedPaused,
-                FlashInfo = flash($"ChatInfo_{MyFace.Services.ChatService.RoomVerified}"),
-                FlashError = flash($"ChatError_{MyFace.Services.ChatService.RoomVerified}"),
-                IsModerator = isMod,
-                UserCanView = MyFace.Services.ChatService.RoomVerified == null ? false : (Model.CurrentUser != null && (Model.CurrentUser.PGPVerifications.Any(v => v.Verified) || isMod))
-            })
-        </div>
-
-        <div class="chat-panel panel-shorts">
-            @await Html.PartialAsync("_ChatSection", new MyFace.Web.Models.ChatSectionModel
-            {
-                Title = "Sigil Shorts",
-                Room = MyFace.Services.ChatService.RoomSigilShorts,
-                Description = "Read-only for everyone; only staff may post.",
-                CanPost = Model.SigilShortsCanPost,
-                Paused = Model.SigilShortsPaused,
-                FlashInfo = flash($"ChatInfo_{MyFace.Services.ChatService.RoomSigilShorts}"),
-                FlashError = flash($"ChatError_{MyFace.Services.ChatService.RoomSigilShorts}"),
-                IsModerator = isMod,
-                UserCanView = true
-            })
-        </div>
-    </div>
+    </aside>
 </div>
-
-@if (!isAuthed)
-{
-    <p class="chat-note">Login is required to post. You can still read Public and Sigil Shorts.</p>
-}

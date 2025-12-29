@@ -15,6 +15,7 @@
     Func<IHtmlContent> MailBadge = () => unreadCount > 0
         ? new HtmlString("<span style=\"color:#e11d48; font-weight:700; margin-left:2px; position:relative; top:-1px;\">!" + "</span>")
         : HtmlString.Empty;
+    var isChatPage = string.Equals(ViewContext.RouteData.Values["controller"]?.ToString(), "Chat", StringComparison.OrdinalIgnoreCase);
 }
 <!DOCTYPE html>
 <html lang="en">
@@ -25,7 +26,7 @@
     <title>@ViewData["Title"] - Sigil</title>
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
 </head>
-<body>
+<body class="@(isChatPage ? "chat-page-body" : string.Empty)">
     <header>
         <nav class="nav-bar">
             <div class="container">
@@ -57,79 +58,76 @@
             </div>
         </nav>
     </header>
-    <div class="main-wrapper">
-        <aside class="sidebar sidebar-left">
-            <nav class="sidebar-nav">
-                <h3>Navigation</h3>
-                <ul>
-                    <li><a href="@Url.Action("Index", "Thread")">Threads</a></li>
-                    <li><a href="@Url.Action("Index", "Monitor")">Monitor</a></li>
-                    <li><a href="@Url.Action("Index", "Chat")">Chat</a></li>
-                    <li><a href="@Url.Action("Index", "Mail")">Mail @MailBadge()</a></li>
-                    @if (User.Identity?.IsAuthenticated == true)
-                    {
-                        @if (User.IsInRole("Admin"))
+    <div class="main-wrapper @(isChatPage ? "chat-page-layout" : string.Empty)">
+        @if (!isChatPage)
+        {
+            <aside class="sidebar sidebar-left">
+                <nav class="sidebar-nav">
+                    <h3>Navigation</h3>
+                    <ul>
+                        <li><a href="@Url.Action("Index", "Thread")">Threads</a></li>
+                        <li><a href="@Url.Action("Index", "Monitor")">Monitor</a></li>
+                        <li><a href="@Url.Action("Index", "Chat")">Chat</a></li>
+                        <li><a href="@Url.Action("Index", "Mail")">Mail @MailBadge()</a></li>
+                        @if (User.Identity?.IsAuthenticated == true)
                         {
-                            <li><a href="@Url.Action("Index", "Admin")">Admin Panel</a></li>
+                            @if (User.IsInRole("Admin"))
+                            {
+                                <li><a href="@Url.Action("Index", "Admin")">Admin Panel</a></li>
+                            }
+                            @if (User.IsInRole("Admin") || User.IsInRole("Moderator"))
+                            {
+                                <li><a href="@Url.Action("Index", "Moderator")">Moderation</a></li>
+                            }
+                            <li><a href="@Url.Action("Index", "User", new { username = User.Identity.Name })">My Profile</a></li>
                         }
-                        @if (User.IsInRole("Admin") || User.IsInRole("Moderator"))
+                        else
                         {
-                            <li><a href="@Url.Action("Index", "Moderator")">Moderation</a></li>
+                            <li><a href="@Url.Action("Login", "Account")">Login</a></li>
+                            <li><a href="@Url.Action("Register", "Account")">Register</a></li>
                         }
-                        <li><a href="@Url.Action("Index", "User", new { username = User.Identity.Name })">My Profile</a></li>
-                    }
-                    else
-                    {
-                        <li><a href="@Url.Action("Login", "Account")">Login</a></li>
-                        <li><a href="@Url.Action("Register", "Account")">Register</a></li>
-                    }
-                </ul>
-            </nav>
-        </aside>
-        <div class="container main-content">
+                    </ul>
+                </nav>
+            </aside>
+        }
+        <div class="container main-content @(isChatPage ? "chat-content-expanded" : string.Empty)">
             <main>
                 @RenderBody()
             </main>
         </div>
-        <aside class="sidebar sidebar-right">
-            <p class="onion-title">Top Onion Links</p>
-            <div class="onion-cards">
-                @foreach (var link in topOnions)
-                {
-                    var statusClass = link.Status?.Equals("Online", StringComparison.OrdinalIgnoreCase) == true
-                        ? "status-online"
-                        : link.Status?.Equals("DEGRADED", StringComparison.OrdinalIgnoreCase) == true
-                            ? "status-degraded"
-                            : "status-offline";
+        @if (!isChatPage)
+        {
+            <aside class="sidebar sidebar-right">
+                <p class="onion-title">Top Onion Links</p>
+                <div class="onion-cards">
+                    @foreach (var link in topOnions)
+                    {
+                        var statusClass = link.Status?.Equals("Online", StringComparison.OrdinalIgnoreCase) == true
+                            ? "status-online"
+                            : link.Status?.Equals("DEGRADED", StringComparison.OrdinalIgnoreCase) == true
+                                ? "status-degraded"
+                                : "status-offline";
 
-                    <a href="@Url.Action("Go", "Monitor", new { id = link.Id })" class="onion-card">
-                        <div class="onion-card__header">
-                            <div>
-                                <span class="onion-name">@link.Name</span>
-                                <span class="onion-url">@link.OnionUrl</span>
+                        <a href="@Url.Action("Go", "Monitor", new { id = link.Id })" class="onion-card">
+                            <div class="onion-card__header">
+                                <div>
+                                    <span class="onion-name">@link.Name</span>
+                                    <span class="onion-url">@link.OnionUrl</span>
+                                </div>
+                                <span class="status-dot @statusClass" title="@link.Status"></span>
                             </div>
-                            <span class="status-dot @statusClass" title="@link.Status"></span>
-                        </div>
-                        <div class="onion-card__meta">
-                            <span class="onion-clicks">Clicks: @link.ClickCount</span>
-                            <span class="onion-status-label">@link.Status</span>
-                        </div>
-                    </a>
-                }
-            </div>
-        </aside>
+                            <div class="onion-card__meta">
+                                <span class="onion-clicks">Clicks: @link.ClickCount</span>
+                                <span class="onion-status-label">@link.Status</span>
+                            </div>
+                        </a>
+                    }
+                </div>
+            </aside>
+        }
     </div>
     <footer>
-        <div class="container">
-            <p>Sigil - Privacy-focused forum | No JavaScript | No tracking</p>
-            @if (User.Identity?.IsAuthenticated == true)
-            {
-                <p style="font-size: 0.8em; color: #666;">
-                    Debug: Role Claim = @User.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value <br/>
-                    IsAdmin = @User.IsInRole("Admin")
-                </p>
-            }
-        </div>
+        <div class="container"></div>
     </footer>
     @RenderSection("Scripts", required: false)
 </body>
