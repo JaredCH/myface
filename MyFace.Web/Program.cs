@@ -32,7 +32,6 @@ else
 builder.Services.AddScoped<UserService>();
 builder.Services.AddScoped<ForumService>();
 builder.Services.AddScoped<OnionStatusService>();
-builder.Services.AddScoped<RssService>();
 builder.Services.AddScoped<ReputationService>();
 builder.Services.AddScoped<VisitTrackingService>();
 builder.Services.AddScoped<RateLimitService>();

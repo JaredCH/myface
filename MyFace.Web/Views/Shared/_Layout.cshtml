@@ -24,7 +24,6 @@
     <meta name="referrer" content="no-referrer" />
     <title>@ViewData["Title"] - Sigil</title>
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
-    <link rel="alternate" type="application/rss+xml" title="Latest Threads" href="@Url.Action("Threads", "Rss")" />
 </head>
 <body>
     <header>
@@ -122,7 +121,7 @@
     </div>
     <footer>
         <div class="container">
-            <p>Sigil - Privacy-focused forum | <a href="@Url.Action("Threads", "Rss")">RSS</a> | No JavaScript | No tracking</p>
+            <p>Sigil - Privacy-focused forum | No JavaScript | No tracking</p>
             @if (User.Identity?.IsAuthenticated == true)
             {
                 <p style="font-size: 0.8em; color: #666;">
