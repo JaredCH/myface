@@ -16,9 +16,12 @@ public class ApplicationDbContext : DbContext
     public DbSet<PostImage> PostImages { get; set; }
     public DbSet<Vote> Votes { get; set; }
     public DbSet<OnionStatus> OnionStatuses { get; set; }
+    public DbSet<OnionProof> OnionProofs { get; set; }
     public DbSet<PGPVerification> PGPVerifications { get; set; }
     public DbSet<UserContact> UserContacts { get; set; }
     public DbSet<UserNews> UserNews { get; set; }
+    public DbSet<UserReview> UserReviews { get; set; }
+    public DbSet<ProfileChatMessage> ProfileChatMessages { get; set; }
     public DbSet<PageVisit> PageVisits { get; set; }
     public DbSet<UsernameChangeLog> UsernameChangeLogs { get; set; }
     public DbSet<Activity> Activities { get; set; }
@@ -74,6 +77,18 @@ public class ApplicationDbContext : DbContext
                 .WithMany(u => u.Posts)
                 .HasForeignKey(e => e.UserId)
                 .OnDelete(DeleteBehavior.SetNull);
+        });
+
+        // PageVisit configuration
+        modelBuilder.Entity<PageVisit>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Path).HasMaxLength(256).IsRequired();
+            entity.Property(e => e.SessionFingerprint).HasMaxLength(64);
+            entity.Property(e => e.UsernameSnapshot).HasMaxLength(64);
+            entity.Property(e => e.EventType).HasMaxLength(32).HasDefaultValue("page-load");
+            entity.HasIndex(e => e.VisitedAt);
+            entity.HasIndex(e => e.SessionFingerprint);
         });
 
         // PostImage configuration
@@ -150,6 +165,20 @@ public class ApplicationDbContext : DbContext
             entity.Property(e => e.ClickCount).HasDefaultValue(0);
         });
 
+        modelBuilder.Entity<OnionProof>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.ProofType).HasMaxLength(32).IsRequired();
+            entity.Property(e => e.Content).IsRequired();
+            entity.Property(e => e.CreatedAt).HasDefaultValueSql("CURRENT_TIMESTAMP");
+            entity.HasIndex(e => new { e.OnionStatusId, e.ProofType });
+
+            entity.HasOne(e => e.OnionStatus)
+                .WithMany(o => o.Proofs)
+                .HasForeignKey(e => e.OnionStatusId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
         // UserContact configuration
         modelBuilder.Entity<UserContact>(entity =>
         {
@@ -175,6 +204,30 @@ public class ApplicationDbContext : DbContext
                 .WithMany(u => u.News)
                 .HasForeignKey(e => e.UserId)
                 .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        // UserReview configuration
+        modelBuilder.Entity<UserReview>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Comment).HasMaxLength(2000).IsRequired();
+            entity.Property(e => e.CreatedAt).HasDefaultValueSql("CURRENT_TIMESTAMP");
+            entity.HasIndex(e => new { e.TargetUserId, e.CreatedAt });
+            entity.HasCheckConstraint("CK_UserReviews_ScoreRange",
+                "\"CommunicationScore\" BETWEEN 1 AND 5 AND " +
+                "\"ShippingScore\" BETWEEN 1 AND 5 AND " +
+                "\"QualityScore\" BETWEEN 1 AND 5 AND " +
+                "\"OverallScore\" BETWEEN 1 AND 5");
+
+            entity.HasOne(e => e.TargetUser)
+                .WithMany(u => u.ReviewsReceived)
+                .HasForeignKey(e => e.TargetUserId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne(e => e.ReviewerUser)
+                .WithMany(u => u.ReviewsAuthored)
+                .HasForeignKey(e => e.ReviewerUserId)
+                .OnDelete(DeleteBehavior.Restrict);
         });
 
         // Activity configuration
@@ -212,6 +265,27 @@ public class ApplicationDbContext : DbContext
             entity.Property(e => e.Content).HasMaxLength(2000).IsRequired();
             entity.Property(e => e.CreatedAt).HasDefaultValueSql("CURRENT_TIMESTAMP");
             entity.HasIndex(e => new { e.Room, e.CreatedAt });
+        });
+
+        // ProfileChatMessage configuration
+        modelBuilder.Entity<ProfileChatMessage>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.AuthorUsername).HasMaxLength(50).IsRequired();
+            entity.Property(e => e.AuthorRole).HasMaxLength(16).HasDefaultValue("User");
+            entity.Property(e => e.Body).HasMaxLength(1000).IsRequired();
+            entity.Property(e => e.CreatedAt).HasDefaultValueSql("CURRENT_TIMESTAMP");
+            entity.HasIndex(e => new { e.TargetUserId, e.CreatedAt });
+
+            entity.HasOne(e => e.TargetUser)
+                .WithMany(u => u.ProfileChatWall)
+                .HasForeignKey(e => e.TargetUserId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne(e => e.AuthorUser)
+                .WithMany(u => u.ProfileChatMessagesAuthored)
+                .HasForeignKey(e => e.AuthorUserId)
+                .OnDelete(DeleteBehavior.Cascade);
         });
 
         // PrivateMessage configuration

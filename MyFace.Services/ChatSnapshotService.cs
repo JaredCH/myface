@@ -52,7 +52,7 @@ public class ChatSnapshotService
 
         foreach (var msg in messages)
         {
-            var ts = msg.CreatedAt.ToUniversalTime().ToString("HH:mm");
+            var ts = msg.CreatedAt.ToUniversalTime().ToString("yyyy-MM-dd HH:mm");
             var role = (msg.RoleSnapshot ?? "User").ToLowerInvariant();
             var roleClass = role switch
             {

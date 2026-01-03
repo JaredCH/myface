@@ -43,10 +43,21 @@
         if (online > 0 && offline == 0) return "category-shell-stable";
         return "category-shell-muted";
     }
+    string RemoveMirrorToken(string? value)
+    {
+        if (string.IsNullOrWhiteSpace(value)) return string.Empty;
+        var trimmed = value.Trim();
+        var marker = trimmed.IndexOf("(mirror", StringComparison.OrdinalIgnoreCase);
+        if (marker >= 0)
+        {
+            trimmed = trimmed[..marker].Trim();
+        }
+        return trimmed;
+    }
     string NormalizeServiceDisplay(string? name)
     {
         if (string.IsNullOrWhiteSpace(name)) return "Unknown";
-        var trimmed = name.Trim();
+        var trimmed = RemoveMirrorToken(name);
         var parts = trimmed.Split(' ', StringSplitOptions.RemoveEmptyEntries);
         if (parts.Length > 1 && int.TryParse(parts[^1], out _))
         {
@@ -61,12 +72,29 @@
         if (monitors.Any(m => NormalizeStatus(m.Status) == "degraded")) return "degraded";
         return "offline";
     }
-    string MirrorLabel(int index) => index == 0 ? "Primary" : $"Mirror {index}";
+    bool HasProof(MyFace.Core.Entities.OnionStatus entry) => entry.Proofs?.Any() == true;
+    int StatusPreference(string normalized) => normalized switch
+    {
+        "online" => 0,
+        "degraded" => 1,
+        _ => 2
+    };
+    List<MyFace.Core.Entities.OnionStatus> OrderLinks(IEnumerable<MyFace.Core.Entities.OnionStatus> entries)
+    {
+        return entries
+            .OrderBy(entry => HasProof(entry) ? 0 : 1)
+            .ThenBy(entry => StatusPreference(NormalizeStatus(entry.Status)))
+            .ThenBy(entry => entry.AverageLatency ?? double.MaxValue)
+            .ThenBy(entry => entry.Id)
+            .ToList();
+    }
+    string MirrorLabel(int index) => index == 0 ? "Favorite" : $"Mirror {index}";
     var groups = Model
         .GroupBy(m => string.IsNullOrWhiteSpace(m.Description) ? "Other" : m.Description)
         .OrderBy(g => Array.IndexOf(categoryOrder, g.Key) >= 0 ? Array.IndexOf(categoryOrder, g.Key) : int.MaxValue)
         .ThenBy(g => g.Key)
         .ToList();
+    var currentReturnUrl = Context.Request.Path + Context.Request.QueryString;
 }
 <h1>Onion Monitor</h1>
 <div class="monitor-actions">
@@ -74,6 +102,7 @@
     {
         <a href="@Url.Action("Add")" class="button">➕ Add Service</a>
         <form asp-action="CheckAll" method="post" style="display:inline">
+            <input type="hidden" name="returnUrl" value="@currentReturnUrl" />
             <button class="button" type="submit">🔄 Check All</button>
         </form>
     }
@@ -102,7 +131,7 @@
                 .GroupBy(m => NormalizeServiceKey(m.Name))
                 .Select(g =>
                 {
-                    var ordered = g.OrderBy(x => x.Id).ToList();
+                    var ordered = OrderLinks(g);
                     var primary = ordered.First();
                     return new
                     {
@@ -133,16 +162,23 @@
                             var toggleId = $"site-panel-{rollup.Primary.Id}";
                             var rollupStatus = RollupStatus(rollup.Items);
                             var primarySafeLink = Url.Action("Go", "Monitor", new { id = rollup.Primary.Id }) ?? "#";
+                            var hasSignedLinks = rollup.Items.Any(HasProof);
                             <div class="site-panel-wrapper">
                                 <input type="checkbox" class="site-panel-toggle" id="@toggleId" />
                                 <div class="site-panel">
                                     <div class="site-header">
                                         <div class="site-title-block">
                                             <span class="status-chip status-@rollupStatus">@StatusChipText(rollupStatus)</span>
-                                            <span class="site-name">@rollup.DisplayName</span>
+                                            <span class="site-name">
+                                                @rollup.DisplayName
+                                                @if (hasSignedLinks)
+                                                {
+                                                    <span class="site-signature-icon" title="PGP-signed mirrors available">🔐</span>
+                                                }
+                                            </span>
                                             <span class="site-url-inline">
-                                                <span class="site-label">Primary address</span>
-                                                <a class="site-url-link" href="@primarySafeLink" rel="noopener">@rollup.Primary.OnionUrl</a>
+                                                <span class="site-label">Favorite link</span>
+                                                <a class="site-url-link favorite-link" href="@primarySafeLink" rel="noopener">@rollup.Primary.OnionUrl</a>
                                             </span>
                                         </div>
                                         <div class="site-header-controls">
@@ -160,10 +196,26 @@
                                                 var entry = rollup.Items[i];
                                                 var entrySafeLink = Url.Action("Go", "Monitor", new { id = entry.Id }) ?? "#";
                                                 var entryStatus = NormalizeStatus(entry.Status);
-                                                <div class="mirror-link-row">
+                                                var hasProof = entry.Proofs?.Any() == true;
+                                                var proofId = hasProof ? entry.Proofs!.OrderByDescending(p => p.CreatedAt).First().Id : (int?)null;
+                                                var isFavorite = i == 0;
+                                                var rowClass = "mirror-link-row";
+                                                if (hasProof)
+                                                {
+                                                    rowClass += " mirror-link-row--preferred";
+                                                }
+                                                if (isFavorite)
+                                                {
+                                                    rowClass += " mirror-link-row--favorite";
+                                                }
+                                                <div class="@rowClass">
                                                     <div class="mirror-link-main">
-                                                        <span class="mirror-chip">@MirrorLabel(i)</span>
+                                                        <span class="mirror-chip@(isFavorite ? " mirror-chip--favorite" : string.Empty)">@MirrorLabel(i)</span>
                                                         <a class="mirror-link" href="@entrySafeLink" rel="noopener">@entry.OnionUrl</a>
+                                                        @if (hasProof && proofId.HasValue)
+                                                        {
+                                                            <a class="mirror-proof-link" href="@Url.Action("Proof", "Monitor", new { proofId })" target="_blank" rel="noopener" aria-label="View signed proof">🔏</a>
+                                                        }
                                                     </div>
                                                     <div class="mirror-link-meta">
                                                         <span class="status-dot status-@entryStatus" title="@StatusChipText(entryStatus)"></span>
@@ -176,11 +228,13 @@
                                                         <div class="mirror-link-actions">
                                                             <form asp-action="Check" method="post">
                                                                 <input type="hidden" name="id" value="@entry.Id" />
+                                                                <input type="hidden" name="returnUrl" value="@currentReturnUrl" />
                                                                 <button type="submit" class="mirror-action-link">Check</button>
                                                             </form>
-                                                            <a class="mirror-action-link" href="@Url.Action("Edit", new { id = entry.Id })">Edit</a>
+                                                            <a class="mirror-action-link" href="@Url.Action("Edit", new { id = entry.Id, returnUrl = currentReturnUrl })">Edit</a>
                                                             <form asp-action="Remove" method="post">
                                                                 <input type="hidden" name="id" value="@entry.Id" />
+                                                                <input type="hidden" name="returnUrl" value="@currentReturnUrl" />
                                                                 <button type="submit" class="mirror-action-link danger">Remove</button>
                                                             </form>
                                                         </div>

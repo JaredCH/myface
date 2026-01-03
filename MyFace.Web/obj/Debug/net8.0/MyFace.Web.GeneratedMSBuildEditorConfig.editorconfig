@@ -118,6 +118,10 @@ build_metadata.AdditionalFiles.CssScope =
 build_metadata.AdditionalFiles.TargetPath = Vmlld3MvTW9uaXRvci9Mb2cuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
+[/home/server/myface/MyFace.Web/Views/Monitor/Proof.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvTW9uaXRvci9Qcm9vZi5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
 [/home/server/myface/MyFace.Web/Views/Post/Edit.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3MvUG9zdC9FZGl0LmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
@@ -184,6 +188,10 @@ build_metadata.AdditionalFiles.CssScope =
 
 [/home/server/myface/MyFace.Web/Views/User/News.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3MvVXNlci9OZXdzLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[/home/server/myface/MyFace.Web/Views/User/Reviews.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvVXNlci9SZXZpZXdzLmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
 [/home/server/myface/MyFace.Web/Views/Vote/VoteCaptcha.cshtml]

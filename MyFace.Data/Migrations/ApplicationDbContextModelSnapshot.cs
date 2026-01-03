@@ -135,6 +135,38 @@ namespace MyFace.Data.Migrations
                     b.ToTable("LoginAttempts");
                 });
 
+            modelBuilder.Entity("MyFace.Core.Entities.OnionProof", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Content")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+                    b.Property<int>("OnionStatusId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("ProofType")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("OnionStatusId", "ProofType");
+
+                    b.ToTable("OnionProofs");
+                });
+
             modelBuilder.Entity("MyFace.Core.Entities.OnionStatus", b =>
                 {
                     b.Property<int>("Id")
@@ -237,20 +269,43 @@ namespace MyFace.Data.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
+                    b.Property<string>("EventType")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)")
+                        .HasDefaultValue("page-load");
+
                     b.Property<string>("IpHash")
                         .HasColumnType("text");
 
                     b.Property<string>("Path")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)");
+
+                    b.Property<string>("SessionFingerprint")
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)");
 
                     b.Property<string>("UserAgent")
                         .HasColumnType("text");
+
+                    b.Property<int?>("UserId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("UsernameSnapshot")
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)");
 
                     b.Property<DateTime>("VisitedAt")
                         .HasColumnType("timestamp with time zone");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("SessionFingerprint");
+
+                    b.HasIndex("VisitedAt");
 
                     b.ToTable("PageVisits");
                 });
@@ -428,6 +483,51 @@ namespace MyFace.Data.Migrations
                     b.HasIndex("SenderId", "CreatedAt");
 
                     b.ToTable("PrivateMessages");
+                });
+
+            modelBuilder.Entity("MyFace.Core.Entities.ProfileChatMessage", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("AuthorRole")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(16)
+                        .HasColumnType("character varying(16)")
+                        .HasDefaultValue("User");
+
+                    b.Property<int>("AuthorUserId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("AuthorUsername")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<string>("Body")
+                        .IsRequired()
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+                    b.Property<int>("TargetUserId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AuthorUserId");
+
+                    b.HasIndex("TargetUserId", "CreatedAt");
+
+                    b.ToTable("ProfileChatMessages");
                 });
 
             modelBuilder.Entity("MyFace.Core.Entities.Thread", b =>
@@ -773,6 +873,54 @@ namespace MyFace.Data.Migrations
                     b.ToTable("UserNews");
                 });
 
+            modelBuilder.Entity("MyFace.Core.Entities.UserReview", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Comment")
+                        .IsRequired()
+                        .HasMaxLength(2000)
+                        .HasColumnType("character varying(2000)");
+
+                    b.Property<int>("CommunicationScore")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+                    b.Property<int>("OverallScore")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("QualityScore")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("ReviewerUserId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("ShippingScore")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("TargetUserId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ReviewerUserId");
+
+                    b.HasIndex("TargetUserId", "CreatedAt");
+
+                    b.ToTable("UserReviews", t =>
+                        {
+                            t.HasCheckConstraint("CK_UserReviews_ScoreRange", "\"CommunicationScore\" BETWEEN 1 AND 5 AND \"ShippingScore\" BETWEEN 1 AND 5 AND \"QualityScore\" BETWEEN 1 AND 5 AND \"OverallScore\" BETWEEN 1 AND 5");
+                        });
+                });
+
             modelBuilder.Entity("MyFace.Core.Entities.UsernameChangeLog", b =>
                 {
                     b.Property<int>("Id")
@@ -876,6 +1024,17 @@ namespace MyFace.Data.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("MyFace.Core.Entities.OnionProof", b =>
+                {
+                    b.HasOne("MyFace.Core.Entities.OnionStatus", "OnionStatus")
+                        .WithMany("Proofs")
+                        .HasForeignKey("OnionStatusId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("OnionStatus");
+                });
+
             modelBuilder.Entity("MyFace.Core.Entities.PGPVerification", b =>
                 {
                     b.HasOne("MyFace.Core.Entities.User", "User")
@@ -939,6 +1098,25 @@ namespace MyFace.Data.Migrations
                     b.Navigation("Sender");
                 });
 
+            modelBuilder.Entity("MyFace.Core.Entities.ProfileChatMessage", b =>
+                {
+                    b.HasOne("MyFace.Core.Entities.User", "AuthorUser")
+                        .WithMany("ProfileChatMessagesAuthored")
+                        .HasForeignKey("AuthorUserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("MyFace.Core.Entities.User", "TargetUser")
+                        .WithMany("ProfileChatWall")
+                        .HasForeignKey("TargetUserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("AuthorUser");
+
+                    b.Navigation("TargetUser");
+                });
+
             modelBuilder.Entity("MyFace.Core.Entities.Thread", b =>
                 {
                     b.HasOne("MyFace.Core.Entities.User", "User")
@@ -969,6 +1147,25 @@ namespace MyFace.Data.Migrations
                         .IsRequired();
 
                     b.Navigation("User");
+                });
+
+            modelBuilder.Entity("MyFace.Core.Entities.UserReview", b =>
+                {
+                    b.HasOne("MyFace.Core.Entities.User", "ReviewerUser")
+                        .WithMany("ReviewsAuthored")
+                        .HasForeignKey("ReviewerUserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("MyFace.Core.Entities.User", "TargetUser")
+                        .WithMany("ReviewsReceived")
+                        .HasForeignKey("TargetUserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("ReviewerUser");
+
+                    b.Navigation("TargetUser");
                 });
 
             modelBuilder.Entity("MyFace.Core.Entities.UsernameChangeLog", b =>
@@ -1012,6 +1209,11 @@ namespace MyFace.Data.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("MyFace.Core.Entities.OnionStatus", b =>
+                {
+                    b.Navigation("Proofs");
+                });
+
             modelBuilder.Entity("MyFace.Core.Entities.Post", b =>
                 {
                     b.Navigation("Images");
@@ -1035,6 +1237,14 @@ namespace MyFace.Data.Migrations
                     b.Navigation("PGPVerifications");
 
                     b.Navigation("Posts");
+
+                    b.Navigation("ProfileChatMessagesAuthored");
+
+                    b.Navigation("ProfileChatWall");
+
+                    b.Navigation("ReviewsAuthored");
+
+                    b.Navigation("ReviewsReceived");
 
                     b.Navigation("Threads");
 

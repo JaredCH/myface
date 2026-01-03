@@ -1,3 +1,5 @@
+using System;
+using System.Linq;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 using MyFace.Services;
@@ -12,12 +14,18 @@ public class AdminController : Controller
     private readonly UserService _userService;
     private readonly VisitTrackingService _visitTracking;
     private readonly UploadScanLogService _uploadScanLogService;
+    private readonly PostLogService _postLogService;
 
-    public AdminController(UserService userService, VisitTrackingService visitTracking, UploadScanLogService uploadScanLogService)
+    public AdminController(
+        UserService userService,
+        VisitTrackingService visitTracking,
+        UploadScanLogService uploadScanLogService,
+        PostLogService postLogService)
     {
         _userService = userService;
         _visitTracking = visitTracking;
         _uploadScanLogService = uploadScanLogService;
+        _postLogService = postLogService;
     }
 
     public async Task<IActionResult> Index()
@@ -131,7 +139,7 @@ public class AdminController : Controller
         };
 
         var result = await _uploadScanLogService.GetLogsAsync(query, page, 40);
-        var viewModel = new UploadLogsViewModel
+        var uploads = new UploadLogsViewModel
         {
             Entries = result.Items,
             Filter = filter,
@@ -140,7 +148,97 @@ public class AdminController : Controller
             TotalCount = result.TotalCount
         };
 
+        var postLog = await _postLogService.GetRecentPostsAsync(60);
+        var visitLog = await _visitTracking.GetRecentVisitsAsync(160);
+        var now = DateTime.UtcNow;
+
+        var postModels = postLog
+            .Select(p => new PostLogEntryModel(
+                p.PostId,
+                p.ThreadId,
+                p.ThreadTitle,
+                p.CreatedAt,
+                FormatPostActor(p),
+                p.IsAnonymous,
+                p.IsDeleted,
+                p.ReportCount,
+                p.WasModerated,
+                p.Snippet,
+                p.ImageCount))
+            .ToList();
+
+        var visitModels = visitLog
+            .Select(v => new VisitLogEntryModel(
+                v.Id,
+                v.VisitedAt,
+                v.Path,
+                FormatEventLabel(v.EventType),
+                FormatVisitActor(v),
+                BuildSessionLabel(v),
+                v.UserAgent,
+                now.Subtract(v.VisitedAt) <= TimeSpan.FromMinutes(1)))
+            .ToList();
+
+        var viewModel = new AdminLogsPageViewModel
+        {
+            Uploads = uploads,
+            PostLog = postModels,
+            VisitLog = visitModels,
+            GeneratedAtUtc = now,
+            AutoRefreshSeconds = 30
+        };
+
         ViewBag.PageSize = result.PageSize;
         return View(viewModel);
     }
+        string FormatPostActor(PostLogRecord entry)
+        {
+            if (!string.IsNullOrWhiteSpace(entry.Username))
+            {
+                return entry.UserId.HasValue
+                    ? $"{entry.Username} (#{entry.UserId})"
+                    : entry.Username;
+            }
+
+            return entry.IsAnonymous ? "Anonymous" : "Unknown";
+        }
+
+        static string FormatEventLabel(string eventType)
+        {
+            return eventType?.Equals("link-click", StringComparison.OrdinalIgnoreCase) == true
+                ? "Link Click"
+                : "Page Load";
+        }
+
+        static string BuildSessionLabel(VisitLogRecord visit)
+        {
+            if (!string.IsNullOrWhiteSpace(visit.SessionFingerprint))
+            {
+                return $"visitor-{visit.SessionFingerprint}";
+            }
+
+            return $"visitor-{visit.Id:X}";
+        }
+
+        static string FormatVisitActor(VisitLogRecord visit)
+        {
+            if (!string.IsNullOrWhiteSpace(visit.UsernameSnapshot))
+            {
+                return visit.UserId.HasValue
+                    ? $"{visit.UsernameSnapshot} (#{visit.UserId})"
+                    : visit.UsernameSnapshot;
+            }
+
+            if (visit.UserId.HasValue)
+            {
+                return $"user #{visit.UserId}";
+            }
+
+            if (!string.IsNullOrWhiteSpace(visit.SessionFingerprint))
+            {
+                return $"visitor-{visit.SessionFingerprint}";
+            }
+
+            return $"visitor-{visit.Id:X}";
+        }
 }

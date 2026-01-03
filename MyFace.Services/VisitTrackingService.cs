@@ -1,3 +1,7 @@
+using System;
+using System.Linq;
+using System.Security.Cryptography;
+using System.Text;
 using MyFace.Data;
 using MyFace.Core.Entities;
 using Microsoft.EntityFrameworkCore;
@@ -13,17 +17,49 @@ public class VisitTrackingService
         _context = context;
     }
 
-    public async Task TrackVisitAsync(string path, string? userAgent = null)
+    public async Task TrackVisitAsync(
+        string path,
+        string? userAgent = null,
+        int? userId = null,
+        string? username = null,
+        string? sessionId = null,
+        string? eventType = null)
     {
         var visit = new PageVisit
         {
             VisitedAt = DateTime.UtcNow,
-            Path = path,
-            UserAgent = userAgent
+            Path = string.IsNullOrWhiteSpace(path) ? "/" : path,
+            UserAgent = userAgent,
+            UserId = userId,
+            UsernameSnapshot = NormalizeUsername(username),
+            SessionFingerprint = HashSessionId(sessionId),
+            EventType = string.IsNullOrWhiteSpace(eventType) ? ClassifyEvent(path) : eventType.Trim().ToLowerInvariant()
         };
 
         _context.PageVisits.Add(visit);
         await _context.SaveChangesAsync();
+    }
+
+    public async Task<IReadOnlyList<VisitLogRecord>> GetRecentVisitsAsync(int take = 120, CancellationToken ct = default)
+    {
+        var size = Math.Clamp(take, 10, 400);
+        var items = await _context.PageVisits
+            .AsNoTracking()
+            .OrderByDescending(v => v.VisitedAt)
+            .Take(size)
+            .ToListAsync(ct);
+
+        return items
+            .Select(v => new VisitLogRecord(
+                v.Id,
+                v.VisitedAt,
+                v.Path,
+                v.EventType,
+                v.UserId,
+                v.UsernameSnapshot,
+                v.SessionFingerprint,
+                v.UserAgent))
+            .ToList();
     }
 
     public async Task<SiteStatistics> GetStatisticsAsync()
@@ -189,7 +225,55 @@ public class VisitTrackingService
     {
         return DateTime.SpecifyKind(date.Date.AddDays(-(int)date.DayOfWeek), DateTimeKind.Utc);
     }
+
+    private static string? NormalizeUsername(string? value)
+    {
+        return string.IsNullOrWhiteSpace(value) ? null : value.Trim();
+    }
+
+    private static string? HashSessionId(string? sessionId)
+    {
+        if (string.IsNullOrWhiteSpace(sessionId))
+        {
+            return null;
+        }
+
+        var bytes = SHA256.HashData(Encoding.UTF8.GetBytes(sessionId));
+        var hex = Convert.ToHexString(bytes).ToLowerInvariant();
+        return hex[..Math.Min(16, hex.Length)];
+    }
+
+    private static string ClassifyEvent(string path)
+    {
+        if (string.IsNullOrWhiteSpace(path))
+        {
+            return "page-load";
+        }
+
+        var normalized = path.Trim().ToLowerInvariant();
+        if (normalized.StartsWith("/monitor/go"))
+        {
+            return "link-click";
+        }
+
+        if (normalized.Contains("/go/") || normalized.Contains("redirect"))
+        {
+            return "link-click";
+        }
+
+        return "page-load";
+    }
 }
+
+public record VisitLogRecord(
+    int Id,
+    DateTime VisitedAt,
+    string Path,
+    string EventType,
+    int? UserId,
+    string? UsernameSnapshot,
+    string? SessionFingerprint,
+    string? UserAgent);
 
 public class SiteStatistics
 {

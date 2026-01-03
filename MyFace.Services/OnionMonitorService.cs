@@ -41,6 +41,7 @@ public class OnionStatusService
     };
     private static readonly int[] ChallengeStatusCodes = { 401, 403, 406, 407, 409, 412, 418, 421, 425, 429, 430, 503, 520, 521, 522, 523, 524 };
     private static readonly Regex MultiWhitespace = new("\\s+", RegexOptions.Compiled);
+    private static readonly Regex MirrorSuffixPattern = new("\\s*\\(mirror[^)]*\\)$", RegexOptions.IgnoreCase | RegexOptions.Compiled);
 
     private record struct ProbeOutcome(int Id, int Reachable, int Attempts, double? AverageLatency, string Status, DateTime CheckedAt);
     private record struct ProbeAttemptResult(bool Success, double? LatencyMs, bool WasChallenged);
@@ -127,17 +128,61 @@ public class OnionStatusService
         }
     }
 
-    public async Task<OnionStatus> AddAsync(string name, string description, string onionUrl)
+    public async Task<OnionStatus> AddAsync(string name, string description, string onionUrl, string? pgpProof = null)
     {
-        name = NormalizeLabel(name);
+        var normalizedName = NormalizeServiceName(name);
         var category = await CanonicalizeCategoryAsync(description);
-        onionUrl = NormalizeUrlInput(onionUrl);
+        var storedUrl = NormalizeUrlForStorage(onionUrl);
+        var comparisonKey = BuildUrlComparisonKey(storedUrl);
+
+        // Admin additions are infrequent, so load once and do an in-memory comparison to catch legacy variants.
+        var existingEntries = await _context.OnionStatuses
+            .Include(o => o.Proofs)
+            .ToListAsync();
+
+        var existing = existingEntries
+            .FirstOrDefault(o => string.Equals(BuildUrlComparisonKey(o.OnionUrl), comparisonKey, StringComparison.OrdinalIgnoreCase));
+
+        if (existing is not null)
+        {
+            var updated = false;
+
+            if (!string.IsNullOrWhiteSpace(category) && string.IsNullOrWhiteSpace(existing.Description))
+            {
+                existing.Description = category;
+                updated = true;
+            }
+
+            if (!string.IsNullOrWhiteSpace(pgpProof))
+            {
+                var trimmedProof = pgpProof.Trim();
+                if (!existing.Proofs.Any(p => string.Equals(p.Content, trimmedProof, StringComparison.Ordinal)))
+                {
+                    existing.Proofs.Add(new OnionProof
+                    {
+                        ProofType = "pgp-signed",
+                        Content = trimmedProof,
+                        CreatedAt = DateTime.UtcNow
+                    });
+                    updated = true;
+                }
+            }
+
+            if (updated)
+            {
+                await _context.SaveChangesAsync();
+            }
+
+            return existing;
+        }
+
+        var canonicalName = await ResolveCanonicalNameAsync(normalizedName);
 
         var status = new OnionStatus
         {
-            Name = name,
+            Name = canonicalName,
             Description = category,
-            OnionUrl = onionUrl,
+            OnionUrl = storedUrl,
             Status = "Unknown",
             LastChecked = null,
             ResponseTime = null,
@@ -147,6 +192,16 @@ public class OnionStatusService
             ClickCount = 0
         };
 
+        if (!string.IsNullOrWhiteSpace(pgpProof))
+        {
+            status.Proofs.Add(new OnionProof
+            {
+                ProofType = "pgp-signed",
+                Content = pgpProof.Trim(),
+                CreatedAt = DateTime.UtcNow
+            });
+        }
+
         _context.OnionStatuses.Add(status);
         await _context.SaveChangesAsync();
         return status;
@@ -155,6 +210,7 @@ public class OnionStatusService
     public async Task<List<OnionStatus>> GetAllAsync()
     {
         return await _context.OnionStatuses
+            .Include(o => o.Proofs)
             .OrderBy(m => m.Description)
             .ThenBy(m => m.Name)
             .ToListAsync();
@@ -305,9 +361,9 @@ public class OnionStatusService
         var item = await _context.OnionStatuses.FindAsync(id);
         if (item == null) return false;
 
-        item.Name = NormalizeLabel(name);
+        item.Name = await ResolveCanonicalNameAsync(NormalizeServiceName(name));
         item.Description = await CanonicalizeCategoryAsync(description);
-        item.OnionUrl = NormalizeUrlInput(onionUrl);
+        item.OnionUrl = NormalizeUrlForStorage(onionUrl);
         
         await _context.SaveChangesAsync();
         return true;
@@ -316,6 +372,14 @@ public class OnionStatusService
     public async Task<OnionStatus?> GetByIdAsync(int id)
     {
         return await _context.OnionStatuses.FindAsync(id);
+    }
+
+    public async Task<OnionProof?> GetProofByIdAsync(int proofId)
+    {
+        return await _context.OnionProofs
+            .Include(p => p.OnionStatus)
+            .AsNoTracking()
+            .FirstOrDefaultAsync(p => p.Id == proofId);
     }
 
     private async Task<string> CanonicalizeCategoryAsync(string? rawCategory)
@@ -362,9 +426,105 @@ public class OnionStatusService
         return MultiWhitespace.Replace(value.Trim(), " ");
     }
 
-    private static string NormalizeUrlInput(string? value)
+    private static string NormalizeUrlForStorage(string? value)
     {
-        return string.IsNullOrWhiteSpace(value) ? string.Empty : value.Trim();
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            return string.Empty;
+        }
+
+        var trimmed = value.Trim();
+        if (!trimmed.StartsWith("http://", StringComparison.OrdinalIgnoreCase) &&
+            !trimmed.StartsWith("https://", StringComparison.OrdinalIgnoreCase))
+        {
+            trimmed = $"http://{trimmed}";
+        }
+
+        if (Uri.TryCreate(trimmed, UriKind.Absolute, out var uri))
+        {
+            var builder = new UriBuilder(uri)
+            {
+                Scheme = uri.Scheme.ToLowerInvariant(),
+                Host = uri.Host.ToLowerInvariant(),
+                Path = string.Equals(uri.AbsolutePath, "/", StringComparison.Ordinal) ? string.Empty : uri.AbsolutePath,
+                Query = uri.Query
+            };
+
+            if ((builder.Scheme == "http" && builder.Port == 80) || (builder.Scheme == "https" && builder.Port == 443))
+            {
+                builder.Port = -1;
+            }
+
+            return builder.Uri.ToString();
+        }
+
+        return trimmed;
+    }
+
+    private static string BuildUrlComparisonKey(string? value)
+    {
+        var normalized = NormalizeUrlForStorage(value);
+        if (string.IsNullOrWhiteSpace(normalized))
+        {
+            return string.Empty;
+        }
+
+        if (!Uri.TryCreate(normalized, UriKind.Absolute, out var uri))
+        {
+            return normalized.ToLowerInvariant();
+        }
+
+        var host = uri.Host.ToLowerInvariant();
+        var scheme = uri.Scheme.ToLowerInvariant();
+        var portSegment = uri.IsDefaultPort ? string.Empty : $":{uri.Port}";
+        var path = string.Equals(uri.AbsolutePath, "/", StringComparison.Ordinal) ? string.Empty : uri.AbsolutePath;
+        var query = uri.Query ?? string.Empty;
+        var key = $"{scheme}://{host}{portSegment}{path}{query}";
+        return string.IsNullOrEmpty(path) && string.IsNullOrEmpty(query)
+            ? key.TrimEnd('/')
+            : key;
+    }
+
+    private static string NormalizeServiceName(string? value)
+    {
+        var normalized = NormalizeLabel(value);
+        if (string.IsNullOrWhiteSpace(normalized))
+        {
+            return string.Empty;
+        }
+
+        return MirrorSuffixPattern.Replace(normalized, string.Empty).Trim();
+    }
+
+    private async Task<string> ResolveCanonicalNameAsync(string candidateName)
+    {
+        if (string.IsNullOrWhiteSpace(candidateName))
+        {
+            return string.Empty;
+        }
+
+        var lowered = candidateName.ToLowerInvariant();
+
+        var exactMatch = await _context.OnionStatuses
+            .AsNoTracking()
+            .Where(o => o.Name.ToLower() == lowered)
+            .Select(o => o.Name)
+            .FirstOrDefaultAsync();
+
+        if (!string.IsNullOrWhiteSpace(exactMatch))
+        {
+            return exactMatch;
+        }
+
+        var mirrorMatch = await _context.OnionStatuses
+            .AsNoTracking()
+            .Where(o => o.Name.ToLower().StartsWith(lowered + " (mirror"))
+            .Select(o => o.Name)
+            .FirstOrDefaultAsync();
+
+        return !string.IsNullOrWhiteSpace(mirrorMatch)
+            ? NormalizeServiceName(mirrorMatch)
+            : candidateName;
     }
 
     private async Task<ProbeOutcome?> ProbeAsync(OnionStatus item, CancellationToken cancellationToken)

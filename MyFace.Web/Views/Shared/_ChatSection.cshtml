@@ -56,29 +56,35 @@
 
     @if (Model.IsModerator)
     {
-        <div class="irc-mod-tools">
-            <form class="single-action" data-label="Pause room" method="post" asp-action="Pause" asp-controller="Chat">
-                @Html.AntiForgeryToken()
-                <input type="hidden" name="room" value="@Model.Room" />
-                <button type="submit" class="button">Pause</button>
-            </form>
-            <form class="single-action" data-label="Resume room" method="post" asp-action="Resume" asp-controller="Chat">
-                @Html.AntiForgeryToken()
-                <input type="hidden" name="room" value="@Model.Room" />
-                <button type="submit" class="button">Resume</button>
-            </form>
-            <form data-label="Delete message" method="post" asp-action="Delete" asp-controller="Chat">
-                @Html.AntiForgeryToken()
-                <input type="number" name="id" placeholder="Message id" min="1" />
-                <button type="submit" class="button">Delete</button>
-            </form>
-            <form data-label="Mute user" method="post" asp-action="Mute" asp-controller="Chat">
-                @Html.AntiForgeryToken()
-                <input type="text" name="username" placeholder="Username" />
-                <input type="number" name="minutes" value="60" min="1" max="10080" />
-                <button type="submit" class="button">Mute</button>
-            </form>
-            <p class="chat-note">Moderation tools: message ids appear in the feed (#123). Mute duration is in minutes.</p>
+        <div class="irc-mod-panel" aria-label="Moderator controls for #@Model.Room">
+            <div class="irc-mod-panel-head">
+                <span class="irc-mod-panel-title">Moderator controls</span>
+                <span class="irc-mod-panel-room">#@Model.Room</span>
+            </div>
+            <div class="irc-mod-tools">
+                <form class="single-action" data-label="Pause room" method="post" asp-action="Pause" asp-controller="Chat">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="room" value="@Model.Room" />
+                    <button type="submit" class="button">Pause</button>
+                </form>
+                <form class="single-action" data-label="Resume room" method="post" asp-action="Resume" asp-controller="Chat">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="room" value="@Model.Room" />
+                    <button type="submit" class="button">Resume</button>
+                </form>
+                <form data-label="Delete message" method="post" asp-action="Delete" asp-controller="Chat">
+                    @Html.AntiForgeryToken()
+                    <input type="number" name="id" placeholder="Message id" min="1" />
+                    <button type="submit" class="button">Delete</button>
+                </form>
+                <form data-label="Mute user" method="post" asp-action="Mute" asp-controller="Chat">
+                    @Html.AntiForgeryToken()
+                    <input type="text" name="username" placeholder="Username" />
+                    <input type="number" name="minutes" value="60" min="1" max="10080" />
+                    <button type="submit" class="button">Mute</button>
+                </form>
+                <p class="chat-note">Moderation tools: message ids appear in the feed (#123). Mute duration is in minutes.</p>
+            </div>
         </div>
     }
 </div>

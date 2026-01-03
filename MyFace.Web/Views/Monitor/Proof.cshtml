@@ -1,0 +1,22 @@
+@model MyFace.Web.Models.MonitorProofViewModel
+@{
+    ViewData["Title"] = "Signed Proof";
+}
+<section class="proof-card">
+    <header class="proof-card__header">
+        <h1 class="admin-title">Signed Proof</h1>
+        <p class="log-meta">Captured @Model.CreatedAtUtc.ToLocalTime().ToString("yyyy-MM-dd HH:mm:ss")</p>
+    </header>
+    <div class="proof-meta">
+        <div>
+            <span class="proof-label">Service</span>
+            <span class="proof-meta__value">@Model.ServiceName</span>
+        </div>
+        <div>
+            <span class="proof-label">Address</span>
+            <span class="proof-meta__value proof-meta__value--address">@Model.OnionUrl</span>
+        </div>
+    </div>
+    <pre class="proof-block">@Model.ProofContent</pre>
+    <p class="text-muted" style="font-size:0.85rem;">Share this page directly to show the provenance of this preferred mirror.</p>
+</section>

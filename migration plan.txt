@@ -1,0 +1,213 @@
+MyFace VPS Migration Plan (2026-01-03)
+================================================
+
+1. Objective & Scope
+--------------------
+- Stand up a fresh VPS (Ubuntu 22.04 LTS or later) and migrate the full MyFace stack (ASP.NET Core app, static assets in wwwroot, PostgreSQL database, background scripts) so the current URL and data remain intact.
+- Perform migration with <15 min HTTP downtime by pre-provisioning the new host, replicating data, and cutting DNS when validation passes.
+- Preserve security artifacts (PGP keys, Tor hidden-service keys under tor/data/hidden_service, uploads, secrets) and existing operational scripts (redeploy.sh, start-web.sh, etc.).
+
+2. Source Environment Inventory
+-------------------------------
+- App source: /home/server/myface (MyFace.sln with MyFace.Web, MyFace.Services, MyFace.Core).
+- Runtime requirements: .NET 8 SDK/runtime, Node not required, nginx reverse proxy, Certbot for TLS, systemd service (if not already defined) to run MyFace.Web `dotnet MyFace.Web.dll`.
+- Data:
+  - PostgreSQL database `myface` on localhost (see MyFace.Web/appsettings.json connection string).
+  - Uploaded files (wwwroot/uploads and any other persistent directories).
+  - Tor configs: tor/torrc + tor/data/hidden_service (preserves onion address).
+- Secrets/config:
+  - Environment overrides (e.g., ConnectionStrings__DefaultConnection) stored in production appsettings or exported as environment variables.
+  - API keys for email or scanners if present.
+
+3. Pre-Migration Checklist (Current VPS)
+----------------------------------------
+- Freeze deploys; announce maintenance window.
+- Verify `pg_dump` works and Postgres credentials are valid.
+- Confirm `redeploy.sh` finishes cleanly (ensures build is healthy).
+- Note TLS cert expiration date.
+- Lower DNS TTL for the apex + subdomains to 300s at least 24h prior.
+- Create a point-in-time backup of uploads (`tar czf uploads-$(date +%F).tgz wwwroot/uploads`).
+
+4. New VPS Provisioning Steps
+-----------------------------
+1. Create privileged user and lock down SSH:
+   ```bash
+   adduser deploy
+   usermod -aG sudo deploy
+   ssh-copy-id deploy@NEW_VPS
+   sudo sed -i 's/^#\?PasswordAuthentication.*/PasswordAuthentication no/' /etc/ssh/sshd_config
+   sudo systemctl restart sshd
+   ```
+2. Base packages + firewall:
+   ```bash
+   sudo apt update && sudo apt upgrade -y
+   sudo apt install -y ufw fail2ban htop unzip git curl nginx postgresql postgresql-contrib \
+       dotnet-sdk-8.0 aspnetcore-runtime-8.0 certbot python3-certbot-nginx tor rsync
+   sudo ufw allow OpenSSH
+   sudo ufw allow 'Nginx Full'
+   sudo ufw enable
+   ```
+3. Optional automation script (`bootstrap_myface.sh`):
+   ```bash
+   #!/usr/bin/env bash
+   set -euo pipefail
+   sudo apt update
+   sudo apt install -y software-properties-common
+   sudo add-apt-repository ppa:deadsnakes/ppa -y || true
+   wget https://packages.microsoft.com/config/ubuntu/22.04/packages-microsoft-prod.deb -O /tmp/ms.deb
+   sudo dpkg -i /tmp/ms.deb
+   sudo apt update
+   sudo apt install -y dotnet-sdk-8.0 aspnetcore-runtime-8.0 nginx postgresql postgresql-contrib tor rsync git unzip certbot python3-certbot-nginx
+   sudo systemctl enable postgresql tor nginx
+   ```
+4. Create directories:
+   ```bash
+   sudo mkdir -p /var/www/myface
+   sudo chown -R deploy:deploy /var/www/myface
+   mkdir -p ~/backups ~/releases
+   ```
+
+5. Database Migration
+---------------------
+1. On old VPS, create compressed dump:
+   ```bash
+   pg_dump -Fc --no-acl --no-owner -h localhost -U postgres myface > ~/backups/myface_$(date +%F_%H%M).dump
+   ```
+2. Transfer dump:
+   ```bash
+   scp ~/backups/myface_2026-01-03_*.dump deploy@NEW_VPS:~/backups/
+   ```
+3. On new VPS, create DB + role (adjust password):
+   ```bash
+   sudo -u postgres psql -c "CREATE USER myface WITH PASSWORD 'REDACTED';"
+   sudo -u postgres psql -c "CREATE DATABASE myface OWNER myface;"
+   sudo -u postgres pg_restore --clean --if-exists -d myface ~/backups/myface_2026-01-03_*.dump
+   ```
+4. Test connectivity from app user:
+   ```bash
+   PGPASSWORD='REDACTED' psql -h localhost -U myface -d myface -c 'SELECT 1;'
+   ```
+5. Keep dump for rollback until migration completes.
+
+6. Application & Asset Transfer
+-------------------------------
+**Option A (Git-based deploy)**
+- Push latest code to origin and clone on new VPS:
+  ```bash
+  cd /var/www/myface
+  git clone --depth=1 git@YOUR_REPO.git .
+  dotnet publish MyFace.Web/MyFace.Web.csproj -c Release -o publish
+  ```
+
+**Option B (rsync exact working tree)**
+1. From old VPS:
+   ```bash
+   rsync -az --delete \
+     /home/server/myface/ \
+     deploy@NEW_VPS:/var/www/myface/
+   ```
+2. Transfer uploads & tor keys:
+   ```bash
+   rsync -az --delete /home/server/myface/wwwroot/uploads/ deploy@NEW_VPS:/var/www/myface/wwwroot/uploads/
+   rsync -az --delete /home/server/myface/tor/data/ deploy@NEW_VPS:/var/www/myface/tor/data/
+   ```
+3. Copy production config (env files, `appsettings.Production.json`, secrets) into `/var/www/myface/config/` and lock permissions (`chmod 600`).
+
+7. Environment Configuration
+----------------------------
+- Export secrets for systemd:
+  ```ini
+  # /etc/systemd/system/myface.service
+  [Unit]
+  Description=MyFace Web
+  After=network.target
+
+  [Service]
+  WorkingDirectory=/var/www/myface/publish
+  ExecStart=/usr/bin/dotnet /var/www/myface/publish/MyFace.Web.dll
+  Restart=always
+  Environment=ASPNETCORE_ENVIRONMENT=Production
+  Environment=ConnectionStrings__DefaultConnection=Host=localhost;Database=myface;Username=myface;Password=REDACTED
+  User=deploy
+  Group=deploy
+
+  [Install]
+  WantedBy=multi-user.target
+  ```
+- Reload + start: `sudo systemctl daemon-reload && sudo systemctl enable --now myface`.
+- nginx reverse proxy (`/etc/nginx/sites-available/myface`):
+  ```nginx
+  server {
+      server_name yourdomain.tld;
+      location / {
+          proxy_pass         http://127.0.0.1:5000;
+          proxy_http_version 1.1;
+          proxy_set_header   Upgrade $http_upgrade;
+          proxy_set_header   Connection keep-alive;
+          proxy_set_header   Host $host;
+          proxy_cache_bypass $http_upgrade;
+          proxy_set_header   X-Forwarded-For $proxy_add_x_forwarded_for;
+          proxy_set_header   X-Forwarded-Proto $scheme;
+      }
+      client_max_body_size 32M;
+  }
+  ```
+- Enable site + cert:
+  ```bash
+  sudo ln -s /etc/nginx/sites-available/myface /etc/nginx/sites-enabled/
+  sudo nginx -t && sudo systemctl reload nginx
+  sudo certbot --nginx -d yourdomain.tld -d www.yourdomain.tld
+  ```
+
+8. Validation Before Cutover
+----------------------------
+- `/var/www/myface/publish/redeploy.sh` (or `dotnet publish`) to ensure binaries build on new VPS.
+- Hit local endpoint: `curl -H "Host: yourdomain.tld" http://127.0.0.1/healthz`.
+- Verify chat, login, uploads, Tor endpoint (if required) via hosts file override.
+- Confirm PostgreSQL log shows app connections.
+
+9. Cutover Plan
+---------------
+1. Schedule final sync window.
+2. Stop app on old VPS: `sudo systemctl stop myface` or bring site to maintenance mode.
+3. Run final rsync + `pg_dump/pg_restore` using latest data (repeat steps 5 & 6 quickly).
+4. Start app on new VPS, run smoke tests.
+5. Update DNS A/AAAA records to point to new VPS IP (respect lowered TTL).
+6. Monitor new VPS logs (`journalctl -u myface -f`, `/var/log/nginx/access.log`).
+7. Keep old VPS powered but offline from public network for 24h backup window.
+
+10. Automation Helpers
+----------------------
+- `sync_myface.sh` (run on old VPS for final sync):
+  ```bash
+  #!/usr/bin/env bash
+  set -euo pipefail
+  TARGET=deploy@NEW_VPS
+  rsync -az --delete --exclude='bin' --exclude='obj' /home/server/myface/ "$TARGET:/var/www/myface/"
+  rsync -az --delete /home/server/myface/wwwroot/uploads/ "$TARGET:/var/www/myface/wwwroot/uploads/"
+  rsync -az /home/server/myface/tor/data/hidden_service/ "$TARGET:/var/www/myface/tor/data/hidden_service/"
+  pg_dump -Fc -h localhost -U postgres myface | ssh "$TARGET" "cat > ~/backups/myface_final.dump"
+  ssh "$TARGET" "sudo -u postgres pg_restore --clean --if-exists -d myface ~/backups/myface_final.dump"
+  ```
+- `deploy_new_vps.sh` (run on new VPS after sync):
+  ```bash
+  #!/usr/bin/env bash
+  set -euo pipefail
+  cd /var/www/myface
+  dotnet publish MyFace.Web/MyFace.Web.csproj -c Release -o publish
+  sudo systemctl restart myface
+  sudo systemctl reload nginx
+  ```
+
+11. Rollback Strategy
+---------------------
+- Keep DNS TTL low so you can point records back to old VPS quickly.
+- Preserve old VPS DB snapshot and app state; if rollback needed, stop new VPS service, restore DNS to old IP, restart old service.
+- Document any schema changes; avoid running irreversible migrations until confidence window is over.
+
+12. Post-Migration Tasks
+------------------------
+- Re-raise DNS TTL to previous value (e.g., 3600s) after 24h stable uptime.
+- Update monitoring/alerting endpoints to new host.
+- Rotate any credentials shared during migration (DB passwords, SSH keys).
+- Remove unused data from old VPS once sign-off is complete.

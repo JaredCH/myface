@@ -161,6 +161,18 @@ public class ChatService
         return ChatDeleteResult.Success(msg.Room);
     }
 
+    public async Task<List<ChatMessage>> GetRecentMessagesForUserAsync(int targetUserId, int limit = 5, CancellationToken ct = default)
+    {
+        await EnsureSchemaAsync(ct);
+
+        return await _db.ChatMessages
+            .Where(m => m.UserId == targetUserId)
+            .OrderByDescending(m => m.CreatedAt)
+            .Take(Math.Max(1, limit))
+            .AsNoTracking()
+            .ToListAsync(ct);
+    }
+
     public bool CanViewRoom(User? user, string room)
     {
         return room switch

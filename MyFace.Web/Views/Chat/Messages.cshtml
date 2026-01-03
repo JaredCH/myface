@@ -11,8 +11,6 @@
     <meta http-equiv="refresh" content="5" />
     <style>
         :root {
-            --irc-bg: #050913;
-            --irc-panel: rgba(6, 12, 25, 0.82);
             --irc-border: rgba(59, 130, 246, 0.35);
             --irc-text: #e2e8f0;
             --irc-muted: #94a3b8;
@@ -26,7 +24,7 @@
             padding: 0.75rem;
             font-family: 'JetBrains Mono', 'Iosevka', 'Ubuntu Mono', monospace;
             font-size: 13px;
-            background: radial-gradient(circle at top, #0f172a 0%, #020617 50%, #01030a 100%);
+            background: transparent;
             color: var(--irc-text);
         }
         .irc-shell {
@@ -37,10 +35,9 @@
             border: 1px solid var(--irc-border);
             border-radius: 16px;
             padding: 0.75rem;
-            background: rgba(2, 6, 23, 0.85);
-            box-shadow: 0 15px 35px rgba(2, 6, 23, 0.8);
+            background: transparent;
         }
-        .irc-header, .irc-footer {
+        .irc-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -54,7 +51,6 @@
             color: var(--irc-highlight);
             font-size: 0.95rem;
         }
-        .irc-footer { border-top: 1px dashed rgba(148, 163, 184, 0.2); padding-top: 0.4rem; }
         .irc-main {
             flex: 1;
             display: flex;
@@ -64,7 +60,7 @@
             flex: 1;
             border: 1px solid var(--irc-border);
             border-radius: 14px;
-            background: var(--irc-panel);
+            background: transparent;
             padding: 0.75rem;
             overflow-y: auto;
             min-width: 0;
@@ -125,10 +121,6 @@
                 @Html.Raw(Model.SnapshotHtml)
             </section>
         </div>
-        <footer class="irc-footer">
-            <span>Newest messages appear on top.</span>
-            <span>UTC timestamps · No JavaScript</span>
-        </footer>
     </div>
 </body>
 </html>

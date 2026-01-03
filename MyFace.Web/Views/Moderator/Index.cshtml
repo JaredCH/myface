@@ -1,6 +1,7 @@
 @model MyFace.Web.Models.ModeratorDashboardViewModel
 @using Microsoft.Extensions.Configuration
 @using System.Security.Claims
+@using System.Linq
 @inject IConfiguration Configuration
 
 @{
@@ -10,6 +11,7 @@
     var viewerIsAdmin = string.Equals(viewerRole, "Admin", StringComparison.OrdinalIgnoreCase);
     var viewerIsMod = string.Equals(viewerRole, "Moderator", StringComparison.OrdinalIgnoreCase);
     var isAdminOrMod = viewerIsAdmin || viewerIsMod;
+    var moderatorReturnUrl = $"{Context.Request.Path}{Context.Request.QueryString}";
 }
 
 <h1>Moderator Panel</h1>
@@ -33,79 +35,62 @@
         <a href="@Url.Action("Index")" class="button">Clear</a>
     </form>
 
-    <table class="table">
-        <thead>
-            <tr>
-                <th>Username</th>
-                <th>Role</th>
-                <th>Suspended Until</th>
-                <th>Actions</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var user in Model.Users)
-            {
-                <tr>
-                    <td><a href="@Url.Action("Index", "User", new { username = user.Username })"><strong>@user.Username</strong></a></td>
-                    <td><span class="role-badge role-@user.Role.ToLower()">@user.Role</span></td>
-                    <td>
-                        @if (user.SuspendedUntil.HasValue)
-                        {
-                            if (user.SuspendedUntil.Value > DateTime.UtcNow)
-                            {
-                                <span class="text-danger">@user.SuspendedUntil.Value.ToString("g")</span>
-                            }
-                            else
-                            {
-                                <span class="text-muted">Expired (@user.SuspendedUntil.Value.ToString("g"))</span>
-                            }
-                        }
-                        else
-                        {
-                            <span>-</span>
-                        }
-                    </td>
-                    <td>
-                        @{
-                            var isSelf = string.Equals(user.Username, username, StringComparison.OrdinalIgnoreCase);
-                            var canSuspend = !isSelf && (viewerIsAdmin || user.Role == "User");
-                        }
-                        <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
-                            @if (canSuspend)
-                            {
-                                <form asp-action="SuspendUser" method="post" class="d-inline">
-                                    <input type="hidden" name="userId" value="@user.Id" />
-                                    <select name="duration" class="form-select d-inline w-auto">
-                                        <option value="24h">24 Hours</option>
-                                        <option value="72h">72 Hours</option>
-                                        <option value="1w">1 Week</option>
-                                        <option value="2w">2 Weeks</option>
-                                        <option value="1m">1 Month</option>
-                                        <option value="forever">Forever</option>
-                                        <option value="unsuspend">Unsuspend</option>
-                                    </select>
-                                    <button type="submit" class="btn btn-warning btn-sm">Apply</button>
-                                    @Html.AntiForgeryToken()
-                                </form>
-                                
-                                <form asp-action="ChangeUsername" method="post" class="d-inline" style="display: flex; gap: 0.25rem; align-items: center;">
-                                    <input type="hidden" name="userId" value="@user.Id" />
-                                    <input type="text" name="newUsername" placeholder="Reset to..." class="input" style="width: 120px; padding: 0.3rem 0.5rem;" title="Temporary reset name" />
-                                    <input type="text" name="adminNote" placeholder="Reason (optional)" class="input" style="width: 180px; padding: 0.3rem 0.5rem;" title="Note to user" />
-                                    <button type="submit" class="btn btn-warning btn-sm">Reset Username</button>
-                                    @Html.AntiForgeryToken()
-                                </form>
-                            }
-                            else
-                            {
-                                <span class="text-muted">Not permitted</span>
-                            }
-                        </div>
-                    </td>
-                </tr>
-            }
-        </tbody>
-    </table>
+    <div class="mod-user-list">
+        @foreach (var user in Model.Users)
+        {
+            var isSelf = string.Equals(user.Username, username, StringComparison.OrdinalIgnoreCase);
+            var canSuspend = !isSelf && (viewerIsAdmin || user.Role == "User");
+            var isSuspended = user.SuspendedUntil.HasValue && user.SuspendedUntil.Value > DateTime.UtcNow;
+            var statusClass = isSuspended ? "mod-user-status mod-user-status--active" : user.SuspendedUntil.HasValue ? "mod-user-status mod-user-status--expired" : "mod-user-status";
+            var statusCopy = isSuspended
+                ? $"Suspended until {user.SuspendedUntil!.Value:g}"
+                : user.SuspendedUntil.HasValue
+                    ? $"Suspension expired {user.SuspendedUntil!.Value:g}"
+                    : "No restrictions";
+            var roleClass = (user.Role ?? "user").ToLowerInvariant();
+
+            <article class="mod-user-card @(isSuspended ? "mod-user-card--suspended" : string.Empty)">
+                <div class="mod-user-line">
+                    <div class="mod-user-meta">
+                        <a class="mod-user-name" href="@Url.Action("Index", "User", new { username = user.Username })">@user.Username</a>
+                        <span class="role-badge role-@roleClass">@user.Role</span>
+                    </div>
+                    <div class="@statusClass">@statusCopy</div>
+                </div>
+                <div class="mod-user-actions">
+                    @if (canSuspend)
+                    {
+                        <form asp-action="SuspendUser" method="post" class="mod-inline-form">
+                            <input type="hidden" name="userId" value="@user.Id" />
+                            <select name="duration" class="mod-select" aria-label="Suspension duration">
+                                <option value="24h">24h</option>
+                                <option value="72h">72h</option>
+                                <option value="1w">1w</option>
+                                <option value="2w">2w</option>
+                                <option value="1m">1m</option>
+                                <option value="forever">Forever</option>
+                                <option value="unsuspend">Unsuspend</option>
+                            </select>
+                            <button type="submit" class="mod-action-btn">Apply</button>
+                            @Html.AntiForgeryToken()
+                        </form>
+
+                        <form asp-action="ChangeUsername" method="post" class="mod-inline-form">
+                            <input type="hidden" name="userId" value="@user.Id" />
+                            <input type="text" name="newUsername" placeholder="Reset name" class="mod-input" aria-label="Temporary username" />
+                            <input type="text" name="adminNote" placeholder="Note" class="mod-input mod-note-input" aria-label="Moderator note" />
+                            <button type="submit" class="mod-action-btn">Rename</button>
+                            @Html.AntiForgeryToken()
+                        </form>
+                    }
+                    else
+                    {
+                        <span class="text-muted mod-user-note">Actions unavailable</span>
+                    }
+                </div>
+            </article>
+        }
+    </div>
 </section>
 
 @if (isAdminOrMod)
@@ -118,7 +103,8 @@
             <p>Add, edit, or remove monitored onion services directly here.</p>
 
             <h3>Add Service</h3>
-            <form asp-controller="Monitor" asp-action="Add" method="post" class="mb-3">
+            <form asp-controller="Monitor" asp-action="Add" method="post" class="mb-3 monitor-add-form">
+                <input type="hidden" name="returnUrl" value="@moderatorReturnUrl" />
                 <div class="row g-2">
                     <div class="col-sm-3">
                         <label for="Name">Name</label>
@@ -133,13 +119,18 @@
                         <input name="Description" class="input w-100" />
                     </div>
                 </div>
+                <div class="mt-2">
+                    <label for="PgpSignedMessages">PGP Signed Messages (optional)</label>
+                    <textarea name="PgpSignedMessages" class="input monospace pgp-input" rows="4" placeholder="Paste signed onion announcements. Multiple blocks are supported."></textarea>
+                </div>
                 <div class="form-actions mt-2">
                     <button type="submit" class="button">➕ Add Service</button>
                 </div>
+                @Html.AntiForgeryToken()
             </form>
 
             <h3>Existing Services</h3>
-            <table class="table">
+            <table class="table monitor-admin-table">
                 <thead>
                     <tr>
                         <th>Name</th>
@@ -152,12 +143,22 @@
                 <tbody>
                     @foreach (var m in Model.Monitors)
                     {
-                        <tr>
+                        var preferredProof = m.Proofs?.OrderByDescending(p => p.CreatedAt).FirstOrDefault();
+                        var hasProofs = preferredProof != null;
+                        <tr class="monitor-row @(hasProofs ? "monitor-row--preferred" : string.Empty)">
                             <td>
                                 <input name="Name" value="@m.Name" class="input" placeholder="Name" form="edit-@m.Id" />
                             </td>
                             <td>
-                                <input name="OnionUrl" value="@m.OnionUrl" class="input" placeholder="Onion URL" form="edit-@m.Id" />
+                                <div class="monitor-url">
+                                    <input name="OnionUrl" value="@m.OnionUrl" class="input" placeholder="Onion URL" form="edit-@m.Id" />
+                                    @if (preferredProof != null)
+                                    {
+                                        <a class="monitor-proof-link" href="@Url.Action("Proof", "Monitor", new { proofId = preferredProof.Id })" title="View signed proof" target="_blank" rel="noopener">
+                                            🔐
+                                        </a>
+                                    }
+                                </div>
                             </td>
                             <td>
                                 <input name="Description" value="@m.Description" class="input" placeholder="Description" form="edit-@m.Id" />
@@ -167,10 +168,14 @@
                             </td>
                             <td>
                                 <form id="edit-@m.Id" asp-controller="Monitor" asp-action="Edit" asp-route-id="@m.Id" method="post" class="d-inline-block">
+                                    <input type="hidden" name="returnUrl" value="@moderatorReturnUrl" />
                                     <button type="submit" class="button button-sm">💾 Save</button>
+                                    @Html.AntiForgeryToken()
                                 </form>
                                 <form asp-controller="Monitor" asp-action="Remove" asp-route-id="@m.Id" method="post" class="d-inline-block ms-1">
+                                    <input type="hidden" name="returnUrl" value="@moderatorReturnUrl" />
                                     <button type="submit" class="button button-sm">🗑️ Remove</button>
+                                    @Html.AntiForgeryToken()
                                 </form>
                             </td>
                         </tr>

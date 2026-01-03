@@ -2,8 +2,12 @@
 @{
     ViewData["Title"] = "Add Monitor";
 }
+@{
+    var returnUrl = ViewBag.ReturnUrl as string;
+}
 <h1>Add Monitor</h1>
 <form asp-action="Add" method="post">
+    <input type="hidden" name="returnUrl" value="@returnUrl" />
     <label asp-for="Name"></label>
     <input asp-for="Name" class="input" />
     <span asp-validation-for="Name"></span>
@@ -12,9 +16,14 @@
     <textarea asp-for="Description" class="input" rows="2" placeholder="e.g., Markets & Shops"></textarea>
     <span asp-validation-for="Description"></span>
 
-    <label asp-for="OnionUrl"></label>
-    <input asp-for="OnionUrl" class="input" />
+    <label asp-for="OnionUrl">Direct Onion URL (optional when using signed blocks)</label>
+    <input asp-for="OnionUrl" class="input" placeholder="http://example.onion" />
     <span asp-validation-for="OnionUrl"></span>
+
+    <label asp-for="PgpSignedMessages">PGP Signed Blocks</label>
+    <textarea asp-for="PgpSignedMessages" class="input" rows="8" placeholder="Paste one or more -----BEGIN PGP SIGNED MESSAGE----- blocks"></textarea>
+    <span asp-validation-for="PgpSignedMessages"></span>
+    <p class="text-muted" style="font-size:0.85rem;">Each signed block will produce a preferred mirror. Multiple blocks share the same name automatically.</p>
 
     <div class="form-actions">
         <button type="submit" class="button">Add</button>

@@ -294,6 +294,97 @@ public class UserService
         }
     }
 
+    public async Task<UserReviewSummaryResult> GetUserReviewSummaryAsync(int targetUserId, int recentCount = 3)
+    {
+        var query = _context.UserReviews
+            .AsNoTracking()
+            .Where(r => r.TargetUserId == targetUserId);
+
+        var total = await query.CountAsync();
+        if (total == 0)
+        {
+            return new UserReviewSummaryResult(0, 0, 0, Array.Empty<UserReview>());
+        }
+
+        var average = await query.AverageAsync(r => r.OverallScore);
+        var positive = await query.CountAsync(r => r.OverallScore >= 4);
+        var recent = recentCount > 0
+            ? await query
+                .OrderByDescending(r => r.CreatedAt)
+                .Take(recentCount)
+                .Include(r => r.ReviewerUser)
+                .ToListAsync()
+            : new List<UserReview>();
+
+        return new UserReviewSummaryResult(total, average, positive, recent);
+    }
+
+    public async Task<List<UserReview>> GetUserReviewsAsync(int targetUserId, int skip, int take)
+    {
+        return await _context.UserReviews
+            .Where(r => r.TargetUserId == targetUserId)
+            .OrderByDescending(r => r.CreatedAt)
+            .Skip(skip)
+            .Take(take)
+            .Include(r => r.ReviewerUser)
+            .AsNoTracking()
+            .ToListAsync();
+    }
+
+    public async Task<UserReview?> GetExistingReviewAsync(int targetUserId, int reviewerUserId)
+    {
+        return await _context.UserReviews
+            .FirstOrDefaultAsync(r => r.TargetUserId == targetUserId && r.ReviewerUserId == reviewerUserId);
+    }
+
+    public async Task<UserReview> UpsertReviewAsync(int targetUserId, int reviewerUserId,
+        int communicationScore, int shippingScore, int qualityScore, int overallScore, string comment)
+    {
+        var normalizedComment = NormalizeReviewComment(comment);
+
+        var review = await _context.UserReviews
+            .FirstOrDefaultAsync(r => r.TargetUserId == targetUserId && r.ReviewerUserId == reviewerUserId);
+
+        if (review == null)
+        {
+            review = new UserReview
+            {
+                TargetUserId = targetUserId,
+                ReviewerUserId = reviewerUserId,
+                CommunicationScore = communicationScore,
+                ShippingScore = shippingScore,
+                QualityScore = qualityScore,
+                OverallScore = overallScore,
+                Comment = normalizedComment,
+                CreatedAt = DateTime.UtcNow
+            };
+            _context.UserReviews.Add(review);
+        }
+        else
+        {
+            review.CommunicationScore = communicationScore;
+            review.ShippingScore = shippingScore;
+            review.QualityScore = qualityScore;
+            review.OverallScore = overallScore;
+            review.Comment = normalizedComment;
+            review.CreatedAt = DateTime.UtcNow;
+        }
+
+        await _context.SaveChangesAsync();
+        return review;
+    }
+
+    private static string NormalizeReviewComment(string? value)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            return "No details provided.";
+        }
+
+        var trimmed = value.Trim();
+        return trimmed.Length <= 2000 ? trimmed : trimmed[..2000];
+    }
+
     public async Task<List<User>> SearchUsersByUsernameAsync(string? search)
     {
         if (string.IsNullOrWhiteSpace(search))
@@ -434,3 +525,5 @@ public class UserService
         return Argon2.Verify(hash, password);
     }
 }
+
+    public record UserReviewSummaryResult(int TotalReviews, double AverageScore, int PositiveReviews, IReadOnlyList<UserReview> RecentReviews);

@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using MyFace.Services;
 
 namespace MyFace.Web.Middleware;
@@ -17,13 +18,26 @@ public class VisitTrackingMiddleware
         await _next(context);
         
         // Track the visit after the request is processed (fire and forget)
+        var path = context.Request.Path.ToString();
+        var userAgent = context.Request.Headers["User-Agent"].ToString();
+        var sessionId = context.Session?.Id;
+        var user = context.User;
+        var username = user?.Identity?.IsAuthenticated == true ? user.Identity?.Name : null;
+        int? userId = null;
+        if (user?.Identity?.IsAuthenticated == true)
+        {
+            var idValue = user.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (int.TryParse(idValue, out var parsedId))
+            {
+                userId = parsedId;
+            }
+        }
+
         _ = Task.Run(async () =>
         {
             try
             {
-                var path = context.Request.Path.ToString();
-                var userAgent = context.Request.Headers["User-Agent"].ToString();
-                await visitTracking.TrackVisitAsync(path, userAgent);
+                await visitTracking.TrackVisitAsync(path, userAgent, userId, username, sessionId);
             }
             catch
             {

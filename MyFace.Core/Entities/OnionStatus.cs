@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+
 namespace MyFace.Core.Entities;
 
 public class OnionStatus
@@ -13,4 +15,6 @@ public class OnionStatus
     public int TotalAttempts { get; set; }
     public double? AverageLatency { get; set; }
     public int ClickCount { get; set; }
+
+    public ICollection<OnionProof> Proofs { get; set; } = new List<OnionProof>();
 }

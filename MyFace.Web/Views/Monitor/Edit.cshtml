@@ -1,9 +1,11 @@
 @model MyFace.Web.Models.AddMonitorViewModel
 @{
     ViewData["Title"] = "Edit Monitor";
+    var returnUrl = ViewBag.ReturnUrl as string;
 }
 <h1>Edit Monitor</h1>
 <form asp-action="Edit" asp-route-id="@ViewBag.Id" method="post">
+    <input type="hidden" name="returnUrl" value="@returnUrl" />
     <label asp-for="Name"></label>
     <input asp-for="Name" class="input" />
     <span asp-validation-for="Name"></span>
@@ -18,6 +20,6 @@
 
     <div class="form-actions">
         <button type="submit" class="button">Save Changes</button>
-        <a href="@Url.Action("Index")" class="button">Cancel</a>
+        <a href="@(string.IsNullOrWhiteSpace(returnUrl) ? Url.Action("Index") : returnUrl)" class="button">Cancel</a>
     </div>
 </form>

@@ -1,341 +1,828 @@
-@model List<MyFace.Core.Entities.Post>
+@model MyFace.Web.Models.UserProfileViewModel
 @using System
+@using System.Linq
+@using MyFace.Web.Layout
+@using MyFace.Core.Entities
 @inject MyFace.Web.Services.BBCodeFormatter Formatter
 @{
-    string AdjustColor(string hex, double factor)
+    string Normalize(string? value, string fallback) => string.IsNullOrWhiteSpace(value) ? fallback : value.Trim();
+    IEnumerable<string> SplitLines(string? value)
+        => string.IsNullOrWhiteSpace(value)
+            ? Array.Empty<string>()
+            : value.Split(new[] { "\r\n", "\n" }, StringSplitOptions.RemoveEmptyEntries)
+                   .Select(line => line.Trim())
+                   .Where(line => line.Length > 0);
+
+    var user = Model.User;
+    ViewData["Title"] = user.Username;
+
+    var bgColor = Normalize(user.BackgroundColor, "#0f172a");
+    var fontColor = Normalize(user.FontColor, "#e5e7eb");
+    var accentColor = Normalize(user.AccentColor, "#3b82f6");
+    var borderColor = Normalize(user.BorderColor, "#334155");
+    var btnBg = Normalize(user.ButtonBackgroundColor, accentColor);
+    var btnText = Normalize(user.ButtonTextColor, "#ffffff");
+    var btnBorder = Normalize(user.ButtonBorderColor, btnBg);
+    var fontFamily = Normalize(user.FontFamily, "system-ui, -apple-system, sans-serif");
+
+    var sections = Model.Sections.Where(s => s.Enabled).ToList();
+    var newsItems = Model.LatestNews;
+    var pgpVerified = user.PGPVerifications?.Any(v => v.Verified) == true;
+    var verifiedEntries = (user.PGPVerifications ?? new List<PGPVerification>())
+        .Where(v => v.Verified)
+        .OrderByDescending(v => v.CreatedAt)
+        .ToList();
+    var contactList = user.Contacts ?? new List<MyFace.Core.Entities.UserContact>();
+    var paymentRows = Model.Payments;
+    var referenceRows = Model.ExternalReferences;
+    var reviewSummary = Model.ReviewSummary;
+    var recentReviews = Model.RecentReviews;
+    var chatWindow = Model.ChatMessages;
+    var chatError = TempData["ProfileChatError"] as string;
+    var chatSuccess = TempData["ProfileChatSuccess"] as string;
+
+    string FormatRelative(DateTime? timestamp)
     {
-        if (string.IsNullOrWhiteSpace(hex) || !hex.StartsWith("#") || (hex.Length != 7 && hex.Length != 4)) return hex ?? string.Empty;
-        string Expand(string h) => h.Length == 4 ? $"#{h[1]}{h[1]}{h[2]}{h[2]}{h[3]}{h[3]}" : h;
-        var full = Expand(hex);
-        try
+        if (!timestamp.HasValue)
         {
-            int r = Convert.ToInt32(full.Substring(1, 2), 16);
-            int g = Convert.ToInt32(full.Substring(3, 2), 16);
-            int b = Convert.ToInt32(full.Substring(5, 2), 16);
-            r = Math.Clamp((int)(r * factor), 0, 255);
-            g = Math.Clamp((int)(g * factor), 0, 255);
-            b = Math.Clamp((int)(b * factor), 0, 255);
-            return $"#{r:X2}{g:X2}{b:X2}";
+            return "Never";
         }
-        catch { return hex; }
+
+        var delta = DateTime.UtcNow - timestamp.Value.ToUniversalTime();
+        if (delta.TotalDays >= 1)
+        {
+            return $"{Math.Floor(delta.TotalDays)}d ago";
+        }
+
+        if (delta.TotalHours >= 1)
+        {
+            return $"{Math.Floor(delta.TotalHours)}h ago";
+        }
+
+        if (delta.TotalMinutes >= 1)
+        {
+            return $"{Math.Floor(delta.TotalMinutes)}m ago";
+        }
+
+        return "Just now";
     }
 
-    var user = (MyFace.Core.Entities.User)ViewBag.User;
-    ViewData["Title"] = user.Username;
-    var currentPage = (int)ViewBag.CurrentPage;
-    var hasMore = (bool)ViewBag.HasMorePages;
-    var isSelf = (bool)(ViewBag.IsOwner ?? false);
-    var isAdminOrMod = (bool)(ViewBag.IsAdminOrMod ?? false);
-    var isAdmin = (bool)(ViewBag.IsAdmin ?? false);
-    
-    // Provide defaults for theme properties
-    var bgColor = string.IsNullOrWhiteSpace(user.BackgroundColor) ? "#f6f7fb" : user.BackgroundColor;
-    var fontColor = string.IsNullOrWhiteSpace(user.FontColor) ? "#1f2933" : user.FontColor;
-    var fontFamily = string.IsNullOrWhiteSpace(user.FontFamily) ? "system-ui, -apple-system, sans-serif" : user.FontFamily;
-    var fontSize = 14; // fixed page-wide size; use BBCode for per-text sizing
-    var accentColor = string.IsNullOrWhiteSpace(user.AccentColor) ? "#2f6fe4" : user.AccentColor;
-    var borderColor = string.IsNullOrWhiteSpace(user.BorderColor) ? "#d9dee7" : user.BorderColor;
-
-    // Button theming (with derived hover/active)
-    var btnBg = string.IsNullOrWhiteSpace(user.ButtonBackgroundColor) ? accentColor : user.ButtonBackgroundColor;
-    var btnText = string.IsNullOrWhiteSpace(user.ButtonTextColor) ? "#ffffff" : user.ButtonTextColor;
-    var btnBorder = string.IsNullOrWhiteSpace(user.ButtonBorderColor) ? btnBg : user.ButtonBorderColor;
-    var btnHover = AdjustColor(btnBg, 0.9);
-    var btnActive = AdjustColor(btnBg, 0.8);
-
-    // Site defaults for recent posts (not themed)
-    var defaultRecentBg = "#ffffff";
-    var defaultRecentBorder = "#d9dee7";
-    var defaultRecentText = "#1f2933";
-    var defaultRecentAccent = accentColor;
 }
 
 <style>
-    .theme-button { background: @btnBg; color: @btnText; border: 1px solid @btnBorder; padding: 0.5rem 0.9rem; border-radius: 6px; font-weight: 700; letter-spacing: 0.01em; box-shadow: 0 6px 18px rgba(0,0,0,0.15); transition: transform 120ms ease, background 120ms ease, box-shadow 120ms ease; text-decoration: none; display: inline-block; }
-    .theme-button:hover { background: @btnHover; transform: translateY(-1px); box-shadow: 0 10px 24px rgba(0,0,0,0.2); }
-    .theme-button:active { background: @btnActive; transform: translateY(0); box-shadow: 0 4px 12px rgba(0,0,0,0.18); }
-    .theme-button.ghost { background: transparent; color: @btnBg; border-color: @btnBorder; box-shadow: none; }
+    .profile-shell {
+        background: var(--profile-bg);
+        color: var(--text-main);
+        font-family: var(--font-family);
+        min-height: 100vh;
+        padding: 2.5rem clamp(1rem, 5vw, 4rem);
+    }
+
+    .profile-hero {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        flex-wrap: wrap;
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+    }
+
+    .profile-hero .identity h1 {
+        margin: 0;
+        font-size: clamp(2rem, 4vw, 2.75rem);
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+    }
+
+    .hero-actions {
+        display: flex;
+        gap: 0.6rem;
+        flex-wrap: wrap;
+    }
+
+    .cta {
+        background: var(--btn-bg);
+        border: 1px solid var(--btn-border);
+        color: var(--btn-text);
+        padding: 0.6rem 1.1rem;
+        border-radius: 999px;
+        font-weight: 600;
+        text-decoration: none;
+        transition: transform 0.15s ease;
+    }
+
+    .cta:hover { transform: translateY(-1px); }
+    .cta.ghost {
+        background: transparent;
+        color: var(--btn-bg);
+    }
+
+    .profile-grid-wrapper {
+        width: 100%;
+        max-width: 100%;
+        overflow-x: auto;
+        padding-bottom: 1.5rem;
+    }
+
+    .profile-grid {
+        width: 100%;
+        min-width: 0;
+        display: grid;
+        grid-template-columns: repeat(6, minmax(0, 1fr));
+        grid-template-rows: repeat(8, minmax(8rem, auto));
+        gap: clamp(0.75rem, 1.5vw, 1.25rem);
+        position: relative;
+        border: 1px solid var(--panel-border);
+        padding: clamp(0.75rem, 2vw, 1.5rem);
+        border-radius: 24px;
+        background: color-mix(in srgb, var(--profile-bg) 90%, var(--accent) 10%);
+    }
+
+    .profile-panel {
+        border: 1px solid var(--panel-border);
+        border-radius: 20px;
+        background: color-mix(in srgb, var(--profile-bg) 85%, transparent 15%);
+        padding: 0.9rem 1rem;
+        display: flex;
+        flex-direction: column;
+        gap: 0.65rem;
+        overflow: hidden;
+    }
+
+    .profile-panel .panel-head {
+        display: flex;
+        justify-content: flex-start;
+        align-items: center;
+        gap: 0.5rem;
+        font-size: 0.8rem;
+        text-transform: uppercase;
+        letter-spacing: 0.16em;
+        color: color-mix(in srgb, var(--text-main) 75%, transparent 25%);
+        padding: 0.35rem 0.6rem;
+        border-radius: 12px;
+        background: color-mix(in srgb, var(--panel-border) 15%, transparent);
+    }
+
+    .profile-panel .panel-head.title-align-center {
+        justify-content: center;
+        text-align: center;
+    }
+
+    .profile-panel .panel-head.title-align-right {
+        justify-content: flex-end;
+        text-align: right;
+    }
+
+    .profile-panel .panel-body {
+        flex: 1;
+        overflow: auto;
+        color: var(--text-main);
+    }
+
+    .profile-panel .panel-body.content-align-center {
+        text-align: center;
+    }
+
+    .profile-panel .panel-body.content-align-right {
+        text-align: right;
+    }
+
+    .panel-title {
+        font-weight: 700;
+        letter-spacing: 0.2em;
+    }
+
+    .panel-body::-webkit-scrollbar { width: 6px; }
+    .panel-body::-webkit-scrollbar-thumb { background: var(--panel-border); border-radius: 999px; }
+
+    .panel-body pre {
+        background: color-mix(in srgb, var(--panel-border) 20%, transparent);
+        border-radius: 12px;
+        padding: 0.6rem;
+        font-size: 0.8rem;
+        white-space: pre-wrap;
+    }
+
+    .stat-row {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+        gap: 0.75rem;
+    }
+
+    .stat-card {
+        border: 1px solid var(--panel-border);
+        border-radius: 16px;
+        padding: 0.7rem;
+        text-align: center;
+    }
+
+    .stat-card strong {
+        display: block;
+        font-size: 1.3rem;
+        color: var(--accent);
+    }
+
+    .news-item { border-bottom: 1px solid var(--panel-border); padding-bottom: 0.7rem; margin-bottom: 0.7rem; }
+    .news-item:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+
+    .summary-stack { display: flex; flex-direction: column; gap: 0.85rem; }
+    .summary-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 0.75rem; }
+    .summary-card {
+        border: 1px solid var(--panel-border);
+        border-radius: 16px;
+        padding: 0.65rem 0.85rem;
+        background: color-mix(in srgb, var(--profile-bg) 75%, transparent);
+    }
+    .summary-card small {
+        display: block;
+        font-size: 0.7rem;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        color: color-mix(in srgb, var(--text-main) 70%, transparent 30%);
+        margin-bottom: 0.25rem;
+    }
+    .summary-card strong { font-size: 1.1rem; }
+    .summary-meta { display: flex; flex-direction: column; gap: 0.35rem; }
+    .summary-activity { display: flex; flex-wrap: wrap; gap: 0.5rem; font-size: 0.85rem; opacity: 0.8; }
+    .summary-status { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+    .summary-note { font-size: 0.75rem; opacity: 0.7; }
+    .summary-votes { display: flex; flex-wrap: wrap; gap: 0.45rem; align-items: center; }
+    .summary-badge {
+        border: 1px solid var(--panel-border);
+        border-radius: 14px;
+        padding: 0.35rem 0.75rem;
+        font-size: 0.82rem;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        background: color-mix(in srgb, var(--profile-bg) 80%, transparent 20%);
+        display: inline-flex;
+        gap: 0.35rem;
+        align-items: center;
+    }
+    .summary-badge strong { font-size: 0.95rem; letter-spacing: normal; }
+
+    .chat-header { display: flex; justify-content: space-between; align-items: center; gap: 0.75rem; }
+    .chat-pill { border: 1px solid var(--panel-border); border-radius: 999px; padding: 0.25rem 0.75rem; font-size: 0.8rem; opacity: 0.8; }
+    .chat-subcopy { margin: 0.2rem 0 0.6rem; font-size: 0.8rem; opacity: 0.75; }
+    .chat-log {
+        display: flex;
+        flex-direction: column;
+        gap: 0.45rem;
+        max-height: 18rem;
+        overflow-y: auto;
+        padding-right: 0.25rem;
+    }
+    .chat-log .chat-line {
+        border: 1px solid var(--panel-border);
+        border-radius: 16px;
+        padding: 0.55rem 0.7rem;
+        display: flex;
+        flex-direction: column;
+        gap: 0.25rem;
+        background: color-mix(in srgb, var(--profile-bg) 85%, transparent 15%);
+    }
+    .chat-meta { display: flex; justify-content: space-between; font-size: 0.75rem; opacity: 0.7; }
+    .chat-copy { margin: 0; font-size: 0.9rem; line-height: 1.45; }
+
+    .chat-notice {
+        font-size: 0.8rem;
+        text-transform: uppercase;
+        letter-spacing: 0.12em;
+        color: color-mix(in srgb, var(--text-main) 65%, transparent 35%);
+    }
+
+    .chat-alert {
+        border-radius: 12px;
+        padding: 0.5rem 0.75rem;
+        font-size: 0.85rem;
+        border: 1px solid var(--panel-border);
+    }
+
+    .chat-alert.success {
+        border-color: color-mix(in srgb, var(--accent) 40%, var(--panel-border));
+        color: var(--accent);
+    }
+
+    .chat-alert.error {
+        border-color: #f87171;
+        color: #fca5a5;
+    }
+
+    .chat-form {
+        display: flex;
+        flex-direction: column;
+        gap: 0.4rem;
+        margin-top: 0.9rem;
+    }
+
+    .chat-form textarea {
+        width: 100%;
+        border-radius: 14px;
+        border: 1px solid var(--panel-border);
+        background: color-mix(in srgb, var(--profile-bg) 85%, transparent 15%);
+        color: var(--text-main);
+        padding: 0.55rem 0.75rem;
+        min-height: 90px;
+    }
+
+    .chat-form textarea:focus {
+        outline: 2px solid color-mix(in srgb, var(--accent) 55%, transparent);
+    }
+
+    .chat-form .cta { align-self: flex-start; }
+
+    .chat-footer {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.6rem;
+        margin-top: 0.9rem;
+        align-items: center;
+    }
+
+    .pill-row { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+    .pill { border: 1px solid var(--panel-border); border-radius: 999px; padding: 0.25rem 0.65rem; font-size: 0.75rem; }
+
+    .placeholder { opacity: 0.6; }
+
+    .pgp-chip-row { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-bottom: 0.75rem; }
+    .pgp-chip {
+        border: 1px solid var(--panel-border);
+        border-radius: 999px;
+        padding: 0.3rem 0.7rem;
+        font-size: 0.78rem;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+    }
+    .pgp-chip.is-good { border-color: var(--accent); color: var(--accent); }
+    .pgp-chip.is-warn { border-color: #f87171; color: #f87171; }
+
+    .pgp-proof-list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 0.5rem; }
+    .pgp-proof-list li { border: 1px solid var(--panel-border); border-radius: 14px; padding: 0.55rem 0.75rem; }
+    .pgp-proof-list small { display: block; opacity: 0.7; font-size: 0.7rem; }
+
+    @@media (max-width: 900px) {
+        .profile-hero { flex-direction: column; }
+        .profile-grid-wrapper { overflow-x: auto; }
+    }
 </style>
 
-<div style="background-color: @bgColor; color: @fontColor; font-family: @fontFamily; font-size: @(fontSize)px; padding: 2rem; min-height: 100vh;">
-    <div style="max-width: 1200px; margin: 0 auto;">
-        <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 1.5rem; margin-bottom: 1.5rem;">
-            <div>
-                <h1 style="display: inline-flex; align-items: center; gap: 0.5rem; margin: 0 0 0.5rem 0;">
-                    @user.Username
-                    @if (user.PGPVerifications?.Any(v => v.Verified) == true)
-                    {
-                        <span style="color: #10b981; font-size: 1.5rem;" title="PGP Verified">✓</span>
-                    }
-                </h1>
-                <p class="meta" style="color: @fontColor; opacity: 0.7; margin: 0;">Joined @user.CreatedAt.ToString("MMMM yyyy")</p>
-                <div style="margin-top: 0.5rem; display: flex; gap: 0.4rem; flex-wrap: wrap;">
-                    <a href="@Url.Action("Activity", "User", new { username = user.Username })" class="theme-button ghost">🔍 Recent Activity</a>
-                </div>
-                
-                @if (isSelf)
+<div class="profile-shell" style="--profile-bg:@bgColor; --text-main:@fontColor; --accent:@accentColor; --panel-border:@borderColor; --btn-bg:@btnBg; --btn-text:@btnText; --btn-border:@btnBorder; --font-family:@fontFamily;">
+    <div class="profile-hero">
+        <div class="identity">
+            <h1>
+                @user.Username
+                @if (pgpVerified)
                 {
-                    <div style="margin-top: 0.75rem; display: flex; gap: 0.5rem; flex-wrap: wrap;">
-                        <a href="/user/editprofile" class="theme-button">🎨 Customize Page</a>
-                        <a href="/user/edit" class="theme-button ghost">📝 Quick Edit</a>
-                        <a href="/user/news/new" class="theme-button ghost">📰 Post news</a>
-                    </div>
+                    <span style="color:var(--accent); font-size:1.5rem;">✓</span>
+                }
+            </h1>
+            <p style="margin:0; opacity:0.7;">Joined @user.CreatedAt.ToString("MMMM yyyy")</p>
+            <div class="hero-actions" style="margin-top:0.8rem;">
+                <a href="@Url.Action("Activity", "User", new { username = user.Username })" class="cta ghost">🔍 Activity</a>
+                @if (Model.IsOwner)
+                {
+                    <a href="/user/editprofile" class="cta">🎨 Customize</a>
+                    <a href="/user/news/new" class="cta ghost">📰 Post news</a>
                 }
                 else if (User.Identity?.IsAuthenticated == true)
                 {
-                    <div style="margin-top: 0.75rem; display: flex; gap: 0.5rem; flex-wrap: wrap;">
-                        <a href="@Url.Action("Index", "Mail", new { tab = "new", to = user.Username })" class="theme-button">✉️ Message</a>
-                    </div>
+                    <a href="@Url.Action("Index", "Mail", new { tab = "new", to = user.Username })" class="cta">✉️ Message</a>
                 }
-                else if (isAdminOrMod)
+            </div>
+            @if (Model.IsAdminOrMod && !Model.IsOwner)
+            {
+                <details style="margin-top:0.75rem;">
+                    <summary style="cursor:pointer; font-weight:600;">🛠 Admin tools</summary>
+                    <div style="margin-top:0.5rem; display:flex; flex-direction:column; gap:0.5rem;">
+                        <form asp-action="SuspendUser" method="post" style="display:flex; gap:0.4rem; align-items:center;">
+                            <input type="hidden" name="userId" value="@user.Id" />
+                            <select name="duration" style="padding:0.25rem 0.4rem; border:1px solid var(--panel-border); border-radius:12px; background:transparent; color:var(--text-main);">
+                                <option value="24h">24h</option>
+                                <option value="72h">3d</option>
+                                <option value="1w">1w</option>
+                                <option value="2w">2w</option>
+                                <option value="1m">1m</option>
+                                <option value="forever">Forever</option>
+                                <option value="unsuspend">Unsuspend</option>
+                            </select>
+                            <button type="submit" class="cta" style="padding:0.3rem 0.8rem;">⏸ Apply</button>
+                        </form>
+                        @if (Model.IsAdmin)
+                        {
+                            <form asp-action="DeleteAccount" method="post" style="display:flex; gap:0.4rem; align-items:center;">
+                                <input type="hidden" name="userId" value="@user.Id" />
+                                <button type="submit" class="cta" style="background:var(--text-main); color:var(--profile-bg);">🗑 Delete account</button>
+                            </form>
+                        }
+                    </div>
+                </details>
+            }
+        </div>
+    </div>
+
+    <div class="profile-grid-wrapper">
+        <div class="profile-grid">
+            @foreach (var slot in sections)
+            {
+                var gridStyle = $"grid-column:{slot.ColumnStart} / {slot.ColumnEnd}; grid-row:{slot.RowStart} / {slot.RowEnd};";
+
+                var headerStyle = string.Empty;
+                if (!string.IsNullOrWhiteSpace(slot.HeaderBackground))
                 {
-                    <div style="margin-top: 0.75rem; display: flex; gap: 0.4rem; flex-wrap: wrap; align-items: center;">
-                        <details style="font-size: 0.9rem; color: #475569; background: rgba(148,163,184,0.12); border: 1px solid rgba(148,163,184,0.45); border-radius: 6px; padding: 0.35rem 0.55rem;">
-                            <summary style="cursor: pointer; list-style: none; display: inline-flex; align-items: center; gap: 0.35rem; font-weight: 700; color: #0f172a;">
-                                🛠️ Admin tools
-                            </summary>
-                            <div style="display: grid; gap: 0.45rem; margin-top: 0.4rem;">
-                                <form asp-action="SuspendUser" method="post" style="display: flex; gap: 0.35rem; align-items: center;">
-                                    <input type="hidden" name="userId" value="@user.Id" />
-                                    <select name="duration" style="padding: 0.25rem 0.35rem; border: 1px solid #cbd5e1; border-radius: 4px; font-size: 0.85rem;">
-                                        <option value="24h">24h</option>
-                                        <option value="72h">3d</option>
-                                        <option value="1w">1w</option>
-                                        <option value="2w">2w</option>
-                                        <option value="1m">1m</option>
-                                        <option value="forever">Forever</option>
-                                        <option value="unsuspend">Unsuspend</option>
-                                    </select>
-                                    <button type="submit" class="button" style="padding: 0.35rem 0.6rem; font-size: 0.85rem;">⏸️ Apply</button>
-                                </form>
-                                @if (isAdmin)
+                    headerStyle += $"background:{slot.HeaderBackground};";
+                }
+                if (!string.IsNullOrWhiteSpace(slot.HeaderTextColor))
+                {
+                    headerStyle += $"color:{slot.HeaderTextColor};";
+                }
+
+                var bodyStyle = string.Empty;
+                if (!string.IsNullOrWhiteSpace(slot.PanelBackground))
+                {
+                    bodyStyle += $"background:{slot.PanelBackground};";
+                }
+                if (!string.IsNullOrWhiteSpace(slot.ContentTextColor))
+                {
+                    bodyStyle += $"color:{slot.ContentTextColor};";
+                }
+                var titleAlignClass = $"title-align-{slot.TitleAlignment}";
+                var contentAlignClass = $"content-align-{slot.ContentAlignment}";
+                <section class="profile-panel panel-@slot.Key" style="@gridStyle">
+                    <div class="panel-head @titleAlignClass" style="@headerStyle">
+                        <span class="panel-title">@slot.DisplayTitle</span>
+                    </div>
+                    <div class="panel-body @contentAlignClass" style="@bodyStyle">
+                        @switch (slot.Key)
+                        {
+                            case "about":
                                 {
-                                    <form asp-action="DeleteAccount" method="post" style="display: flex; gap: 0.35rem; align-items: center;">
-                                        <input type="hidden" name="userId" value="@user.Id" />
-                                        <button type="submit" class="button" style="padding: 0.35rem 0.6rem; font-size: 0.85rem; background: #dc2626; color: #fff; border-color: #dc2626;">🗑️ Delete Account</button>
-                                    </form>
+                                    if (!string.IsNullOrWhiteSpace(user.AboutMe))
+                                    {
+                                        @Formatter.Format(user.AboutMe)
+                                    }
+                                    else
+                                    {
+                                        <p class="placeholder">Share your manifesto here.</p>
+                                    }
+                                    break;
                                 }
-                            </div>
-                        </details>
+                            case "extra":
+                                {
+                                    if (!string.IsNullOrWhiteSpace(user.VendorShopDescription))
+                                    {
+                                        <p style="white-space:pre-wrap; margin:0;">@Html.Encode(user.VendorShopDescription)</p>
+                                    }
+                                    else
+                                    {
+                                        <p class="placeholder">Use the Extra module for promos or merch callouts.</p>
+                                    }
+                                    break;
+                                }
+                            case "policies":
+                                {
+                                    if (!string.IsNullOrWhiteSpace(user.VendorPolicies))
+                                    {
+                                        <p style="white-space:pre-wrap; margin:0;">@Html.Encode(user.VendorPolicies)</p>
+                                    }
+                                    else
+                                    {
+                                        <p class="placeholder">No policies added.</p>
+                                    }
+                                    break;
+                                }
+                            case "payments":
+                                {
+                                    if (paymentRows.Any())
+                                    {
+                                        <ul style="margin:0; padding-left:1.1rem; display:flex; flex-direction:column; gap:0.4rem;">
+                                            @foreach (var payment in paymentRows)
+                                            {
+                                                <li>
+                                                    <strong>@payment.Label</strong><br />
+                                                    <span style="opacity:0.8;">@payment.Details</span>
+                                                </li>
+                                            }
+                                        </ul>
+                                    }
+                                    else
+                                    {
+                                        <p class="placeholder">List accepted currencies or escrow handles.</p>
+                                    }
+                                    break;
+                                }
+                            case "external":
+                                {
+                                    if (referenceRows.Any())
+                                    {
+                                        <div style="display:flex; flex-direction:column; gap:0.6rem;">
+                                            @foreach (var reference in referenceRows)
+                                            {
+                                                <div>
+                                                    <strong>@reference.Label</strong><br />
+                                                    @if (!string.IsNullOrWhiteSpace(reference.Url))
+                                                    {
+                                                        <a href="@reference.Url" style="color:var(--accent);" rel="noreferrer noopener" target="_blank">@reference.Url</a><br />
+                                                    }
+                                                    @if (!string.IsNullOrWhiteSpace(reference.Notes))
+                                                    {
+                                                        <span style="opacity:0.7;">@reference.Notes</span>
+                                                    }
+                                                </div>
+                                            }
+                                        </div>
+                                    }
+                                    else
+                                    {
+                                        <p class="placeholder">Add mirrors, proofs, or external review threads.</p>
+                                    }
+                                    break;
+                                }
+                            case "news":
+                                {
+                                    if (newsItems.Any())
+                                    {
+                                        foreach (var news in newsItems)
+                                        {
+                                            <div class="news-item">
+                                                <strong>@news.Title</strong>
+                                                <span style="display:block; font-size:0.75rem; opacity:0.7;">@news.CreatedAt.ToString("g")</span>
+                                                <div>@Formatter.Format(news.Content)</div>
+                                            </div>
+                                        }
+                                    }
+                                    else
+                                    {
+                                        <p class="placeholder">Publish news to surface drops or ops updates.</p>
+                                    }
+                                    break;
+                                }
+                            case "chat":
+                                {
+                                    var chatCount = chatWindow.Count;
+                                    <div class="chat-header">
+                                        <div>
+                                            <span class="chat-notice">Profile wall</span>
+                                            <h4 style="margin:0;">Visitor feed</h4>
+                                        </div>
+                                        <span class="chat-pill">@chatCount @(chatCount == 1 ? "ping" : "pings")</span>
+                                    </div>
+                                    <p class="chat-subcopy">Messages auto-trim nightly. Refresh this page to pull the latest replies.</p>
+                                    @if (!string.IsNullOrEmpty(chatError))
+                                    {
+                                        <div class="chat-alert error">@chatError</div>
+                                    }
+                                    else if (!string.IsNullOrEmpty(chatSuccess))
+                                    {
+                                        <div class="chat-alert success">@chatSuccess</div>
+                                    }
+
+                                    if (chatWindow.Any())
+                                    {
+                                        <div class="chat-log">
+                                            @foreach (var msg in chatWindow)
+                                            {
+                                                <article class="chat-line">
+                                                    <div class="chat-meta">
+                                                        <strong>@msg.Username</strong>
+                                                        <span>@msg.CreatedAt.ToString("HH:mm")</span>
+                                                    </div>
+                                                    <p class="chat-copy">@Html.Raw(msg.Content)</p>
+                                                </article>
+                                            }
+                                        </div>
+                                    }
+                                    else
+                                    {
+                                        <p class="placeholder">No wall posts yet. Be the first to check in.</p>
+                                    }
+
+                                    if (Model.ViewerAuthenticated)
+                                    {
+                                        <form asp-action="PostProfileChat" asp-controller="User" asp-route-username="@user.Username" method="post" class="chat-form">
+                                            @Html.AntiForgeryToken()
+                                            <label style="display:flex; flex-direction:column; gap:0.35rem;">
+                                                <span style="font-size:0.8rem; opacity:0.75;">Message</span>
+                                                <textarea name="chatMessage" placeholder="Drop a short message" maxlength="500" required></textarea>
+                                            </label>
+                                            <div style="display:flex; gap:0.75rem; align-items:center; flex-wrap:wrap;">
+                                                <button type="submit" class="cta">Send message</button>
+                                                <small style="opacity:0.65;">Max 500 characters · plain text only</small>
+                                            </div>
+                                        </form>
+                                    }
+                                    else
+                                    {
+                                        <a class="cta" href="/account/login">Sign in to chat</a>
+                                    }
+
+                                    <div class="chat-footer">
+                                        <span style="opacity:0.75;">Need to send more context?</span>
+                                        <a class="cta ghost" href="@Url.Action("Index", "Mail", new { tab = "new", to = user.Username })">Send mail</a>
+                                    </div>
+                                    break;
+                                }
+                            case "reviews":
+                                {
+                                    if (reviewSummary.TotalReviews > 0)
+                                    {
+                                        <div class="stat-row" style="margin-bottom:0.75rem;">
+                                            <div class="stat-card">
+                                                <span>Total</span>
+                                                <strong>@reviewSummary.TotalReviews</strong>
+                                            </div>
+                                            <div class="stat-card">
+                                                <span>Average</span>
+                                                <strong>@reviewSummary.AverageScore.ToString("0.0")</strong>
+                                            </div>
+                                            <div class="stat-card">
+                                                <span>Positive</span>
+                                                <strong>@reviewSummary.PositivePercent.ToString("0.0")%</strong>
+                                            </div>
+                                        </div>
+                                        if (recentReviews.Any())
+                                        {
+                                            <div style="display:flex; flex-direction:column; gap:0.6rem;">
+                                                @foreach (var review in recentReviews)
+                                                {
+                                                    <div style="border:1px solid var(--panel-border); border-radius:14px; padding:0.6rem 0.8rem;">
+                                                        <strong>@review.ReviewerUsername</strong>
+                                                        <span style="font-size:0.75rem; opacity:0.7;"> · @review.CreatedAt.ToString("MMM d")</span>
+                                                        <div style="font-size:0.85rem; margin-top:0.3rem;">Overall: <strong>@review.OverallScore/5</strong></div>
+                                                        <p style="margin:0; font-size:0.85rem; opacity:0.85; white-space:pre-wrap;">@review.Comment</p>
+                                                        @if (review.IsViewer)
+                                                        {
+                                                            <span style="font-size:0.75rem; color:var(--accent);">Your review</span>
+                                                        }
+                                                    </div>
+                                                }
+                                            </div>
+                                        }
+                                    }
+                                    else
+                                    {
+                                        <p class="placeholder">No feedback logged yet. Invite trusted buyers to leave the first review.</p>
+                                    }
+                                    <div style="display:flex; flex-wrap:wrap; gap:0.6rem; margin-top:0.8rem;">
+                                        <a class="cta" href="@Url.Action("Reviews", "User", new { username = user.Username })">Read reviews</a>
+                                        @if (Model.CanLeaveReview)
+                                        {
+                                            var reviewCtaLabel = Model.ViewerHasReview ? "Update review" : "Leave one";
+                                            <a class="cta ghost" href="@Url.Action("Reviews", "User", new { username = user.Username })#comment">@reviewCtaLabel</a>
+                                        }
+                                        else if (!Model.ViewerAuthenticated)
+                                        {
+                                            <a class="cta ghost" href="/account/login">Sign in to review</a>
+                                        }
+                                    </div>
+                                    break;
+                                }
+                            case "pgp":
+                                {
+                                    var proofCount = verifiedEntries.Count;
+                                    <div class="pgp-chip-row">
+                                        <span class="pgp-chip @(pgpVerified ? "is-good" : "is-warn")">@(pgpVerified ? "PGP verified" : "PGP pending")</span>
+                                        @if (proofCount > 0)
+                                        {
+                                            <span class="pgp-chip">@proofCount proofs</span>
+                                        }
+                                        <span class="pgp-chip">@(string.IsNullOrWhiteSpace(user.PgpPublicKey) ? "Key missing" : "Key on file")</span>
+                                    </div>
+                                    if (verifiedEntries.Any())
+                                    {
+                                        <ul class="pgp-proof-list">
+                                            @foreach (var proof in verifiedEntries.Take(4))
+                                            {
+                                                <li>
+                                                    <strong>@(string.IsNullOrWhiteSpace(proof.Fingerprint) ? "Fingerprint pending" : proof.Fingerprint)</strong>
+                                                    <small>Signed @proof.CreatedAt.ToString("MMM dd yyyy", System.Globalization.CultureInfo.InvariantCulture)</small>
+                                                    @if (!string.IsNullOrWhiteSpace(proof.ChallengeText))
+                                                    {
+                                                        <p style="margin:0; font-size:0.85rem; opacity:0.85; white-space:pre-wrap; max-height:4.5rem; overflow:hidden;">
+                                                            @Html.Encode(proof.ChallengeText)
+                                                        </p>
+                                                    }
+                                                </li>
+                                            }
+                                        </ul>
+                                    }
+                                    else
+                                    {
+                                        <p class="placeholder">Complete a signed challenge reply to prove PGP control.</p>
+                                    }
+                                    if (!string.IsNullOrWhiteSpace(user.PgpPublicKey))
+                                    {
+                                        <details style="margin-top:0.8rem;">
+                                            <summary style="cursor:pointer; font-weight:600;">View public key</summary>
+                                            <pre>@user.PgpPublicKey</pre>
+                                        </details>
+                                    }
+                                    else
+                                    {
+                                        <p class="placeholder">No armored key uploaded yet.</p>
+                                    }
+                                    break;
+                                }
+                            case "summary":
+                                {
+                                    var newsCount = user.News?.Count ?? 0;
+                                    var totalUpvotes = (user.PostUpvotes + user.CommentUpvotes).ToString("N0", System.Globalization.CultureInfo.InvariantCulture);
+                                    var threadUp = user.PostUpvotes.ToString("N0", System.Globalization.CultureInfo.InvariantCulture);
+                                    var threadDown = user.PostDownvotes.ToString("N0", System.Globalization.CultureInfo.InvariantCulture);
+                                    var commentUp = user.CommentUpvotes.ToString("N0", System.Globalization.CultureInfo.InvariantCulture);
+                                    var commentDown = user.CommentDownvotes.ToString("N0", System.Globalization.CultureInfo.InvariantCulture);
+                                    var verifiedCount = verifiedEntries.Count;
+                                    var summaryChips = new List<(string Label, string Value)>
+                                    {
+                                        ("Member since", user.CreatedAt.ToString("MMM yyyy", System.Globalization.CultureInfo.InvariantCulture)),
+                                        ("Role", Normalize(user.Role, "Member")),
+                                        ("PGP proofs", verifiedCount > 0 ? verifiedCount.ToString(System.Globalization.CultureInfo.InvariantCulture) : "pending"),
+                                        ("Status", user.IsActive ? "Active" : "Dormant")
+                                    };
+                                    <div class="summary-stack">
+                                        <div class="summary-votes">
+                                            <div class="summary-badge" aria-label="Thread vote totals">
+                                                <span>Threads</span>
+                                                <strong>↑ @threadUp</strong>
+                                                <span>↓ @threadDown</span>
+                                            </div>
+                                            <div class="summary-badge" aria-label="Comment vote totals">
+                                                <span>Comments</span>
+                                                <strong>↑ @commentUp</strong>
+                                                <span>↓ @commentDown</span>
+                                            </div>
+                                        </div>
+                                        <div class="summary-grid">
+                                            @foreach (var chip in summaryChips)
+                                            {
+                                                <div class="summary-card">
+                                                    <small>@chip.Label</small>
+                                                    <strong>@chip.Value</strong>
+                                                </div>
+                                            }
+                                        </div>
+                                        <div class="summary-status">
+                                            <span class="pill">@(pgpVerified ? "PGP verified" : "PGP pending")</span>
+                                            <span class="pill">@reviewSummary.AverageScore.ToString("0.0")/5 avg · @reviewSummary.TotalReviews reviews</span>
+                                            <span class="pill">Last seen @FormatRelative(user.LastSeenAt)</span>
+                                        </div>
+                                        <div class="summary-meta">
+                                            <div class="summary-activity">
+                                                <span>@newsCount news @(newsCount == 1 ? "drop" : "drops")</span>
+                                                <span>@contactList.Count contact @(contactList.Count == 1 ? "link" : "links")</span>
+                                                <span>@totalUpvotes total upvotes logged</span>
+                                            </div>
+                                            <span class="summary-note">Grid refreshes whenever you save new layout settings.</span>
+                                        </div>
+                                    </div>
+                                    break;
+                                }
+                        }
                     </div>
-                }
-            </div>
-            
-            <!-- Trophy Display for Votes -->
-            <div style="display: flex; gap: 0.6rem; flex-wrap: wrap;">
-                <div style="text-align: center; min-width: 80px; background: rgba(47,111,228,0.12); border: 1px solid rgba(47,111,228,0.35); border-radius: 10px; padding: 0.6rem 0.75rem;">
-                    <div style="font-size: 1.8rem; margin-bottom: 0.1rem; line-height: 1;">🏆</div>
-                    <div style="font-size: 1.3rem; font-weight: 800; color: @accentColor; line-height: 1;">@user.PostUpvotes</div>
-                    <div style="font-size: 0.8rem; font-weight: 700; color: @fontColor; opacity: 0.95; line-height: 1;">Thread ↑</div>
-                </div>
-                <div style="text-align: center; min-width: 80px; background: rgba(239,68,68,0.12); border: 1px solid rgba(239,68,68,0.35); border-radius: 10px; padding: 0.6rem 0.75rem;">
-                    <div style="font-size: 1.8rem; margin-bottom: 0.1rem; line-height: 1;">⚡</div>
-                    <div style="font-size: 1.3rem; font-weight: 800; color: #d92c2c; line-height: 1;">@user.PostDownvotes</div>
-                    <div style="font-size: 0.8rem; font-weight: 700; color: @fontColor; opacity: 0.95; line-height: 1;">Thread ↓</div>
-                </div>
-                <div style="text-align: center; min-width: 80px; background: rgba(47,111,228,0.12); border: 1px solid rgba(47,111,228,0.35); border-radius: 10px; padding: 0.6rem 0.75rem;">
-                    <div style="font-size: 1.8rem; margin-bottom: 0.1rem; line-height: 1;">💬</div>
-                    <div style="font-size: 1.3rem; font-weight: 800; color: @accentColor; line-height: 1;">@user.CommentUpvotes</div>
-                    <div style="font-size: 0.8rem; font-weight: 700; color: @fontColor; opacity: 0.95; line-height: 1;">Comment ↑</div>
-                </div>
-                <div style="text-align: center; min-width: 80px; background: rgba(249,115,22,0.12); border: 1px solid rgba(249,115,22,0.35); border-radius: 10px; padding: 0.6rem 0.75rem;">
-                    <div style="font-size: 1.8rem; margin-bottom: 0.1rem; line-height: 1;">💭</div>
-                    <div style="font-size: 1.3rem; font-weight: 800; color: #d6580a; line-height: 1;">@user.CommentDownvotes</div>
-                    <div style="font-size: 0.8rem; font-weight: 700; color: @fontColor; opacity: 0.95; line-height: 1;">Comment ↓</div>
-                </div>
-            </div>
+                </section>
+            }
         </div>
-
-    <div style="background: @bgColor; border: 1px solid @borderColor; padding: 1.5rem; border-radius: 8px; margin-bottom: 1rem;">
-        <h3 style="color: @accentColor; margin-top: 0; display: inline-flex; align-items: center; gap: 0.4rem;">About Me
-            @if (isAdminOrMod && !isSelf)
-            {
-                <details style="font-size: 0.85rem; color: #475569;">
-                    <summary style="cursor: pointer; list-style: none;">✏️</summary>
-                    <form asp-action="AdminEditAboutMe" method="post" style="margin-top: 0.4rem; display: grid; gap: 0.35rem;">
-                        <input type="hidden" name="userId" value="@user.Id" />
-                        <textarea name="aboutMe" rows="3" style="padding: 0.35rem; border: 1px solid @borderColor; border-radius: 6px; font-size: 0.9rem;">@user.AboutMe</textarea>
-                        <button type="submit" class="button" style="width: fit-content; padding: 0.3rem 0.6rem; font-size: 0.85rem;">💾 Save</button>
-                    </form>
-                </details>
-            }
-        </h3>
-        @if (!string.IsNullOrEmpty(user.AboutMe))
-        {
-            <div>@Formatter.Format(user.AboutMe)</div>
-        }
-        else
-        {
-            <p style="opacity: 0.6;">No information added yet.</p>
-        }
     </div>
 
-    <div style="background: @bgColor; border: 1px solid @borderColor; padding: 1.5rem; border-radius: 8px; margin-bottom: 1rem;">
-        <h3 style="color: @accentColor; margin-top: 0; display: inline-flex; align-items: center; gap: 0.4rem;">Vendor Profile
-            @if (isAdminOrMod && !isSelf)
+    <div style="margin-top:2rem; display:flex; flex-wrap:wrap; gap:1rem; align-items:center;">
+        <div>
+            <h3 style="margin:0 0 0.4rem 0;">Contact links</h3>
+            @if (contactList.Any())
             {
-                <details style="font-size: 0.85rem; color: #475569;">
-                    <summary style="cursor: pointer; list-style: none;">✏️</summary>
-                    <form asp-action="AdminUpdateVendor" method="post" style="margin-top: 0.4rem; display: grid; gap: 0.35rem;">
-                        <input type="hidden" name="userId" value="@user.Id" />
-                        <textarea name="vendorShopDescription" rows="2" placeholder="Shop" style="padding: 0.35rem; border: 1px solid @borderColor; border-radius: 6px; font-size: 0.9rem;">@user.VendorShopDescription</textarea>
-                        <textarea name="vendorPolicies" rows="2" placeholder="Policies" style="padding: 0.35rem; border: 1px solid @borderColor; border-radius: 6px; font-size: 0.9rem;">@user.VendorPolicies</textarea>
-                        <textarea name="vendorPayments" rows="2" placeholder="Payments" style="padding: 0.35rem; border: 1px solid @borderColor; border-radius: 6px; font-size: 0.9rem;">@user.VendorPayments</textarea>
-                        <textarea name="vendorExternalReferences" rows="2" placeholder="External references" style="padding: 0.35rem; border: 1px solid @borderColor; border-radius: 6px; font-size: 0.9rem;">@user.VendorExternalReferences</textarea>
-                        <button type="submit" class="button" style="width: fit-content; padding: 0.3rem 0.6rem; font-size: 0.85rem;">💾 Save</button>
-                    </form>
-                </details>
-            }
-        </h3>
-        <p class="meta" style="color: @fontColor; opacity: 0.7; margin-top: 0;">External references render as plain text; images and embeds are blocked.</p>
-        @if (!string.IsNullOrWhiteSpace(user.VendorShopDescription) || !string.IsNullOrWhiteSpace(user.VendorPolicies) || !string.IsNullOrWhiteSpace(user.VendorPayments) || !string.IsNullOrWhiteSpace(user.VendorExternalReferences))
-        {
-            <div style="display: grid; gap: 0.8rem;">
-                @if (!string.IsNullOrWhiteSpace(user.VendorShopDescription))
-                {
-                    <div>
-                        <strong>Shop</strong>
-                        <p style="margin: 0.25rem 0 0; white-space: pre-wrap;">@Html.Encode(user.VendorShopDescription)</p>
-                    </div>
-                }
-                @if (!string.IsNullOrWhiteSpace(user.VendorPolicies))
-                {
-                    <div>
-                        <strong>Policies</strong>
-                        <p style="margin: 0.25rem 0 0; white-space: pre-wrap;">@Html.Encode(user.VendorPolicies)</p>
-                    </div>
-                }
-                @if (!string.IsNullOrWhiteSpace(user.VendorPayments))
-                {
-                    <div>
-                        <strong>Payments</strong>
-                        <p style="margin: 0.25rem 0 0; white-space: pre-wrap;">@Html.Encode(user.VendorPayments)</p>
-                    </div>
-                }
-                @if (!string.IsNullOrWhiteSpace(user.VendorExternalReferences))
-                {
-                    <div>
-                        <strong>External References</strong>
-                        <p style="margin: 0.25rem 0 0; white-space: pre-wrap;">@Html.Encode(user.VendorExternalReferences)</p>
-                    </div>
-                }
-            </div>
-        }
-        else
-        {
-            <p style="opacity: 0.6;">No vendor details added yet.</p>
-        }
-    </div>
-
-
-
-    <div style="background: @bgColor; border: 1px solid @borderColor; padding: 1.5rem; border-radius: 8px; margin-bottom: 1rem;">
-        <h3 style="color: @accentColor; margin-top: 0;">Contact Info</h3>
-        <ul>
-            @foreach (var contact in user.Contacts)
-            {
-                <li>
-                    <strong>@contact.ServiceName</strong>: @contact.AccountId
-                    @if (isSelf)
+                <ul style="margin:0; padding-left:1.2rem;">
+                    @foreach (var contact in contactList)
                     {
-                        <form asp-action="RemoveContact" method="post" style="display:inline">
-                            <input type="hidden" name="id" value="@contact.Id" />
-                            <button type="submit" class="btn-delete" style="padding: 0.2rem 0.5rem; font-size: 0.8rem;">Remove</button>
-                        </form>
+                        <li>
+                            <strong>@contact.ServiceName</strong>: @contact.AccountId
+                            @if (Model.IsOwner)
+                            {
+                                <form asp-action="RemoveContact" method="post" style="display:inline-block; margin-left:0.35rem;">
+                                    <input type="hidden" name="id" value="@contact.Id" />
+                                    <button type="submit" class="cta ghost" style="padding:0.15rem 0.5rem;">Remove</button>
+                                </form>
+                            }
+                            else if (Model.IsAdminOrMod)
+                            {
+                                <form asp-action="AdminRemoveContact" method="post" style="display:inline-block; margin-left:0.35rem;">
+                                    <input type="hidden" name="id" value="@contact.Id" />
+                                    <button type="submit" class="cta ghost" style="padding:0.15rem 0.5rem;">Remove</button>
+                                </form>
+                            }
+                        </li>
                     }
-                    else if (isAdminOrMod)
-                    {
-                        <form asp-action="AdminRemoveContact" method="post" style="display:inline">
-                            <input type="hidden" name="id" value="@contact.Id" />
-                            <button type="submit" class="btn-delete" style="padding: 0.2rem 0.5rem; font-size: 0.8rem;">Remove</button>
-                        </form>
-                    }
-                </li>
-            }
-        </ul>
-    </div>
-
-    <div style="background: @bgColor; border: 1px solid @borderColor; padding: 1.5rem; border-radius: 8px; margin-bottom: 1rem; color: @fontColor;">
-        <div style="display:flex; justify-content: space-between; align-items: center; gap: 1rem;">
-            <h3 style="margin: 0; color: @accentColor;">News Feed</h3>
-        </div>
-        @foreach (var news in user.News.OrderByDescending(n => n.CreatedAt))
-        {
-            var useTheme = news.ApplyTheme;
-            var newsBg = useTheme ? bgColor : defaultRecentBg;
-            var newsBorder = useTheme ? borderColor : defaultRecentBorder;
-            var newsText = useTheme ? fontColor : defaultRecentText;
-            var newsAccent = useTheme ? accentColor : defaultRecentAccent;
-
-            <div style="border: 1px solid @newsBorder; background: @newsBg; color: @newsText; padding: 1rem 1rem 0.5rem; border-radius: 8px; margin-bottom: 1rem; box-shadow: 0 4px 12px rgba(0,0,0,0.06);">
-                <h4 style="margin: 0 0 0.35rem 0; color: @newsAccent;"><a href="/user/news/@news.Id" style="color: @newsAccent; text-decoration: none;">@news.Title</a> <span class="meta" style="font-size: 0.8rem; color: @newsText; opacity: 0.7;">@news.CreatedAt.ToString("g")</span></h4>
-                <div style="max-height: 200px; overflow: hidden; position: relative; color: @newsText;">
-                    @Formatter.Format(news.Content)
-                </div>
-                <p style="margin: 0.4rem 0 0.6rem 0;"><a href="/user/news/@news.Id" style="font-size: 0.9rem; color: @newsAccent;">Read more / Permalink</a></p>
-                @if (isSelf)
-                {
-                    <form asp-action="RemoveNews" method="post" style="display:inline">
-                        <input type="hidden" name="id" value="@news.Id" />
-                        <button type="submit" class="button" style="padding: 0.2rem 0.5rem; font-size: 0.8rem;">Delete</button>
-                    </form>
-                }
-                else if (isAdminOrMod)
-                {
-                    <form asp-action="AdminRemoveNews" method="post" style="display:inline">
-                        <input type="hidden" name="id" value="@news.Id" />
-                        <button type="submit" class="button" style="padding: 0.2rem 0.5rem; font-size: 0.8rem; background: #dc2626; color: #fff; border-color: #dc2626;">Delete</button>
-                    </form>
-                }
-            </div>
-        }
-    </div>
-
-    <div style="background: @bgColor; border: 1px solid @borderColor; padding: 1.5rem; border-radius: 8px; margin-bottom: 1rem;">
-        <h3 style="color: @accentColor; margin-top: 0; display: inline-flex; align-items: center; gap: 0.35rem;">🔐 PGP Public Key
-            @if (isAdminOrMod && !isSelf && !string.IsNullOrWhiteSpace(user.PgpPublicKey))
-            {
-                <form asp-action="AdminClearPgpKey" method="post" style="display: inline;">
-                    <input type="hidden" name="userId" value="@user.Id" />
-                    <button type="submit" class="button" style="padding: 0.15rem 0.4rem; font-size: 0.8rem; background: #f97316; color: #fff; border-color: #f97316;">Clear</button>
-                </form>
-            }
-        </h3>
-        @if (!string.IsNullOrWhiteSpace(user.PgpPublicKey))
-        {
-            @if (user.PGPVerifications?.Any(v => v.Verified) == true)
-            {
-                <p style="color: #10b981; font-weight: 600; margin-bottom: 0.5rem;">✓ Verified</p>
+                </ul>
             }
             else
             {
-                <p style="color: #f59e0b; font-weight: 600; margin-bottom: 0.5rem;">⚠ Not Verified</p>
+                <p class="placeholder">No contact info listed.</p>
             }
-            <pre style="white-space: pre-wrap; font-size: 0.7rem; max-height: 100px; overflow: auto; padding: 0.5rem; background: rgba(0,0,0,0.3); border: 1px solid @borderColor; border-radius: 4px; color: @fontColor;">@user.PgpPublicKey</pre>
-        }
-        else
-        {
-            <p style="opacity: 0.6;">No PGP key configured</p>
-        }
-        
-        @if (isSelf)
-        {
-            <div style="margin-top: 1rem;">
-                <a href="/account/pgpsetup" class="button" style="background: @accentColor;">🔑 Setup/Update PGP Key</a>
-            </div>
-        }
-    </div>
-
-    @if (isSelf)
-    {
-        <div style="background: @bgColor; border: 1px solid @borderColor; padding: 1.25rem; border-radius: 8px; margin-bottom: 1rem; display: flex; justify-content: space-between; align-items: center; gap: 1rem; flex-wrap: wrap;">
-            <div>
-                <h3 style="margin: 0 0 0.35rem 0; color: @accentColor;">Reset your password</h3>
-                <p style="margin: 0; opacity: 0.7; color: @fontColor;">You can change your password anytime without contacting support.</p>
-            </div>
-            <a href="/account/changepassword" class="button" style="background: @accentColor;">🔒 Change Password</a>
         </div>
-    }
-
+        @if (Model.IsOwner)
+        {
+            <div>
+                <h3 style="margin:0 0 0.35rem 0;">Security</h3>
+                <a href="/account/changepassword" class="cta">🔒 Reset password</a>
+            </div>
+        }
     </div>
 </div>

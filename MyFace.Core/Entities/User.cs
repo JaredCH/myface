@@ -50,4 +50,8 @@ public class User
     public ICollection<PGPVerification> PGPVerifications { get; set; } = new List<PGPVerification>();
     public ICollection<UserContact> Contacts { get; set; } = new List<UserContact>();
     public ICollection<UserNews> News { get; set; } = new List<UserNews>();
+    public ICollection<UserReview> ReviewsAuthored { get; set; } = new List<UserReview>();
+    public ICollection<UserReview> ReviewsReceived { get; set; } = new List<UserReview>();
+    public ICollection<ProfileChatMessage> ProfileChatMessagesAuthored { get; set; } = new List<ProfileChatMessage>();
+    public ICollection<ProfileChatMessage> ProfileChatWall { get; set; } = new List<ProfileChatMessage>();
 }
