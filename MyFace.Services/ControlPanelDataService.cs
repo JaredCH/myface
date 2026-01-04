@@ -124,16 +124,21 @@ public class ControlPanelDataService
         var bannedUsers = await _context.Users.CountAsync(u => !u.IsActive, ct);
         var pgpVerified = await _context.Users.CountAsync(u => !string.IsNullOrWhiteSpace(u.PgpPublicKey), ct);
 
-        var topContributors = await _context.Posts
+        // Materialize posts with user info first to avoid EF translation issues with grouping + record construction
+        var recentPosts = await _context.Posts
             .AsNoTracking()
             .Where(p => p.UserId.HasValue && p.CreatedAt >= thirtyDaysAgo)
-            .GroupBy(p => new
+            .Select(p => new
             {
                 p.UserId,
                 Username = p.User!.Username,
                 p.User.Role,
                 p.User.LastSeenAt
             })
+            .ToListAsync(ct);
+
+        var topContributors = recentPosts
+            .GroupBy(p => new { p.UserId, p.Username, p.Role, p.LastSeenAt })
             .Select(g => new UserContributionSummary(
                 g.Key.UserId!.Value,
                 g.Key.Username,
@@ -143,7 +148,7 @@ public class ControlPanelDataService
             .OrderByDescending(x => x.PostsLast30Days)
             .ThenBy(x => x.Username)
             .Take(5)
-            .ToListAsync(ct);
+            .ToList();
 
         var suspendedUsers = await _context.Users
             .AsNoTracking()
@@ -193,13 +198,18 @@ public class ControlPanelDataService
 
         if (includeAdmin)
         {
-            growthSeries = await _context.Users
+            // Materialize user creation dates first to avoid EF translation issues with GroupBy + record constructor
+            var recentUsers = await _context.Users
                 .AsNoTracking()
                 .Where(u => u.CreatedAt >= thirtyDaysAgo)
-                .GroupBy(u => u.CreatedAt.Date)
+                .Select(u => u.CreatedAt.Date)
+                .ToListAsync(ct);
+
+            growthSeries = recentUsers
+                .GroupBy(date => date)
                 .Select(g => new TimeSeriesPoint(g.Key, g.Count()))
                 .OrderBy(p => p.Day)
-                .ToListAsync(ct);
+                .ToList();
 
             var sentLastWeek = await _context.PrivateMessages
                 .AsNoTracking()
