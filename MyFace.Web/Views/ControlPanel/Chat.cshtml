@@ -1,0 +1,201 @@
+@model ChatOversightViewModel
+
+<section class="cp-section">
+    <h2>Chat Traffic</h2>
+    <div class="cp-card-grid">
+        <article class="cp-card">
+            <p class="cp-label">Messages (last hour)</p>
+            <p class="cp-value">@Model.Data.MessagesLastHour</p>
+        </article>
+        <article class="cp-card">
+            <p class="cp-label">Unique chatters (24h)</p>
+            <p class="cp-value">@Model.Data.UniqueChattersLastDay</p>
+        </article>
+        <article class="cp-card">
+            <p class="cp-label">Verified share</p>
+            <p class="cp-value">@Model.VerifiedShareDisplay</p>
+        </article>
+        <article class="cp-card">
+            <p class="cp-label">Moderator share</p>
+            <p class="cp-value">@Model.ModeratorShareDisplay</p>
+        </article>
+    </div>
+    <div class="cp-placeholder" style="padding:0; overflow-x:auto; margin-top:1rem;">
+        <table style="width:100%; border-collapse:collapse; font-size:0.9rem;">
+            <thead>
+                <tr>
+                    <th style="text-align:left; padding:0.75rem; border-bottom:1px solid var(--border);">Room</th>
+                    <th style="text-align:left; padding:0.75rem; border-bottom:1px solid var(--border);">Messages (24h)</th>
+                </tr>
+            </thead>
+            <tbody>
+            @if (Model.Data.MessagesByRoom.Count == 0)
+            {
+                <tr>
+                    <td colspan="2" style="padding:0.85rem; text-align:center; color:var(--muted);">No chat activity recorded.</td>
+                </tr>
+            }
+            else
+            {
+                foreach (var room in Model.Data.MessagesByRoom)
+                {
+                    <tr>
+                        <td style="padding:0.65rem; border-bottom:1px solid var(--border);">@room.Label</td>
+                        <td style="padding:0.65rem; border-bottom:1px solid var(--border);">@room.Count</td>
+                    </tr>
+                }
+            }
+            </tbody>
+        </table>
+    </div>
+</section>
+
+<section class="cp-section">
+    <h2>Room Status</h2>
+    <div class="cp-placeholder" style="padding:0; overflow-x:auto;">
+        <table style="width:100%; border-collapse:collapse; font-size:0.9rem;">
+            <thead>
+                <tr>
+                    <th style="text-align:left; padding:0.75rem; border-bottom:1px solid var(--border);">Room</th>
+                    <th style="text-align:left; padding:0.75rem; border-bottom:1px solid var(--border);">Paused</th>
+                    <th style="text-align:left; padding:0.75rem; border-bottom:1px solid var(--border);">Expires</th>
+                    <th style="text-align:left; padding:0.75rem; border-bottom:1px solid var(--border);">Messages (1h)</th>
+                    <th style="text-align:left; padding:0.75rem; border-bottom:1px solid var(--border);">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+            @foreach (var status in Model.Data.RoomStatuses)
+            {
+                <tr>
+                    <td style="padding:0.65rem; border-bottom:1px solid var(--border);">@status.Room</td>
+                    <td style="padding:0.65rem; border-bottom:1px solid var(--border);">@(status.IsPaused ? "Yes" : "No")</td>
+                    <td style="padding:0.65rem; border-bottom:1px solid var(--border);">
+                        @(status.ExpiresAt.HasValue ? status.ExpiresAt.Value.ToString("yyyy-MM-dd HH:mm") + " UTC" : "—")
+                    </td>
+                    <td style="padding:0.65rem; border-bottom:1px solid var(--border);">@status.MessagesLastHour</td>
+                    <td style="padding:0.65rem; border-bottom:1px solid var(--border);">
+                        <form asp-action="PauseChatRoom" method="post" style="display:inline;" class="cp-inline-form">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="room" value="@status.Room" />
+                            <input type="number" name="minutes" min="1" max="@(Model.IsAdmin ? 720 : 120)" value="30" style="width:4rem;" />
+                            <button type="submit">Pause</button>
+                        </form>
+                        <form asp-action="ResumeChatRoom" method="post" style="display:inline; margin-left:0.5rem;" class="cp-inline-form">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="room" value="@status.Room" />
+                            <button type="submit">Resume</button>
+                        </form>
+                    </td>
+                </tr>
+            }
+            </tbody>
+        </table>
+    </div>
+</section>
+
+<section class="cp-section">
+    <h2>Active Mutes</h2>
+    <div class="cp-placeholder" style="padding:0; overflow-x:auto;">
+        <table style="width:100%; border-collapse:collapse; font-size:0.9rem;">
+            <thead>
+                <tr>
+                    <th style="text-align:left; padding:0.75rem; border-bottom:1px solid var(--border);">User</th>
+                    <th style="text-align:left; padding:0.75rem; border-bottom:1px solid var(--border);">Role</th>
+                    <th style="text-align:left; padding:0.75rem; border-bottom:1px solid var(--border);">Expires</th>
+                    <th style="text-align:left; padding:0.75rem; border-bottom:1px solid var(--border);">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+            @if (!Model.HasMutes)
+            {
+                <tr>
+                    <td colspan="4" style="padding:0.85rem; text-align:center; color:var(--muted);">No muted users.</td>
+                </tr>
+            }
+            else
+            {
+                foreach (var mute in Model.Data.ActiveMutes)
+                {
+                    <tr>
+                        <td style="padding:0.65rem; border-bottom:1px solid var(--border);">@mute.Username</td>
+                        <td style="padding:0.65rem; border-bottom:1px solid var(--border);">@mute.Role</td>
+                        <td style="padding:0.65rem; border-bottom:1px solid var(--border);">@mute.ExpiresAt.ToString("yyyy-MM-dd HH:mm") UTC</td>
+                        <td style="padding:0.65rem; border-bottom:1px solid var(--border);">
+                            <form asp-action="UnmuteChatUser" method="post" class="cp-inline-form">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="userId" value="@mute.UserId" />
+                                <button type="submit">Unmute</button>
+                            </form>
+                        </td>
+                    </tr>
+                }
+            }
+            </tbody>
+        </table>
+    </div>
+</section>
+
+<section class="cp-section">
+    <h2>Moderation Controls</h2>
+    <div class="cp-card-grid" style="grid-template-columns:repeat(auto-fit,minmax(260px,1fr));">
+        <article class="cp-card">
+            <p class="cp-label">Mute user</p>
+            <form asp-action="MuteChatUser" method="post" class="cp-form">
+                @Html.AntiForgeryToken()
+                <label for="mute-user" class="cp-label">Username</label>
+                <input type="text" id="mute-user" name="username" required />
+                <label for="mute-minutes" class="cp-label">Minutes (max @(Model.IsAdmin ? 10080 : 1440))</label>
+                <input type="number" id="mute-minutes" name="minutes" min="1" max="@(Model.IsAdmin ? 10080 : 1440)" value="60" required />
+                <button type="submit">Mute</button>
+            </form>
+        </article>
+        <article class="cp-card">
+            <p class="cp-label">Pause room</p>
+            <form asp-action="PauseChatRoom" method="post" class="cp-form">
+                @Html.AntiForgeryToken()
+                <label for="pause-room" class="cp-label">Room</label>
+                <select id="pause-room" name="room">
+                    @foreach (var status in Model.Data.RoomStatuses)
+                    {
+                        <option value="@status.Room">@status.Room</option>
+                    }
+                </select>
+                <label for="pause-minutes" class="cp-label">Minutes (max @(Model.IsAdmin ? 720 : 120))</label>
+                <input type="number" id="pause-minutes" name="minutes" min="1" max="@(Model.IsAdmin ? 720 : 120)" value="30" required />
+                <button type="submit">Pause</button>
+            </form>
+        </article>
+    </div>
+</section>
+
+<section class="cp-section">
+    <h2>Hourly Participants (12h)</h2>
+    <div class="cp-placeholder" style="padding:0; overflow-x:auto;">
+        <table style="width:100%; border-collapse:collapse; font-size:0.9rem;">
+            <thead>
+                <tr>
+                    <th style="text-align:left; padding:0.75rem; border-bottom:1px solid var(--border);">UTC Hour</th>
+                    <th style="text-align:left; padding:0.75rem; border-bottom:1px solid var(--border);">Participants</th>
+                </tr>
+            </thead>
+            <tbody>
+            @if (Model.Data.HourlyActive.Count == 0)
+            {
+                <tr>
+                    <td colspan="2" style="padding:0.85rem; text-align:center; color:var(--muted);">No data.</td>
+                </tr>
+            }
+            else
+            {
+                foreach (var bucket in Model.Data.HourlyActive)
+                {
+                    <tr>
+                        <td style="padding:0.65rem; border-bottom:1px solid var(--border);">@bucket.HourUtc.ToString("yyyy-MM-dd HH:00")</td>
+                        <td style="padding:0.65rem; border-bottom:1px solid var(--border);">@bucket.ParticipantCount</td>
+                    </tr>
+                }
+            }
+            </tbody>
+        </table>
+    </div>
+</section>

@@ -15,12 +15,18 @@ public class ThreadController : Controller
     private readonly ForumService _forumService;
     private readonly CaptchaService _captchaService;
     private readonly ThreadImageStorageService _imageStorageService;
+    private readonly ControlSettingsReader _settingsReader;
 
-    public ThreadController(ForumService forumService, CaptchaService captchaService, ThreadImageStorageService imageStorageService)
+    public ThreadController(
+        ForumService forumService,
+        CaptchaService captchaService,
+        ThreadImageStorageService imageStorageService,
+        ControlSettingsReader settingsReader)
     {
         _forumService = forumService;
         _captchaService = captchaService;
         _imageStorageService = imageStorageService;
+        _settingsReader = settingsReader;
     }
 
     public async Task<IActionResult> Index(int page = 1)
@@ -55,9 +61,10 @@ public class ThreadController : Controller
     }
 
     [HttpGet]
-    public IActionResult Create()
+    public async Task<IActionResult> Create()
     {
         PrepareCreateCaptcha();
+        await SetAnonymousFlagAsync();
         return View(new CreateThreadViewModel());
     }
 
@@ -120,11 +127,18 @@ public class ThreadController : Controller
         if (!ModelState.IsValid)
         {
             PrepareCreateCaptcha();
+            await SetAnonymousFlagAsync();
             return View(model);
         }
 
         int? userId = GetCurrentUserId();
-        bool isAnonymous = model.PostAsAnonymous || userId == null;
+        var allowAnonymous = await _settingsReader.GetBoolAsync(ControlSettingKeys.PostAllowAnonymous, true, HttpContext.RequestAborted);
+        if (model.PostAsAnonymous && !allowAnonymous)
+        {
+            TempData["ThreadCreateError"] = "Anonymous posting is currently disabled by administrators.";
+        }
+
+        bool isAnonymous = (model.PostAsAnonymous && allowAnonymous) || userId == null;
 
         List<StoredImageResult> uploads = new();
         if (model.Images?.Any() == true)
@@ -138,6 +152,7 @@ public class ThreadController : Controller
             {
                 ModelState.AddModelError("Images", ex.Message);
                 PrepareCreateCaptcha();
+                await SetAnonymousFlagAsync();
                 return View(model);
             }
         }
@@ -152,6 +167,11 @@ public class ThreadController : Controller
         }
 
         return RedirectToAction("View", new { id = thread.Id });
+    }
+
+    private async Task SetAnonymousFlagAsync()
+    {
+        ViewBag.AllowAnonymousPosts = await _settingsReader.GetBoolAsync(ControlSettingKeys.PostAllowAnonymous, true, HttpContext.RequestAborted);
     }
 
     [HttpPost]
@@ -225,6 +245,7 @@ public class ThreadController : Controller
 
         // Generate Captcha for Reply
         PrepareReplyCaptcha();
+        await SetAnonymousFlagAsync();
 
         return View(thread);
     }
@@ -252,33 +273,39 @@ public class ThreadController : Controller
             return RedirectToAction("View", new { id = model.ThreadId });
         }
 
-            int? userId = GetCurrentUserId();
-            bool isAnonymous = model.PostAsAnonymous || userId == null;
+        var allowAnonymous = await _settingsReader.GetBoolAsync(ControlSettingKeys.PostAllowAnonymous, true, HttpContext.RequestAborted);
+        if (model.PostAsAnonymous && !allowAnonymous)
+        {
+            TempData["ThreadReplyError"] = "Anonymous posting is currently disabled by administrators.";
+        }
 
-            List<StoredImageResult> uploads = new();
-            try
+        int? userId = GetCurrentUserId();
+        bool isAnonymous = (model.PostAsAnonymous && allowAnonymous) || userId == null;
+
+        List<StoredImageResult> uploads = new();
+        try
+        {
+            if (model.Images?.Any() == true)
             {
-                if (model.Images?.Any() == true)
-                {
-                    var uploadContext = BuildUploadContext("ThreadReply", userId, isAnonymous);
-                    uploads = (await _imageStorageService.SaveImagesAsync(model.Images, uploadContext, cancellationToken)).ToList();
-                }
+                var uploadContext = BuildUploadContext("ThreadReply", userId, isAnonymous);
+                uploads = (await _imageStorageService.SaveImagesAsync(model.Images, uploadContext, cancellationToken)).ToList();
             }
-            catch (InvalidOperationException ex)
-            {
-                TempData["ThreadReplyError"] = ex.Message;
-                return RedirectToAction("View", new { id = model.ThreadId });
-            }
-
-            var post = await _forumService.CreatePostAsync(model.ThreadId, model.Content, userId, isAnonymous);
-
-            var order = 0;
-            foreach (var upload in uploads)
-            {
-                await _forumService.AddPostImageAsync(post.Id, upload.OriginalUrl, upload.ThumbnailUrl, upload.ContentType, upload.Width, upload.Height, upload.FileSize, order++);
-            }
-
+        }
+        catch (InvalidOperationException ex)
+        {
+            TempData["ThreadReplyError"] = ex.Message;
             return RedirectToAction("View", new { id = model.ThreadId });
+        }
+
+        var post = await _forumService.CreatePostAsync(model.ThreadId, model.Content, userId, isAnonymous);
+
+        var order = 0;
+        foreach (var upload in uploads)
+        {
+            await _forumService.AddPostImageAsync(post.Id, upload.OriginalUrl, upload.ThumbnailUrl, upload.ContentType, upload.Width, upload.Height, upload.FileSize, order++);
+        }
+
+        return RedirectToAction("View", new { id = model.ThreadId });
     }
 
     [HttpPost]

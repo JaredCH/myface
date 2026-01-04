@@ -2640,9 +2640,9 @@
     "net8.0": [
       "Microsoft.EntityFrameworkCore.Design >= 8.0.4",
       "Microsoft.EntityFrameworkCore.InMemory >= 8.0.4",
-      "Microsoft.Extensions.Configuration >= 8.0.4",
-      "Microsoft.Extensions.Configuration.EnvironmentVariables >= 8.0.4",
-      "Microsoft.Extensions.Configuration.Json >= 8.0.4",
+      "Microsoft.Extensions.Configuration >= 9.0.0",
+      "Microsoft.Extensions.Configuration.EnvironmentVariables >= 9.0.0",
+      "Microsoft.Extensions.Configuration.Json >= 9.0.0",
       "MyFace.Core >= 1.0.0",
       "Npgsql.EntityFrameworkCore.PostgreSQL >= 8.0.4"
     ]
@@ -2705,15 +2705,15 @@
           },
           "Microsoft.Extensions.Configuration": {
             "target": "Package",
-            "version": "[8.0.4, )"
+            "version": "[9.0.0, )"
           },
           "Microsoft.Extensions.Configuration.EnvironmentVariables": {
             "target": "Package",
-            "version": "[8.0.4, )"
+            "version": "[9.0.0, )"
           },
           "Microsoft.Extensions.Configuration.Json": {
             "target": "Package",
-            "version": "[8.0.4, )"
+            "version": "[9.0.0, )"
           },
           "Npgsql.EntityFrameworkCore.PostgreSQL": {
             "target": "Package",
@@ -2739,37 +2739,5 @@
         "runtimeIdentifierGraphPath": "/usr/share/dotnet/sdk/8.0.416/PortableRuntimeIdentifierGraph.json"
       }
     }
-  },
-  "logs": [
-    {
-      "code": "NU1603",
-      "level": "Warning",
-      "warningLevel": 1,
-      "message": "MyFace.Data depends on Microsoft.Extensions.Configuration (>= 8.0.4) but Microsoft.Extensions.Configuration 8.0.4 was not found. An approximate best match of Microsoft.Extensions.Configuration 9.0.0 was resolved.",
-      "libraryId": "Microsoft.Extensions.Configuration",
-      "targetGraphs": [
-        "net8.0"
-      ]
-    },
-    {
-      "code": "NU1603",
-      "level": "Warning",
-      "warningLevel": 1,
-      "message": "MyFace.Data depends on Microsoft.Extensions.Configuration.EnvironmentVariables (>= 8.0.4) but Microsoft.Extensions.Configuration.EnvironmentVariables 8.0.4 was not found. An approximate best match of Microsoft.Extensions.Configuration.EnvironmentVariables 9.0.0 was resolved.",
-      "libraryId": "Microsoft.Extensions.Configuration.EnvironmentVariables",
-      "targetGraphs": [
-        "net8.0"
-      ]
-    },
-    {
-      "code": "NU1603",
-      "level": "Warning",
-      "warningLevel": 1,
-      "message": "MyFace.Data depends on Microsoft.Extensions.Configuration.Json (>= 8.0.4) but Microsoft.Extensions.Configuration.Json 8.0.4 was not found. An approximate best match of Microsoft.Extensions.Configuration.Json 9.0.0 was resolved.",
-      "libraryId": "Microsoft.Extensions.Configuration.Json",
-      "targetGraphs": [
-        "net8.0"
-      ]
-    }
-  ]
+  }
 }

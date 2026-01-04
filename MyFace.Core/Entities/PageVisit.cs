@@ -10,5 +10,6 @@ public class PageVisit
     public int? UserId { get; set; }
     public string? UsernameSnapshot { get; set; }
     public string? SessionFingerprint { get; set; }
+    public string? Referrer { get; set; }
     public string EventType { get; set; } = "page-load";
 }

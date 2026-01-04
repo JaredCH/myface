@@ -1,0 +1,107 @@
+@model TrafficAnalyticsViewModel
+
+<section class="cp-section">
+    <h2>Session Overview</h2>
+    <p class="cp-subhead">Derived from the last 24 hours of PageVisit data · Snapshot @Model.Analytics.GeneratedAtUtc.ToString("yyyy-MM-dd HH:mm:ss") UTC</p>
+    @if (Model.IncludeSensitive)
+    {
+        <div class="cp-actions" style="margin-bottom:1rem;">
+            <form asp-action="ExportTrafficAnalytics" asp-controller="ControlPanel" method="post">
+                @Html.AntiForgeryToken()
+                <button type="submit">Export CSV</button>
+            </form>
+        </div>
+    }
+    <div class="cp-card-grid">
+        <article class="cp-card">
+            <p class="cp-label">Average session</p>
+            <p class="cp-value">@Model.AverageSessionDisplay</p>
+            <p class="cp-caption">Mean dwell time per session.</p>
+        </article>
+        <article class="cp-card">
+            <p class="cp-label">Anonymous visits</p>
+            <p class="cp-value">@Model.Analytics.AnonymousVisits</p>
+            <p class="cp-caption">Unique hits without an authenticated user.</p>
+        </article>
+        <article class="cp-card">
+            <p class="cp-label">Authenticated visits</p>
+            <p class="cp-value">@Model.Analytics.AuthenticatedVisits</p>
+            <p class="cp-caption">Visits tied to a signed-in account.</p>
+        </article>
+        <article class="cp-card">
+            <p class="cp-label">Bounce rate</p>
+            <p class="cp-value">@Model.BounceRateDisplay</p>
+            <p class="cp-caption">Single-hit sessions / total sessions.</p>
+        </article>
+    </div>
+</section>
+
+<section class="cp-section">
+    <h2>Top Pages (24h)</h2>
+    <div class="cp-placeholder" style="padding:0; overflow-x:auto;">
+        @Html.Partial("_MetricTable", Model.Analytics.TopPages)
+    </div>
+</section>
+
+<section class="cp-section">
+    <h2>Entry & Exit Paths</h2>
+    <div class="cp-card-grid">
+        <div class="cp-placeholder" style="padding:0; overflow-x:auto;">
+            <h3 style="padding:1rem 1rem 0; margin:0;">Entry pages</h3>
+            @Html.Partial("_MetricTable", Model.Analytics.EntryPages)
+        </div>
+        <div class="cp-placeholder" style="padding:0; overflow-x:auto;">
+            <h3 style="padding:1rem 1rem 0; margin:0;">Exit pages</h3>
+            @Html.Partial("_MetricTable", Model.Analytics.ExitPages)
+        </div>
+    </div>
+</section>
+
+@if (Model.IncludeSensitive)
+{
+    <section class="cp-section">
+        <h2>Referral Sources</h2>
+        <div class="cp-placeholder" style="padding:0; overflow-x:auto;">
+            @Html.Partial("_MetricTable", Model.Analytics.Referrers)
+        </div>
+    </section>
+
+    <section class="cp-section">
+        <h2>User Composition</h2>
+        <div class="cp-card-grid">
+            <article class="cp-card">
+                <p class="cp-label">New user visits</p>
+                <p class="cp-value">@Model.Analytics.NewUserVisits</p>
+                <p class="cp-caption">Accounts created within 30 days.</p>
+            </article>
+            <article class="cp-card">
+                <p class="cp-label">Returning user visits</p>
+                <p class="cp-value">@Model.Analytics.ReturningUserVisits</p>
+                <p class="cp-caption">Accounts older than 30 days.</p>
+            </article>
+        </div>
+    </section>
+}
+
+<section class="cp-section">
+    <h2>Traffic by Hour (7 days)</h2>
+    <div class="cp-placeholder" style="padding:0; overflow-x:auto;">
+        <table style="width:100%; border-collapse:collapse; font-size:0.9rem;">
+            <thead>
+                <tr>
+                    <th style="text-align:left; padding:0.75rem; border-bottom:1px solid var(--border); text-transform:uppercase; letter-spacing:0.18em; font-size:0.7rem; color:var(--muted);">UTC Hour</th>
+                    <th style="text-align:left; padding:0.75rem; border-bottom:1px solid var(--border); text-transform:uppercase; letter-spacing:0.18em; font-size:0.7rem; color:var(--muted);">Page views</th>
+                </tr>
+            </thead>
+            <tbody>
+            @foreach (var bucket in Model.Analytics.HourlyCounts)
+            {
+                <tr>
+                    <td style="padding:0.6rem; border-bottom:1px solid var(--border); color:var(--fg);">@bucket.HourUtc.ToString("yyyy-MM-dd HH:00")</td>
+                    <td style="padding:0.6rem; border-bottom:1px solid var(--border); color:var(--fg);">@bucket.Count</td>
+                </tr>
+            }
+            </tbody>
+        </table>
+    </div>
+</section>

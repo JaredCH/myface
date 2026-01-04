@@ -25,12 +25,14 @@ public class MailController : Controller
     }
 
     [HttpGet]
-    public async Task<IActionResult> Index(string tab = "inbox", string to = "")
+    public async Task<IActionResult> Index(string tab = "inbox", int? messageId = null, string to = "", string composeSubject = "", string composeBody = "")
     {
         await EnsureSchemaAsync();
+        ViewBag.HideSidebars = true;
         var user = await GetCurrentUserAsync();
         if (user == null) return RedirectToAction("Login", "Account");
 
+        var normalizedTab = NormalizeTab(tab);
         var isVerified = user.PGPVerifications.Any(v => v.Verified);
         var isMod = IsModeratorOrAdmin(user.Role);
 
@@ -44,17 +46,42 @@ public class MailController : Controller
             CurrentUser = user,
             IsVerified = isVerified,
             IsModeratorOrAdmin = isMod,
-            ActiveTab = tab,
+            ActiveTab = normalizedTab,
             Inbox = inbox.Select(ToItemView).ToList(),
             Outbox = outbox.Select(ToItemView).ToList(),
             Drafts = drafts.Select(ToItemView).ToList(),
             Compose = new MailComposeModel
             {
                 To = to ?? string.Empty,
-                Subject = string.Empty,
-                Body = string.Empty
+                Subject = composeSubject ?? string.Empty,
+                Body = composeBody ?? string.Empty
             }
         };
+
+        if (!string.Equals(normalizedTab, "new", StringComparison.OrdinalIgnoreCase))
+        {
+            var activeList = normalizedTab switch
+            {
+                "outbox" => model.Outbox,
+                "drafts" => model.Drafts,
+                _ => model.Inbox
+            };
+
+            var resolvedId = messageId ?? activeList.FirstOrDefault()?.Id;
+            if (resolvedId.HasValue)
+            {
+                var detail = await _mailService.GetMessageAsync(resolvedId.Value, user.Id);
+                if (detail != null)
+                {
+                    if (!detail.IsDraft && detail.RecipientId == user.Id)
+                    {
+                        await _mailService.MarkReadAsync(detail, user.Id);
+                    }
+
+                    model.SelectedMessage = ToViewMessageModel(detail, user);
+                }
+            }
+        }
 
         return View(model);
     }
@@ -144,20 +171,28 @@ public class MailController : Controller
             await _mailService.MarkReadAsync(msg, user.Id);
         }
 
-        var model = new MailViewMessageModel
-        {
-            Id = msg.Id,
-            Subject = msg.Subject,
-            Body = msg.Body,
-            From = msg.SenderUsernameSnapshot,
-            To = msg.RecipientUsernameSnapshot,
-            SentAt = msg.SentAt,
-            ReadAt = msg.ReadAt,
-            IsDraft = msg.IsDraft,
-            CanSendDraft = msg.IsDraft && msg.SenderId == user.Id && msg.RecipientId != null
-        };
+        var targetTab = ResolveTabForMessage(msg, user.Id);
+        return RedirectToAction("Index", new { tab = targetTab, messageId = msg.Id });
+    }
 
-        return View("Message", model);
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> Delete(int id, string tab = "inbox")
+    {
+        await EnsureSchemaAsync();
+        var user = await GetCurrentUserAsync();
+        if (user == null) return RedirectToAction("Login", "Account");
+
+        var message = await _mailService.GetMessageAsync(id, user.Id);
+        if (message == null)
+        {
+            TempData["MailError"] = "Message not found.";
+            return RedirectToAction("Index", new { tab });
+        }
+
+        var deleted = await _mailService.DeleteAsync(message, user.Id);
+        TempData[deleted ? "MailInfo" : "MailError"] = deleted ? "Message deleted." : "Unable to delete message.";
+        return RedirectToAction("Index", new { tab });
     }
 
     private async Task<User?> GetCurrentUserAsync()
@@ -219,6 +254,33 @@ public class MailController : Controller
             ReadAt = msg.ReadAt,
             IsDraft = msg.IsDraft
         };
+    }
+
+    private static MailViewMessageModel ToViewMessageModel(PrivateMessage msg, User currentUser)
+    {
+        return new MailViewMessageModel
+        {
+            Id = msg.Id,
+            Subject = msg.Subject,
+            Body = msg.Body,
+            From = msg.SenderUsernameSnapshot,
+            To = msg.RecipientUsernameSnapshot,
+            SentAt = msg.SentAt,
+            ReadAt = msg.ReadAt,
+            IsDraft = msg.IsDraft,
+            CanSendDraft = msg.IsDraft && msg.SenderId == currentUser.Id && msg.RecipientId != null
+        };
+    }
+
+    private static string NormalizeTab(string tab)
+    {
+        return string.IsNullOrWhiteSpace(tab) ? "inbox" : tab.Trim().ToLowerInvariant();
+    }
+
+    private static string ResolveTabForMessage(PrivateMessage msg, int currentUserId)
+    {
+        if (msg.IsDraft) return "drafts";
+        return msg.SenderId == currentUserId ? "outbox" : "inbox";
     }
 
     private async Task EnsureSchemaAsync()

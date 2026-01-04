@@ -9,14 +9,16 @@ namespace MyFace.Services;
 public class RateLimitService
 {
     private readonly ApplicationDbContext _context;
+    private readonly ControlSettingsReader _settings;
     
     // Configuration
     private const int InitialAttempts = 5; // First 5 attempts no delay
     private const int MaxDelaySeconds = 900; // Max 15 minutes
     
-    public RateLimitService(ApplicationDbContext context)
+    public RateLimitService(ApplicationDbContext context, ControlSettingsReader settings)
     {
         _context = context;
+        _settings = settings;
     }
     
     /// <summary>
@@ -36,10 +38,11 @@ public class RateLimitService
             .OrderByDescending(a => a.AttemptedAt)
             .ToListAsync();
         
+        var graceAttempts = await _settings.GetIntAsync(ControlSettingKeys.RateLoginInitialAttempts, InitialAttempts);
         var failedCount = recentFailedAttempts.Count;
         
-        // First 5 attempts: no delay
-        if (failedCount < InitialAttempts)
+        // First grace attempts: no delay
+        if (failedCount < graceAttempts)
         {
             return 0;
         }
@@ -53,8 +56,9 @@ public class RateLimitService
         
         // Calculate exponential backoff: 2^(attempts - InitialAttempts) seconds
         // Example: 6th attempt = 2^1 = 2s, 7th = 4s, 8th = 8s, 9th = 16s, 10th = 32s
-        var attemptsOverLimit = failedCount - InitialAttempts + 1;
-        var requiredDelay = Math.Min((int)Math.Pow(2, attemptsOverLimit), MaxDelaySeconds);
+        var maxDelaySeconds = await _settings.GetIntAsync(ControlSettingKeys.RateLoginMaxDelaySeconds, MaxDelaySeconds);
+        var attemptsOverLimit = failedCount - graceAttempts + 1;
+        var requiredDelay = Math.Min((int)Math.Pow(2, attemptsOverLimit), maxDelaySeconds);
         
         var timeSinceLastAttempt = (now - lastAttempt.AttemptedAt).TotalSeconds;
         var remainingDelay = requiredDelay - (int)timeSinceLastAttempt;
@@ -111,7 +115,7 @@ public class RateLimitService
             .CountAsync();
         
         // Thresholds: Allow 10 posts/votes per hour before requiring captcha
-        const int activityThreshold = 10;
+        var activityThreshold = await _settings.GetIntAsync(ControlSettingKeys.RateActivityPerHour, 10);
         
         return recentActivityCount >= activityThreshold;
     }

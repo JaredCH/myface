@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using System.Text;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
@@ -17,41 +18,150 @@ public class ChatService
     private readonly ApplicationDbContext _db;
     private readonly IMemoryCache _cache;
     private readonly ChatSnapshotService _snapshotService;
+    private readonly ControlSettingsReader _settings;
+    private readonly ConcurrentDictionary<int, DateTime> _muteExpirations = new();
+    private readonly ConcurrentDictionary<string, DateTime> _pauseExpirations = new(StringComparer.OrdinalIgnoreCase);
 
-    private const int MessageMaxLength = 199;
-    private static readonly TimeSpan RateLimitWindow = TimeSpan.FromSeconds(7);
-
-    public ChatService(ApplicationDbContext db, IMemoryCache cache, ChatSnapshotService snapshotService)
+    public ChatService(ApplicationDbContext db, IMemoryCache cache, ChatSnapshotService snapshotService, ControlSettingsReader settings)
     {
         _db = db;
         _cache = cache;
         _snapshotService = snapshotService;
+        _settings = settings;
     }
 
     public bool IsValidRoom(string room) => AllowedRooms.Contains(room);
 
     public bool IsRoomPaused(string room)
     {
-        return _cache.TryGetValue(GetPauseKey(room), out bool paused) && paused;
+        if (_cache.TryGetValue(GetPauseKey(room), out bool paused) && paused)
+        {
+            return true;
+        }
+
+        if (_pauseExpirations.TryGetValue(room, out var expiresAt))
+        {
+            if (expiresAt <= DateTime.UtcNow)
+            {
+                _pauseExpirations.TryRemove(room, out _);
+                _cache.Remove(GetPauseKey(room));
+                return false;
+            }
+
+            _cache.Set(GetPauseKey(room), true, expiresAt - DateTime.UtcNow);
+            return true;
+        }
+
+        return false;
     }
 
-    public void SetRoomPaused(string room, bool paused)
+    public void SetRoomPaused(string room, bool paused, TimeSpan? duration = null)
     {
-        _cache.Set(GetPauseKey(room), paused, TimeSpan.FromHours(12));
+        if (!IsValidRoom(room))
+        {
+            return;
+        }
+
+        if (paused)
+        {
+            var ttl = duration ?? TimeSpan.FromHours(12);
+            var expires = DateTime.UtcNow.Add(ttl);
+            _pauseExpirations[room] = expires;
+            _cache.Set(GetPauseKey(room), true, ttl);
+        }
+        else
+        {
+            _pauseExpirations.TryRemove(room, out _);
+            _cache.Remove(GetPauseKey(room));
+        }
     }
 
     public bool IsUserMuted(int userId)
     {
-        if (_cache.TryGetValue(GetMuteKey(userId), out DateTime until))
+        if (_muteExpirations.TryGetValue(userId, out var expires) && expires > DateTime.UtcNow)
         {
-            return until > DateTime.UtcNow;
+            return true;
         }
+
+        if (_cache.TryGetValue(GetMuteKey(userId), out DateTime until) && until > DateTime.UtcNow)
+        {
+            _muteExpirations[userId] = until;
+            return true;
+        }
+
+        _muteExpirations.TryRemove(userId, out _);
+        _cache.Remove(GetMuteKey(userId));
         return false;
     }
 
     public void MuteUser(int userId, TimeSpan duration)
     {
-        _cache.Set(GetMuteKey(userId), DateTime.UtcNow.Add(duration), duration);
+        var expires = DateTime.UtcNow.Add(duration);
+        _muteExpirations[userId] = expires;
+        _cache.Set(GetMuteKey(userId), expires, duration);
+    }
+
+    public bool TryUnmuteUser(int userId)
+    {
+        var removed = _muteExpirations.TryRemove(userId, out _);
+        _cache.Remove(GetMuteKey(userId));
+        return removed;
+    }
+
+    public bool TryPauseRoom(string room, TimeSpan duration)
+    {
+        if (!IsValidRoom(room))
+        {
+            return false;
+        }
+
+        SetRoomPaused(room, true, duration);
+        return true;
+    }
+
+    public bool TryResumeRoom(string room)
+    {
+        if (!IsValidRoom(room))
+        {
+            return false;
+        }
+
+        SetRoomPaused(room, false);
+        return true;
+    }
+
+    public IReadOnlyList<ChatMuteState> GetActiveMutes()
+    {
+        var now = DateTime.UtcNow;
+        var active = new List<ChatMuteState>();
+        foreach (var entry in _muteExpirations.ToArray())
+        {
+            if (entry.Value <= now)
+            {
+                _muteExpirations.TryRemove(entry.Key, out _);
+                _cache.Remove(GetMuteKey(entry.Key));
+                continue;
+            }
+
+            active.Add(new ChatMuteState(entry.Key, entry.Value));
+        }
+
+        return active
+            .OrderByDescending(m => m.ExpiresAt)
+            .ToList();
+    }
+
+    public IReadOnlyList<ChatPauseState> GetRoomStatuses()
+    {
+        var statuses = new List<ChatPauseState>();
+        foreach (var room in AllowedRooms)
+        {
+            var isPaused = IsRoomPaused(room);
+            _pauseExpirations.TryGetValue(room, out var expires);
+            statuses.Add(new ChatPauseState(room, isPaused, isPaused ? expires : null));
+        }
+
+        return statuses;
     }
 
     public async Task EnsureSchemaAsync(CancellationToken ct = default)
@@ -103,18 +213,22 @@ public class ChatService
         }
 
         var now = DateTime.UtcNow;
+        var maxLength = await _settings.GetIntAsync(ControlSettingKeys.ChatMessageMaxLength, 199, ct);
+        var cooldownSeconds = await _settings.GetIntAsync(ControlSettingKeys.ChatRateWindowSeconds, 7, ct);
+        var rateLimitWindow = TimeSpan.FromSeconds(Math.Clamp(cooldownSeconds, 1, 600));
+
         if (_cache.TryGetValue(GetRateKey(sender.Id, room), out DateTime lastSent))
         {
-            if (now - lastSent < RateLimitWindow)
+            if (now - lastSent < rateLimitWindow)
             {
                 return ChatPostResult.Failed("You are sending messages too quickly.");
             }
         }
 
         var content = rawContent.Replace("\r", " ").Replace("\n", " ").Trim();
-        if (content.Length > MessageMaxLength)
+        if (content.Length > maxLength)
         {
-            content = content.Substring(0, MessageMaxLength);
+            content = content[..maxLength];
         }
 
         var encoded = System.Web.HttpUtility.HtmlEncode(content);
@@ -134,7 +248,7 @@ public class ChatService
         _db.ChatMessages.Add(entity);
         await _db.SaveChangesAsync(ct);
 
-        _cache.Set(GetRateKey(sender.Id, room), now, RateLimitWindow);
+        _cache.Set(GetRateKey(sender.Id, room), now, rateLimitWindow);
         _snapshotService.Invalidate(room);
 
         return ChatPostResult.Success();
@@ -225,3 +339,7 @@ public record ChatDeleteResult(bool Ok, string? Error, string? Room)
     public static ChatDeleteResult Success(string room) => new(true, null, room);
     public static ChatDeleteResult Failed(string error) => new(false, error, null);
 }
+
+public record ChatMuteState(int UserId, DateTime ExpiresAt);
+
+public record ChatPauseState(string Room, bool IsPaused, DateTime? ExpiresAt);

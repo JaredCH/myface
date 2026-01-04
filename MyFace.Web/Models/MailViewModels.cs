@@ -12,6 +12,7 @@ public class MailIndexViewModel
     public List<MailItemViewModel> Outbox { get; set; } = new();
     public List<MailItemViewModel> Drafts { get; set; } = new();
     public MailComposeModel Compose { get; set; } = new();
+    public MailViewMessageModel? SelectedMessage { get; set; }
 }
 
 public class MailItemViewModel

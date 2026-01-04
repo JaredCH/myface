@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "dgSpecHash": "BReiFEwepew=",
+  "dgSpecHash": "MWuIQHPWSRI=",
   "success": true,
   "projectFilePath": "/home/server/myface/MyFace.Services/MyFace.Services.csproj",
   "expectedPackageFiles": [
@@ -41,46 +41,5 @@
     "/home/server/.nuget/packages/system.text.encodings.web/9.0.0/system.text.encodings.web.9.0.0.nupkg.sha512",
     "/home/server/.nuget/packages/system.text.json/9.0.0/system.text.json.9.0.0.nupkg.sha512"
   ],
-  "logs": [
-    {
-      "code": "NU1603",
-      "level": "Warning",
-      "warningLevel": 1,
-      "message": "MyFace.Services depends on Isopoh.Cryptography.Argon2 (>= 1.4.2) but Isopoh.Cryptography.Argon2 1.4.2 was not found. An approximate best match of Isopoh.Cryptography.Argon2 2.0.0 was resolved.",
-      "libraryId": "Isopoh.Cryptography.Argon2",
-      "targetGraphs": [
-        "net8.0"
-      ]
-    },
-    {
-      "code": "NU1603",
-      "level": "Warning",
-      "warningLevel": 1,
-      "message": "MyFace.Data depends on Microsoft.Extensions.Configuration (>= 8.0.4) but Microsoft.Extensions.Configuration 8.0.4 was not found. An approximate best match of Microsoft.Extensions.Configuration 9.0.0 was resolved.",
-      "libraryId": "Microsoft.Extensions.Configuration",
-      "targetGraphs": [
-        "net8.0"
-      ]
-    },
-    {
-      "code": "NU1603",
-      "level": "Warning",
-      "warningLevel": 1,
-      "message": "MyFace.Data depends on Microsoft.Extensions.Configuration.EnvironmentVariables (>= 8.0.4) but Microsoft.Extensions.Configuration.EnvironmentVariables 8.0.4 was not found. An approximate best match of Microsoft.Extensions.Configuration.EnvironmentVariables 9.0.0 was resolved.",
-      "libraryId": "Microsoft.Extensions.Configuration.EnvironmentVariables",
-      "targetGraphs": [
-        "net8.0"
-      ]
-    },
-    {
-      "code": "NU1603",
-      "level": "Warning",
-      "warningLevel": 1,
-      "message": "MyFace.Data depends on Microsoft.Extensions.Configuration.Json (>= 8.0.4) but Microsoft.Extensions.Configuration.Json 8.0.4 was not found. An approximate best match of Microsoft.Extensions.Configuration.Json 9.0.0 was resolved.",
-      "libraryId": "Microsoft.Extensions.Configuration.Json",
-      "targetGraphs": [
-        "net8.0"
-      ]
-    }
-  ]
+  "logs": []
 }

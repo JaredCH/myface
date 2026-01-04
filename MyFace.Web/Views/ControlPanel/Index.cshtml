@@ -1,0 +1,138 @@
+@model ControlPanelPageViewModel
+
+<section class="cp-section">
+    <h2>Live Status</h2>
+    <p class="cp-subhead">Auto-refresh cadence: @Model.RefreshIntervalSeconds s · Generated @Model.Snapshot.GeneratedAt.ToString("yyyy-MM-dd HH:mm:ss") UTC</p>
+    <div class="cp-card-grid">
+        <article class="cp-card">
+            <p class="cp-label">Live users (15m)</p>
+            <p class="cp-value">@Model.Snapshot.LiveUsers15Minutes</p>
+            <p class="cp-caption">Signed-in visitors seen within the last 15 minutes.</p>
+        </article>
+        <article class="cp-card">
+            <p class="cp-label">Active sessions (1h)</p>
+            <p class="cp-value">@Model.Snapshot.ActiveSessionsHour</p>
+            <p class="cp-caption">Unique session fingerprints observed in the last hour.</p>
+        </article>
+        <article class="cp-card">
+            <p class="cp-label">Users online (4h)</p>
+            <p class="cp-value">@Model.Snapshot.UsersOnlineFourHours</p>
+            <p class="cp-caption">Members with recent activity inside a 4 hour window.</p>
+        </article>
+        <article class="cp-card">
+            <p class="cp-label">Peak concurrent (today)</p>
+            <p class="cp-value">@Model.Snapshot.PeakUsersToday</p>
+            <p class="cp-caption">Maximum simultaneous sessions recorded today.</p>
+        </article>
+    </div>
+</section>
+
+<section class="cp-section">
+    <h2>Traffic Summary</h2>
+    <p class="cp-subhead">Rolling 24h window</p>
+    <div class="cp-card-grid">
+        <article class="cp-card">
+            <p class="cp-label">Page views</p>
+            <p class="cp-value">@Model.Snapshot.PageViews24Hours</p>
+            <p class="cp-caption">Includes anonymous and authenticated visits.</p>
+        </article>
+        <article class="cp-card">
+            <p class="cp-label">New registrations</p>
+            <p class="cp-value">@Model.Snapshot.NewRegistrations24Hours</p>
+            <p class="cp-caption">Fresh accounts created during the last day.</p>
+        </article>
+    </div>
+</section>
+
+<section class="cp-section">
+    <h2>Content Velocity</h2>
+    <p class="cp-subhead">Moderator-facing totals</p>
+    <div class="cp-card-grid">
+        <article class="cp-card">
+            <p class="cp-label">Threads created</p>
+            <p class="cp-value">@Model.Snapshot.ActiveThreads24Hours</p>
+            <p class="cp-caption">Threads opened within 24 hours.</p>
+        </article>
+        <article class="cp-card">
+            <p class="cp-label">Posts created</p>
+            <p class="cp-value">@Model.Snapshot.Posts24Hours</p>
+            <p class="cp-caption">Replies and OPs posted in the same window.</p>
+        </article>
+        <article class="cp-card">
+            <p class="cp-label">Reports pending</p>
+            <p class="cp-value">@Model.Snapshot.ReportsPending</p>
+            <p class="cp-caption">Non-hidden reports awaiting moderator review.</p>
+        </article>
+    </div>
+</section>
+
+@if (Model.IsAdmin)
+{
+    <section class="cp-section">
+        <h2>Security Signals</h2>
+        <p class="cp-subhead">Admin-only visibility</p>
+        <div class="cp-card-grid">
+            <article class="cp-card">
+                <p class="cp-label">Failed logins (1h)</p>
+                <p class="cp-value">@Model.Snapshot.FailedLoginsHour</p>
+                <p class="cp-caption">Recent unsuccessful login attempts.</p>
+            </article>
+        </div>
+    </section>
+
+    <section class="cp-section">
+        <h2>System Health</h2>
+        <p class="cp-subhead">Storage refresh 1h · Memory refresh per request</p>
+        <div class="cp-card-grid">
+            <article class="cp-card">
+                <p class="cp-label">Database size</p>
+                <p class="cp-value">@FormatBytes(Model.Snapshot.DatabaseSizeBytes)</p>
+                <p class="cp-caption">pg_database_size(current_database()).</p>
+            </article>
+            <article class="cp-card">
+                <p class="cp-label">Disk free</p>
+                <p class="cp-value">@FormatBytes(Model.Snapshot.DiskFreeBytes)</p>
+                <p class="cp-caption">Based on host volume for this app.</p>
+            </article>
+            <article class="cp-card">
+                <p class="cp-label">Working set</p>
+                <p class="cp-value">@FormatBytes(Model.Snapshot.WorkingSetBytes)</p>
+                <p class="cp-caption">Process memory usage (RSS).</p>
+            </article>
+            <article class="cp-card">
+                <p class="cp-label">Managed heap</p>
+                <p class="cp-value">@FormatBytes(Model.Snapshot.ManagedMemoryBytes)</p>
+                <p class="cp-caption">GC.GetTotalMemory snapshot.</p>
+            </article>
+        </div>
+    </section>
+}
+
+<section class="cp-section">
+    <h2>Quick Actions</h2>
+    <p class="cp-subhead">Hookups scheduled when the respective phases land</p>
+    <div class="cp-actions">
+        <form asp-action="ClearCache" method="post">
+            @Html.AntiForgeryToken()
+            <button type="submit">Clear cache</button>
+        </form>
+        <form asp-action="ExportMetrics" method="post">
+            @Html.AntiForgeryToken()
+            <button type="submit">Export metrics</button>
+        </form>
+        <form asp-action="AuditLog" method="get">
+            <button type="submit">View audit log</button>
+        </form>
+    </div>
+</section>
+
+@functions {
+    private static string FormatBytes(long bytes)
+    {
+        if (bytes <= 0) return "0 B";
+        string[] units = { "B", "KB", "MB", "GB", "TB" };
+        var order = (int)Math.Min(units.Length - 1, Math.Floor(Math.Log(bytes, 1024)));
+        var value = bytes / Math.Pow(1024, order);
+        return $"{value:0.##} {units[order]}";
+    }
+}

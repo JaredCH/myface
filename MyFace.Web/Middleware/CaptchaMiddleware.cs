@@ -1,7 +1,5 @@
 using Microsoft.AspNetCore.Http;
 using MyFace.Web.Services;
-using System.Security.Cryptography;
-using System.Security.Claims;
 
 namespace MyFace.Web.Middleware;
 
@@ -14,7 +12,7 @@ public class CaptchaMiddleware
         _next = next;
     }
 
-    public async Task InvokeAsync(HttpContext context)
+    public async Task InvokeAsync(HttpContext context, CaptchaThresholdService thresholds)
     {
         // Skip for static files, captcha controller itself, and login/register pages if needed
         var path = context.Request.Path.Value?.ToLower();
@@ -38,10 +36,10 @@ public class CaptchaMiddleware
             
             // Get or generate random captcha threshold (15-30 page loads)
             var threshold = context.Session.GetInt32("CaptchaThreshold");
-            var (min, max) = CaptchaSettings.GetRangeForUser(context.User);
+            var (min, max) = await thresholds.GetRangeAsync(context.User, context.RequestAborted);
             if (threshold == null || threshold < min || threshold > max)
             {
-                threshold = CaptchaSettings.NextThreshold(context.User);
+                threshold = await thresholds.NextThresholdAsync(context.User, context.RequestAborted);
                 context.Session.SetInt32("CaptchaThreshold", threshold.Value);
             }
             

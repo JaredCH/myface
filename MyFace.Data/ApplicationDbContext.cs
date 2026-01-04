@@ -29,6 +29,9 @@ public class ApplicationDbContext : DbContext
     public DbSet<ChatMessage> ChatMessages { get; set; }
     public DbSet<PrivateMessage> PrivateMessages { get; set; }
     public DbSet<UploadScanLog> UploadScanLogs { get; set; }
+    public DbSet<ControlSetting> ControlSettings { get; set; }
+    public DbSet<ControlSettingHistory> ControlSettingHistories { get; set; }
+    public DbSet<ControlPanelAuditEntry> ControlPanelAuditEntries { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -86,6 +89,7 @@ public class ApplicationDbContext : DbContext
             entity.Property(e => e.Path).HasMaxLength(256).IsRequired();
             entity.Property(e => e.SessionFingerprint).HasMaxLength(64);
             entity.Property(e => e.UsernameSnapshot).HasMaxLength(64);
+            entity.Property(e => e.Referrer).HasMaxLength(512);
             entity.Property(e => e.EventType).HasMaxLength(32).HasDefaultValue("page-load");
             entity.HasIndex(e => e.VisitedAt);
             entity.HasIndex(e => e.SessionFingerprint);
@@ -330,6 +334,41 @@ public class ApplicationDbContext : DbContext
             entity.HasIndex(e => new { e.EventType, e.CreatedAt });
             entity.HasIndex(e => new { e.Source, e.CreatedAt });
             entity.HasIndex(e => new { e.UserId, e.CreatedAt });
+        });
+
+        modelBuilder.Entity<ControlSetting>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.HasIndex(e => e.Key).IsUnique();
+            entity.Property(e => e.Key).HasMaxLength(128).IsRequired();
+            entity.Property(e => e.Value).HasMaxLength(2048).IsRequired();
+            entity.Property(e => e.Description).HasMaxLength(512);
+            entity.Property(e => e.UpdatedAt).HasDefaultValueSql("CURRENT_TIMESTAMP");
+        });
+
+        modelBuilder.Entity<ControlSettingHistory>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Key).HasMaxLength(128).IsRequired();
+            entity.Property(e => e.Value).HasMaxLength(2048).IsRequired();
+            entity.Property(e => e.Reason).HasMaxLength(512);
+            entity.Property(e => e.UpdatedByUsername).HasMaxLength(64);
+            entity.Property(e => e.CreatedAt).HasDefaultValueSql("CURRENT_TIMESTAMP");
+            entity.HasIndex(e => e.Key);
+            entity.HasIndex(e => e.CreatedAt);
+        });
+
+        modelBuilder.Entity<ControlPanelAuditEntry>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.ActorUsername).HasMaxLength(64);
+            entity.Property(e => e.ActorRole).HasMaxLength(32).IsRequired();
+            entity.Property(e => e.Action).HasMaxLength(128).IsRequired();
+            entity.Property(e => e.Target).HasMaxLength(128);
+            entity.Property(e => e.Details).HasMaxLength(2000);
+            entity.Property(e => e.CreatedAt).HasDefaultValueSql("CURRENT_TIMESTAMP");
+            entity.HasIndex(e => e.CreatedAt);
+            entity.HasIndex(e => e.Action);
         });
     }
 }

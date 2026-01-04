@@ -100,6 +100,24 @@ public class UserService
         }
     }
 
+    public async Task<bool> SetActiveStateAsync(int userId, bool isActive)
+    {
+        var user = await _context.Users.FindAsync(userId);
+        if (user == null)
+        {
+            return false;
+        }
+
+        user.IsActive = isActive;
+        if (isActive)
+        {
+            user.SuspendedUntil = null;
+        }
+
+        await _context.SaveChangesAsync();
+        return true;
+    }
+
     public async Task<List<User>> GetAllUsersAsync()
     {
         return await _context.Users.OrderByDescending(u => u.CreatedAt).ToListAsync();

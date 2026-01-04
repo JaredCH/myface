@@ -6,10 +6,12 @@ namespace MyFace.Web.Controllers;
 public class CaptchaController : Controller
 {
     private readonly CaptchaService _captchaService;
+    private readonly CaptchaThresholdService _thresholds;
 
-    public CaptchaController(CaptchaService captchaService)
+    public CaptchaController(CaptchaService captchaService, CaptchaThresholdService thresholds)
     {
         _captchaService = captchaService;
+        _thresholds = thresholds;
     }
 
     [HttpGet]
@@ -25,14 +27,15 @@ public class CaptchaController : Controller
 
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public IActionResult Verify(string answer, string returnUrl)
+    public async Task<IActionResult> Verify(string answer, string returnUrl)
     {
         var expected = HttpContext.Session.GetString("CaptchaAnswer");
         if (_captchaService.Validate(expected, answer))
         {
             // Reset page view count
             HttpContext.Session.SetInt32("PageViews", 0);
-            HttpContext.Session.SetInt32("CaptchaThreshold", CaptchaSettings.NextThreshold(User));
+            var nextThreshold = await _thresholds.NextThresholdAsync(User, HttpContext.RequestAborted);
+            HttpContext.Session.SetInt32("CaptchaThreshold", nextThreshold);
             HttpContext.Session.Remove("CaptchaAnswer");
             
             if (!string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl))

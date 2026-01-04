@@ -3,41 +3,774 @@
     ViewData["Title"] = "Mail";
     var error = TempData["MailError"] as string;
     var info = TempData["MailInfo"] as string;
-    string TabClass(string key) => Model.ActiveTab?.Equals(key, StringComparison.OrdinalIgnoreCase) == true ? "active" : string.Empty;
+    var activeTab = (Model.ActiveTab ?? "inbox").ToLowerInvariant();
+    var highlightUnread = activeTab == "inbox";
+    var selectedMessageId = Model.SelectedMessage?.Id;
+    var listTitle = activeTab switch
+    {
+        "outbox" => "Outbox",
+        "drafts" => "Drafts",
+        "new" => "Compose",
+        _ => "Inbox"
+    };
+    System.Collections.Generic.IReadOnlyList<MyFace.Web.Models.MailItemViewModel> messageItems = activeTab switch
+    {
+        "outbox" => Model.Outbox,
+        "drafts" => Model.Drafts,
+        "new" => Array.Empty<MyFace.Web.Models.MailItemViewModel>(),
+        _ => Model.Inbox
+    };
+    var counterpartLabel = (activeTab == "outbox" || activeTab == "drafts") ? "To" : "From";
+    Func<DateTime?, string> formatDate = d => d?.ToLocalTime().ToString("MM/dd/yyyy") ?? "--";
+    Func<DateTime?, string> formatDateTime = d => d?.ToLocalTime().ToString("MMM d, yyyy h:mm tt") ?? "--";
+    string CategoryClass(string key) => activeTab == key ? "category-item active" : "category-item";
+    var unreadCount = 0;
+    foreach (var mail in Model.Inbox)
+    {
+        if (!mail.ReadAt.HasValue)
+        {
+            unreadCount++;
+        }
+    }
+    var replyRecipient = Model.SelectedMessage == null
+        ? string.Empty
+        : activeTab == "outbox" || Model.SelectedMessage.IsDraft
+            ? Model.SelectedMessage.To
+            : Model.SelectedMessage.From;
+    var composeLimit = Model.IsVerified ? "5 verified" : "1 unverified";
 }
 
-<div class="container mt-3">
-    <h2>Mail</h2>
+@section HeadExtras {
+    <style>
+        .mail-surface {
+            font-family: 'Space Grotesk', 'IBM Plex Sans', 'Segoe UI', sans-serif;
+            color: #e5e5e5;
+            background: radial-gradient(circle at top left, #1c1c1c, #050505 70%);
+            padding: 24px clamp(12px, 3vw, 32px) 48px;
+        }
 
-    @if (!string.IsNullOrEmpty(error))
-    {
-        <div class="alert alert-danger">@error</div>
-    }
-    @if (!string.IsNullOrEmpty(info))
-    {
-        <div class="alert alert-success">@info</div>
-    }
+        .mail-frame {
+            max-width: 1320px;
+            margin: 0 auto;
+        }
 
-    <ul class="nav nav-tabs mb-3">
-        <li class="nav-item"><a class="nav-link @TabClass("inbox")" href="@Url.Action("Index", new { tab = "inbox" })">Inbox</a></li>
-        <li class="nav-item"><a class="nav-link @TabClass("outbox")" href="@Url.Action("Index", new { tab = "outbox" })">Outbox</a></li>
-        <li class="nav-item"><a class="nav-link @TabClass("drafts")" href="@Url.Action("Index", new { tab = "drafts" })">Drafts</a></li>
-        <li class="nav-item"><a class="nav-link @TabClass("new")" href="@Url.Action("Index", new { tab = "new" })">New</a></li>
-    </ul>
+        .mail-page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-bottom: 24px;
+        }
 
-    @switch(Model.ActiveTab?.ToLowerInvariant())
-    {
-        case "outbox":
-            <partial name="_MailList" model="Model.Outbox" />
-            break;
-        case "drafts":
-            <partial name="_Drafts" model="Model.Drafts" />
-            break;
-        case "new":
-            <partial name="_Compose" model="Model" />
-            break;
-        default:
-                <partial name="_MailList" model="Model.Inbox" view-data='@new ViewDataDictionary(ViewData) { { "HighlightUnread", true } }' />
-            break;
-    }
+        .mail-page-header h1 {
+            font-size: 32px;
+            font-weight: 600;
+            margin: 4px 0 0;
+        }
+
+        .mail-breadcrumb {
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            font-size: 12px;
+            color: #8a8a8a;
+        }
+
+        .mail-count-pill {
+            background: rgba(59, 130, 246, 0.15);
+            color: #9cc8ff;
+            border: 1px solid rgba(59, 130, 246, 0.4);
+            border-radius: 12px;
+            padding: 10px 18px;
+            text-align: center;
+            min-width: 100px;
+        }
+
+        .mail-count-pill span {
+            font-size: 24px;
+            font-weight: 600;
+            display: block;
+        }
+
+        .mail-count-pill small {
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+        }
+
+        .mail-flash {
+            margin-bottom: 18px;
+        }
+
+        .mail-alert {
+            padding: 14px 18px;
+            border-radius: 12px;
+            margin-bottom: 12px;
+            font-size: 14px;
+            border: 1px solid;
+        }
+
+        .mail-alert--error {
+            background: rgba(239, 68, 68, 0.1);
+            border-color: rgba(239, 68, 68, 0.6);
+            color: #fecaca;
+        }
+
+        .mail-alert--info {
+            background: rgba(59, 130, 246, 0.1);
+            border-color: rgba(59, 130, 246, 0.6);
+            color: #bfdbfe;
+        }
+
+        .mail-container {
+            display: grid;
+            grid-template-columns: 220px 360px 1fr;
+            gap: 0;
+            border: 1px solid #2b2b2b;
+            border-radius: 24px;
+            overflow: hidden;
+            min-height: calc(100vh - 180px);
+            background: rgba(8, 8, 8, 0.92);
+            box-shadow: 0 20px 80px rgba(0, 0, 0, 0.45);
+        }
+
+        .categories-sidebar {
+            background: #111;
+            border-right: 1px solid #1f1f1f;
+            display: flex;
+            flex-direction: column;
+            padding: 20px 12px;
+        }
+
+        .sidebar-header {
+            padding: 0 12px 20px;
+            border-bottom: 1px solid #1f1f1f;
+        }
+
+        .sidebar-header h2 {
+            font-size: 20px;
+            margin-bottom: 12px;
+        }
+
+        .new-conversation-btn {
+            background: #3b82f6;
+            color: #fff;
+            border: none;
+            padding: 12px 18px;
+            border-radius: 10px;
+            width: 100%;
+            box-sizing: border-box;
+            font-weight: 600;
+            font-size: 14px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            text-decoration: none;
+            transition: background 0.2s ease;
+        }
+
+        .new-conversation-btn:hover {
+            background: #2563eb;
+        }
+
+        .category-list {
+            flex: 1;
+            padding: 16px 12px 0;
+        }
+
+        .category-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 16px;
+            color: inherit;
+            text-decoration: none;
+            font-size: 15px;
+            transition: background 0.2s ease, color 0.2s ease;
+            border-left: 3px solid transparent;
+            border-radius: 10px;
+        }
+
+        .category-item:hover {
+            background: #1d1d1d;
+        }
+
+        .category-item.active {
+            background: #1f2937;
+            border-left-color: #3b82f6;
+            color: #9cc8ff;
+        }
+
+        .category-icon {
+            width: 20px;
+            height: 20px;
+            color: currentColor;
+        }
+
+        .messages-list {
+            background: #0f0f0f;
+            border-right: 1px solid #1f1f1f;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .messages-header {
+            padding: 20px 24px 12px;
+            border-bottom: 1px solid #1f1f1f;
+        }
+
+        .messages-header h3 {
+            font-size: 18px;
+            margin-bottom: 14px;
+        }
+
+        .search-bar {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: #151515;
+            border: 1px solid #202020;
+            border-radius: 10px;
+            padding: 10px 14px;
+            color: #bbb;
+        }
+
+        .search-bar input {
+            border: none;
+            background: transparent;
+            color: #e5e5e5;
+            width: 100%;
+            font-size: 14px;
+        }
+
+        .search-bar input:focus {
+            outline: none;
+        }
+
+        .message-items {
+            flex: 1;
+            overflow-y: auto;
+        }
+
+        .message-item {
+            display: block;
+            padding: 18px 24px;
+            border-bottom: 1px solid #1a1a1a;
+            color: inherit;
+            text-decoration: none;
+            transition: background 0.2s ease;
+        }
+
+        .message-item:hover {
+            background: #1a1a1a;
+        }
+
+        .message-item.active {
+            background: #1f2937;
+            border-left: 3px solid #3b82f6;
+        }
+
+        .message-item.unread {
+            background: #151515;
+        }
+
+        .message-subject {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 600;
+            margin-bottom: 6px;
+        }
+
+        .unread-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #3b82f6;
+        }
+
+        .message-meta {
+            display: flex;
+            justify-content: space-between;
+            font-size: 13px;
+            color: #8a8a8a;
+            margin-bottom: 4px;
+        }
+
+        .message-preview {
+            font-size: 13px;
+            color: #6d6d6d;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .message-view {
+            display: flex;
+            flex-direction: column;
+            background: #050505;
+        }
+
+        .view-header {
+            padding: 24px 28px 18px;
+            border-bottom: 1px solid #1a1a1a;
+            background: #0d0d0d;
+        }
+
+        .view-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 18px;
+        }
+
+        .action-btn,
+        .view-actions form button {
+            padding: 8px 16px;
+            border-radius: 8px;
+            border: 1px solid #2a2a2a;
+            background: #151515;
+            color: #e5e5e5;
+            font-size: 13px;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            cursor: pointer;
+            transition: background 0.2s ease, border-color 0.2s ease;
+            text-decoration: none;
+        }
+
+        .action-btn:hover,
+        .view-actions form button:hover {
+            background: #222;
+            border-color: #3b82f6;
+        }
+
+        .action-btn.delete,
+        .view-actions form button.delete {
+            color: #fca5a5;
+            border-color: #ef4444;
+        }
+
+        .action-btn.delete:hover,
+        .view-actions form button.delete:hover {
+            background: #ef4444;
+            color: #fff;
+        }
+
+        .message-subject-display {
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: 12px;
+        }
+
+        .message-info-line {
+            display: flex;
+            gap: 18px;
+            font-size: 14px;
+            color: #8a8a8a;
+            margin-bottom: 4px;
+        }
+
+        .message-info-line .info-label {
+            color: #6d6d6d;
+            min-width: 60px;
+        }
+
+        .message-content-area {
+            flex: 1;
+            overflow-y: auto;
+            padding: 24px 28px 32px;
+        }
+
+        .message-body {
+            background: #0f0f0f;
+            border: 1px solid #1f1f1f;
+            border-radius: 16px;
+            padding: 24px;
+            line-height: 1.7;
+            box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.35);
+        }
+
+        .message-body__text {
+            margin: 0;
+            white-space: pre-wrap;
+            word-break: break-word;
+            font-size: 15px;
+            color: #d4d4d4;
+        }
+
+        .compose-form {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .compose-fields {
+            flex: 1;
+            overflow-y: auto;
+            padding: 24px 28px 12px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .form-input,
+        .form-textarea {
+            width: 100%;
+            border: 1px solid #2a2a2a;
+            border-radius: 10px;
+            background: #0f0f0f;
+            color: #e5e5e5;
+            padding: 12px 16px;
+            font-size: 14px;
+        }
+
+        .form-input:focus,
+        .form-textarea:focus {
+            outline: none;
+            border-color: #3b82f6;
+        }
+
+        .form-textarea {
+            min-height: 280px;
+            resize: vertical;
+            font-family: inherit;
+        }
+
+        .form-hint {
+            font-size: 12px;
+            color: #808080;
+            margin-top: 6px;
+        }
+
+        .form-actions {
+            border-top: 1px solid #1f1f1f;
+            padding: 20px 28px;
+            display: flex;
+            gap: 12px;
+            justify-content: flex-end;
+        }
+
+        .btn-primary,
+        .btn-secondary {
+            border: none;
+            border-radius: 10px;
+            padding: 12px 24px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.15s ease, background 0.15s ease;
+        }
+
+        .btn-primary {
+            background: #3b82f6;
+            color: #fff;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-1px);
+            background: #2563eb;
+        }
+
+        .btn-secondary {
+            background: #1f1f1f;
+            color: #e5e5e5;
+        }
+
+        .btn-secondary:hover {
+            transform: translateY(-1px);
+            background: #2f2f2f;
+        }
+
+        .empty-state {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            text-align: center;
+            color: #666;
+            padding: 40px 20px;
+        }
+
+        .empty-state svg {
+            width: 64px;
+            height: 64px;
+            margin-bottom: 18px;
+            opacity: 0.45;
+        }
+
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #121212;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #2a2a2a;
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #3a3a3a;
+        }
+
+        @@media (max-width: 1200px) {
+            .mail-container {
+                grid-template-columns: 200px 1fr;
+            }
+
+            .message-view {
+                grid-column: 1 / -1;
+                min-height: 420px;
+            }
+        }
+
+        @@media (max-width: 900px) {
+            .mail-container {
+                display: flex;
+                flex-direction: column;
+            }
+
+            .messages-list,
+            .message-view,
+            .categories-sidebar {
+                border-right: none;
+                border-bottom: 1px solid #1f1f1f;
+            }
+
+            .mail-count-pill {
+                display: none;
+            }
+
+            .mail-page-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 8px;
+            }
+        }
+    </style>
+}
+
+<div class="mail-surface">
+    <div class="mail-frame">
+        <div class="mail-page-header">
+        <div>
+            <p class="mail-breadcrumb">SIGIL · MAIL</p>
+            <h1>Mail Center</h1>
+        </div>
+        <div class="mail-count-pill">
+            <span>@unreadCount</span>
+            <small>Unread</small>
+        </div>
+        </div>
+
+        @if (!string.IsNullOrEmpty(error) || !string.IsNullOrEmpty(info))
+        {
+            <div class="mail-flash">
+                @if (!string.IsNullOrEmpty(error))
+                {
+                    <div class="mail-alert mail-alert--error">@error</div>
+                }
+                @if (!string.IsNullOrEmpty(info))
+                {
+                    <div class="mail-alert mail-alert--info">@info</div>
+                }
+            </div>
+        }
+
+        <div class="mail-container">
+        <aside class="categories-sidebar">
+            <div class="sidebar-header">
+                <h2>Mail</h2>
+                <a class="new-conversation-btn" href="@Url.Action("Index", "Mail", new { tab = "new" })">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z" />
+                    </svg>
+                    New Message
+                </a>
+            </div>
+            <div class="category-list">
+                <a class="@CategoryClass("inbox")" href="@Url.Action("Index", "Mail", new { tab = "inbox" })">
+                    <svg class="category-icon" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z" />
+                    </svg>
+                    Inbox
+                </a>
+                <a class="@CategoryClass("outbox")" href="@Url.Action("Index", "Mail", new { tab = "outbox" })">
+                    <svg class="category-icon" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z" />
+                    </svg>
+                    Outbox
+                </a>
+                <a class="@CategoryClass("drafts")" href="@Url.Action("Index", "Mail", new { tab = "drafts" })">
+                    <svg class="category-icon" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M21.99 8c0-.72-.37-1.35-.94-1.7L12 1 2.95 6.3C2.38 6.65 2 7.28 2 8v10c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2l-.01-10zM12 13L3.74 7.84 12 3l8.26 4.84L12 13z" />
+                    </svg>
+                    Drafts
+                </a>
+                <a class="@CategoryClass("new")" href="@Url.Action("Index", "Mail", new { tab = "new" })">
+                    <svg class="category-icon" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM21.41 6.34a1.25 1.25 0 0 0 0-1.77l-2.98-2.98a1.25 1.25 0 0 0-1.77 0l-1.83 1.83 3.75 3.75 1.83-1.83z" />
+                    </svg>
+                    Compose
+                </a>
+            </div>
+        </aside>
+
+        <section class="messages-list">
+            <div class="messages-header">
+                <h3>@listTitle</h3>
+                <div class="search-bar">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5z" />
+                    </svg>
+                    <input type="text" placeholder="Search messages" aria-label="Search messages" />
+                </div>
+            </div>
+            <div class="message-items">
+                @if (messageItems.Count == 0)
+                {
+                    <div class="empty-state">
+                        <svg viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M12 12 3.74 6.84 12 2l8.26 4.84L12 12z" />
+                        </svg>
+                        <h3>No items here</h3>
+                        <p>Select another category or start a new conversation.</p>
+                    </div>
+                }
+                else
+                {
+                    foreach (var item in messageItems)
+                    {
+                        var isUnread = highlightUnread && !item.ReadAt.HasValue;
+                        var classes = $"message-item{(selectedMessageId == item.Id ? " active" : string.Empty)}{(isUnread ? " unread" : string.Empty)}";
+                        var link = Url.Action("Index", "Mail", new { tab = activeTab, messageId = item.Id }) ?? "#";
+                        var counterparty = counterpartLabel == "To" ? item.To : item.From;
+                        <a href="@link" class="@classes">
+                            <div class="message-subject">
+                                @if (isUnread)
+                                {
+                                    <span class="unread-dot"></span>
+                                }
+                                <span>@(string.IsNullOrWhiteSpace(item.Subject) ? "(No Subject)" : item.Subject)</span>
+                            </div>
+                            <div class="message-meta">
+                                <span>@($"{counterpartLabel}: {counterparty}")</span>
+                                <span>@formatDate(item.SentAt)</span>
+                            </div>
+                            <div class="message-preview">
+                                @(item.IsDraft ? "Draft awaiting recipient." : "Open to view full message.")
+                            </div>
+                        </a>
+                    }
+                }
+            </div>
+        </section>
+
+        <section class="message-view">
+            @if (activeTab == "new")
+            {
+                <form method="post" class="compose-form">
+                    @Html.AntiForgeryToken()
+                    <div class="compose-fields">
+                        <div class="form-group">
+                            <label class="form-label" for="compose-to">To</label>
+                            <input id="compose-to" name="to" class="form-input" value="@Model.Compose.To" placeholder="username or comma separated" />
+                            <p class="form-hint">Limit: @composeLimit recipients.</p>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="compose-subject">Subject</label>
+                            <input id="compose-subject" name="subject" class="form-input" value="@Model.Compose.Subject" maxlength="200" />
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="compose-body">Body</label>
+                            <textarea id="compose-body" name="body" class="form-textarea" maxlength="2000">@Model.Compose.Body</textarea>
+                        </div>
+                    </div>
+                    <div class="form-actions">
+                        <button type="submit" formaction="@Url.Action("SaveDraft", "Mail")" class="btn-secondary">Save Draft</button>
+                        <button type="submit" formaction="@Url.Action("Send", "Mail")" class="btn-primary">Send Message</button>
+                    </div>
+                </form>
+            }
+            else if (Model.SelectedMessage != null)
+            {
+                <div class="view-header">
+                    <div class="view-actions">
+                        <a class="action-btn" href="@Url.Action("Index", "Mail", new { tab = "new", to = replyRecipient, composeSubject = $"RE: {Model.SelectedMessage.Subject}" })">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M10 9V5l-7 7 7 7v-4.1c5 0 8.5 1.6 11 5.1-1-5-4-10-11-11z" />
+                            </svg>
+                            Reply
+                        </a>
+                        <a class="action-btn" href="@Url.Action("Index", "Mail", new { tab = "new", composeSubject = $"FWD: {Model.SelectedMessage.Subject}" })">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M10 9V5l-7 7 7 7v-4.1c5 0 8.5 1.6 11 5.1-1-5-4-10-11-11z" />
+                            </svg>
+                            Forward
+                        </a>
+                        @if (Model.SelectedMessage.CanSendDraft)
+                        {
+                            <form method="post" action="@Url.Action("SendDraft", "Mail")">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="id" value="@Model.SelectedMessage.Id" />
+                                <button type="submit" class="action-btn">Send Draft</button>
+                            </form>
+                        }
+                        <form method="post" action="@Url.Action("Delete", "Mail")">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="id" value="@Model.SelectedMessage.Id" />
+                            <input type="hidden" name="tab" value="@Model.ActiveTab" />
+                            <button type="submit" class="action-btn delete">Delete</button>
+                        </form>
+                    </div>
+                    <h2 class="message-subject-display">@(string.IsNullOrWhiteSpace(Model.SelectedMessage.Subject) ? "(No Subject)" : Model.SelectedMessage.Subject)</h2>
+                    <div class="message-info-line">
+                        <span class="info-label">From:</span>
+                        <span>@Model.SelectedMessage.From</span>
+                    </div>
+                    <div class="message-info-line">
+                        <span class="info-label">To:</span>
+                        <span>@Model.SelectedMessage.To</span>
+                    </div>
+                    <div class="message-info-line">
+                        <span class="info-label">Sent:</span>
+                        <span>@formatDateTime(Model.SelectedMessage.SentAt)</span>
+                    </div>
+                    <div class="message-info-line">
+                        <span class="info-label">Read:</span>
+                        <span>@(Model.SelectedMessage.ReadAt.HasValue ? formatDateTime(Model.SelectedMessage.ReadAt) : "Unread")</span>
+                    </div>
+                </div>
+                <div class="message-content-area">
+                    <div class="message-body">
+                        <pre class="message-body__text">@Model.SelectedMessage.Body</pre>
+                    </div>
+                </div>
+            }
+            else
+            {
+                <div class="empty-state">
+                    <svg viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M12 12 3.74 6.84 12 2l8.26 4.84L12 12z" />
+                    </svg>
+                    <h3>Select a conversation</h3>
+                    <p>Your messages will appear here once selected.</p>
+                </div>
+            }
+        </section>
+        </div>
+    </div>
 </div>

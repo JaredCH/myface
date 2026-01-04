@@ -26,7 +26,7 @@ public class ThreadImageStorageService
         ["WEBP"] = new AllowedImageFormat("image/webp", ".webp")
     };
 
-    private const long MaxFileSizeBytes = 6 * 1024 * 1024; // 6 MB cap per image
+    private const int DefaultMaxFileSizeBytes = 6 * 1024 * 1024; // 6 MB cap per image
     private const int MaxDimension = 1920;
     private static readonly Size ThumbnailSize = new(420, 260);
     private const string OriginalFolder = "uploads/thread-images/full";
@@ -37,19 +37,22 @@ public class ThreadImageStorageService
     private readonly IMalwareScanner _malwareScanner;
     private readonly UploadScanLogService _uploadScanLogService;
     private readonly IOptions<MalwareScannerOptions> _scannerOptions;
+    private readonly ControlSettingsReader _settings;
 
     public ThreadImageStorageService(
         IWebHostEnvironment environment,
         ILogger<ThreadImageStorageService> logger,
         IMalwareScanner malwareScanner,
         UploadScanLogService uploadScanLogService,
-        IOptions<MalwareScannerOptions> scannerOptions)
+        IOptions<MalwareScannerOptions> scannerOptions,
+        ControlSettingsReader settings)
     {
         _environment = environment;
         _logger = logger;
         _malwareScanner = malwareScanner;
         _uploadScanLogService = uploadScanLogService;
         _scannerOptions = scannerOptions;
+        _settings = settings;
     }
 
     public async Task<IReadOnlyList<StoredImageResult>> SaveImagesAsync(
@@ -68,15 +71,17 @@ public class ThreadImageStorageService
         }
 
         var selectedFiles = files.Where(f => f != null && f.Length > 0).Take(2).ToList();
+        var configuredMaxBytes = await _settings.GetIntAsync(ControlSettingKeys.UploadsThreadMaxBytes, DefaultMaxFileSizeBytes, cancellationToken);
+        var maxFileSizeBytes = Math.Clamp(configuredMaxBytes, 256 * 1024, 20 * 1024 * 1024);
         var results = new List<StoredImageResult>(selectedFiles.Count);
 
         foreach (var file in selectedFiles)
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            if (file.Length > MaxFileSizeBytes)
+            if (file.Length > maxFileSizeBytes)
             {
-                throw new InvalidOperationException($"{file.FileName} exceeds the {MaxFileSizeBytes / (1024 * 1024)} MB limit.");
+                throw new InvalidOperationException($"{file.FileName} exceeds the {maxFileSizeBytes / (1024 * 1024)} MB limit.");
             }
 
             var processingTimer = Stopwatch.StartNew();

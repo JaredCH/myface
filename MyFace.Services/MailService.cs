@@ -40,10 +40,14 @@ public class MailService
                 "IsDraft" boolean NOT NULL DEFAULT false,
                 "CreatedAt" timestamptz NOT NULL DEFAULT NOW(),
                 "SentAt" timestamptz NULL,
-                "ReadAt" timestamptz NULL
+                "ReadAt" timestamptz NULL,
+                "SenderDeleted" boolean NOT NULL DEFAULT false,
+                "RecipientDeleted" boolean NOT NULL DEFAULT false
             );
             CREATE INDEX IF NOT EXISTS "IX_PrivateMessages_RecipientId_CreatedAt" ON "PrivateMessages" ("RecipientId", "CreatedAt");
             CREATE INDEX IF NOT EXISTS "IX_PrivateMessages_SenderId_CreatedAt" ON "PrivateMessages" ("SenderId", "CreatedAt");
+            ALTER TABLE "PrivateMessages" ADD COLUMN IF NOT EXISTS "SenderDeleted" boolean NOT NULL DEFAULT false;
+            ALTER TABLE "PrivateMessages" ADD COLUMN IF NOT EXISTS "RecipientDeleted" boolean NOT NULL DEFAULT false;
             """;
 
             await _db.Database.ExecuteSqlRawAsync(sql, ct);
@@ -90,7 +94,9 @@ public class MailService
                 Body = trimmedBody,
                 IsDraft = false,
                 CreatedAt = now,
-                SentAt = now
+                SentAt = now,
+                SenderDeleted = false,
+                RecipientDeleted = false
             };
 
             _db.PrivateMessages.Add(message);
@@ -126,7 +132,9 @@ public class MailService
             Body = trimmedBody,
             IsDraft = true,
             CreatedAt = DateTime.UtcNow,
-            SentAt = null
+            SentAt = null,
+            SenderDeleted = false,
+            RecipientDeleted = false
         };
 
         _db.PrivateMessages.Add(message);
@@ -138,7 +146,7 @@ public class MailService
     {
         await EnsureSchemaAsync(ct);
 
-        var draft = await _db.PrivateMessages.FirstOrDefaultAsync(m => m.Id == draftId && m.SenderId == userId && m.IsDraft, ct);
+        var draft = await _db.PrivateMessages.FirstOrDefaultAsync(m => m.Id == draftId && m.SenderId == userId && m.IsDraft && !m.SenderDeleted, ct);
         if (draft == null || draft.RecipientId == null)
         {
             return false;
@@ -154,7 +162,7 @@ public class MailService
     {
         await EnsureSchemaAsync(ct);
         return await _db.PrivateMessages
-            .Where(m => m.RecipientId == userId && !m.IsDraft)
+            .Where(m => m.RecipientId == userId && !m.IsDraft && !m.RecipientDeleted)
             .OrderByDescending(m => m.CreatedAt)
             .Take(take)
             .ToListAsync(ct);
@@ -164,7 +172,7 @@ public class MailService
     {
         await EnsureSchemaAsync(ct);
         return await _db.PrivateMessages
-            .Where(m => m.SenderId == userId && !m.IsDraft)
+            .Where(m => m.SenderId == userId && !m.IsDraft && !m.SenderDeleted)
             .OrderByDescending(m => m.CreatedAt)
             .Take(take)
             .ToListAsync(ct);
@@ -174,7 +182,7 @@ public class MailService
     {
         await EnsureSchemaAsync(ct);
         return await _db.PrivateMessages
-            .Where(m => m.SenderId == userId && m.IsDraft)
+            .Where(m => m.SenderId == userId && m.IsDraft && !m.SenderDeleted)
             .OrderByDescending(m => m.CreatedAt)
             .Take(take)
             .ToListAsync(ct);
@@ -185,14 +193,17 @@ public class MailService
         await EnsureSchemaAsync(ct);
         return await _db.PrivateMessages
             .AsNoTracking()
-            .Where(m => m.RecipientId == userId && !m.IsDraft && m.ReadAt == null)
+            .Where(m => m.RecipientId == userId && !m.IsDraft && m.ReadAt == null && !m.RecipientDeleted)
             .CountAsync(ct);
     }
 
     public async Task<PrivateMessage?> GetMessageAsync(int id, int userId, CancellationToken ct = default)
     {
         await EnsureSchemaAsync(ct);
-        return await _db.PrivateMessages.FirstOrDefaultAsync(m => m.Id == id && (m.SenderId == userId || m.RecipientId == userId), ct);
+        return await _db.PrivateMessages
+            .Where(m => m.Id == id)
+            .Where(m => (m.SenderId == userId && !m.SenderDeleted) || (m.RecipientId == userId && !m.RecipientDeleted))
+            .FirstOrDefaultAsync(ct);
     }
 
     public async Task<bool> MarkReadAsync(PrivateMessage message, int userId, CancellationToken ct = default)
@@ -200,6 +211,36 @@ public class MailService
         if (message.RecipientId != userId) return false;
         if (message.ReadAt != null) return true;
         message.ReadAt = DateTime.UtcNow;
+        await _db.SaveChangesAsync(ct);
+        return true;
+    }
+
+    public async Task<bool> DeleteAsync(PrivateMessage message, int userId, CancellationToken ct = default)
+    {
+        if (message == null) return false;
+
+        if (message.SenderId == userId)
+        {
+            if (message.SenderDeleted) return true;
+            message.SenderDeleted = true;
+        }
+        else if (message.RecipientId == userId)
+        {
+            if (message.RecipientDeleted) return true;
+            message.RecipientDeleted = true;
+        }
+        else
+        {
+            return false;
+        }
+
+        var senderDone = message.SenderId == null || message.SenderDeleted;
+        var recipientDone = message.RecipientId == null || message.RecipientDeleted;
+        if (senderDone && recipientDone)
+        {
+            _db.PrivateMessages.Remove(message);
+        }
+
         await _db.SaveChangesAsync(ct);
         return true;
     }

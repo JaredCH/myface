@@ -13,6 +13,8 @@ public class PrivateMessage
     public DateTime CreatedAt { get; set; }
     public DateTime? SentAt { get; set; }
     public DateTime? ReadAt { get; set; }
+    public bool SenderDeleted { get; set; }
+    public bool RecipientDeleted { get; set; }
 
     public User? Sender { get; set; }
     public User? Recipient { get; set; }

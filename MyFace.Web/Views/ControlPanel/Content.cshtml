@@ -1,0 +1,170 @@
+@using MyFace.Services
+@model ContentMetricsViewModel
+
+<section class="cp-section">
+    <h2>Window & Export</h2>
+    <div class="cp-filters" style="display:flex; gap:1rem; flex-wrap:wrap; align-items:flex-end;">
+        <form method="get">
+            <label for="range-select" class="cp-label">Window</label>
+            <select id="range-select" name="range" onchange="this.form.submit()">
+                @foreach (var option in Model.AvailableRanges)
+                {
+                    var value = option.ToQueryValue();
+                    var label = ContentMetricsRangeExtensions.ToLabel(option);
+                    var selected = option == Model.SelectedRange ? "selected" : null;
+                    <option value="@value" selected="@selected">@label</option>
+                }
+            </select>
+        </form>
+        @if (Model.Data.IncludeAdmin)
+        {
+            <form asp-action="ExportContentMetrics" asp-controller="ControlPanel" method="post">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="range" value="@Model.SelectedRange.ToQueryValue()" />
+                <button type="submit">Export CSV</button>
+            </form>
+        }
+    </div>
+    <p class="cp-subhead">@Model.RangeWindowDescription</p>
+</section>
+
+<section class="cp-section">
+    <h2>Thread Velocity</h2>
+    <p class="cp-subhead">New threads across common reporting windows</p>
+    <div class="cp-card-grid">
+        <article class="cp-card">
+            <p class="cp-label">24 hours</p>
+            <p class="cp-value">@Model.Data.ThreadsDay</p>
+            <p class="cp-caption">Threads opened today.</p>
+        </article>
+        <article class="cp-card">
+            <p class="cp-label">7 days</p>
+            <p class="cp-value">@Model.Data.ThreadsWeek</p>
+            <p class="cp-caption">Rolling week.</p>
+        </article>
+        <article class="cp-card">
+            <p class="cp-label">30 days</p>
+            <p class="cp-value">@Model.Data.ThreadsMonth</p>
+            <p class="cp-caption">Rolling month.</p>
+        </article>
+        <article class="cp-card">
+            <p class="cp-label">Sticky / pinned</p>
+            <p class="cp-value">@Model.Data.StickyOrPinned</p>
+            <p class="cp-caption">Threads currently elevated.</p>
+        </article>
+    </div>
+</section>
+
+<section class="cp-section">
+    <h2>Range Insights</h2>
+    <p class="cp-subhead">Focused on @Model.SelectedRangeLabel</p>
+    <div class="cp-card-grid">
+        <article class="cp-card">
+            <p class="cp-label">Threads (@Model.SelectedRangeLabel)</p>
+            <p class="cp-value">@Model.Data.ThreadsInRange</p>
+        </article>
+        <article class="cp-card">
+            <p class="cp-label">Posts (@Model.SelectedRangeLabel)</p>
+            <p class="cp-value">@Model.Data.PostsInRange</p>
+        </article>
+        <article class="cp-card">
+            <p class="cp-label">Avg posts/thread</p>
+            <p class="cp-value">@Model.AveragePostsPerThreadDisplay</p>
+            <p class="cp-caption">Calculated for @Model.SelectedRangeLabel.</p>
+        </article>
+        <article class="cp-card">
+            <p class="cp-label">Votes (@Model.SelectedRangeLabel)</p>
+            <p class="cp-value">@Model.Data.VotesInRange</p>
+        </article>
+        <article class="cp-card">
+            <p class="cp-label">Activity events</p>
+            <p class="cp-value">@Model.Data.ActivitiesInRange</p>
+            <p class="cp-caption">Entries in Activity table for @Model.SelectedRangeLabel.</p>
+        </article>
+        <article class="cp-card">
+            <p class="cp-label">Moderation actions</p>
+            <p class="cp-value">@Model.Data.ModerationActionsInRange</p>
+            <p class="cp-caption">Posts touched by moderators in @Model.SelectedRangeLabel.</p>
+        </article>
+        <article class="cp-card">
+            <p class="cp-label">Visible reports</p>
+            <p class="cp-value">@Model.Data.VisibleReportsInRange</p>
+            <p class="cp-caption">Report queue items still public.</p>
+        </article>
+        <article class="cp-card">
+            <p class="cp-label">Hidden reports</p>
+            <p class="cp-value">@Model.Data.HiddenReportsInRange</p>
+            <p class="cp-caption">Reports hidden from public view.</p>
+        </article>
+    </div>
+</section>
+
+<section class="cp-section">
+    <h2>Post Activity</h2>
+    <p class="cp-subhead">Posts created + moderation posture</p>
+    <div class="cp-card-grid">
+        <article class="cp-card">
+            <p class="cp-label">Posts (24h)</p>
+            <p class="cp-value">@Model.Data.PostsDay</p>
+        </article>
+        <article class="cp-card">
+            <p class="cp-label">Posts (7d)</p>
+            <p class="cp-value">@Model.Data.PostsWeek</p>
+        </article>
+        <article class="cp-card">
+            <p class="cp-label">Posts (30d)</p>
+            <p class="cp-value">@Model.Data.PostsMonth</p>
+        </article>
+        <article class="cp-card">
+            <p class="cp-label">Anonymous ratio</p>
+            <p class="cp-value">@Model.AnonymousRatioDisplay</p>
+            <p class="cp-caption">Share of posts flagged anonymous (7d).</p>
+        </article>
+        <article class="cp-card">
+            <p class="cp-label">Edited posts</p>
+            <p class="cp-value">@Model.Data.EditedPosts</p>
+        </article>
+        <article class="cp-card">
+            <p class="cp-label">Deleted posts</p>
+            <p class="cp-value">@Model.Data.DeletedPosts</p>
+        </article>
+        <article class="cp-card">
+            <p class="cp-label">Moderated posts</p>
+            <p class="cp-value">@Model.Data.ModeratedPosts</p>
+        </article>
+        <article class="cp-card">
+            <p class="cp-label">Reports pending</p>
+            <p class="cp-value">@Model.Data.ReportsPending</p>
+            <p class="cp-caption">Non-hidden queue items.</p>
+        </article>
+    </div>
+</section>
+
+<section class="cp-section">
+    <h2>Top Categories (7d)</h2>
+    <div class="cp-placeholder" style="padding:0; overflow-x:auto;">
+        @Html.Partial("_MetricTable", Model.Data.TopCategories.Select(c => new MetricCount(c.Label, c.Count)).ToList())
+    </div>
+</section>
+
+@if (Model.Data.IncludeAdmin)
+{
+    <section class="cp-section">
+        <h2>Media Monitoring (24h)</h2>
+        <div class="cp-card-grid">
+            <article class="cp-card">
+                <p class="cp-label">Images uploaded</p>
+                <p class="cp-value">@Model.Data.ImagesUploadedDay</p>
+            </article>
+            <article class="cp-card">
+                <p class="cp-label">Upload failures</p>
+                <p class="cp-value">@Model.Data.UploadFailuresDay</p>
+                <p class="cp-caption">Blocked by malware scanner or validation.</p>
+            </article>
+            <article class="cp-card">
+                <p class="cp-label">Malware detections</p>
+                <p class="cp-value">@Model.Data.MalwareDetectionsDay</p>
+            </article>
+        </div>
+    </section>
+}

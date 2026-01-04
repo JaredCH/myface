@@ -1,0 +1,24 @@
+Phase 1 – Assess & Scope
+- Capture current MailController flow, view models, and Razor partial usage.
+- Note data needs for inbox/outbox/drafts lists, compose form, and message detail preview.
+- Confirm global layout knobs (ViewBag.HideSidebars) required to give Mail page full width.
+
+Phase 2 – Data & Controller Enhancements
+- Extend MailIndexViewModel to include a SelectedMessage payload for the inline viewer.
+- Update MailController.Index to accept an optional messageId, fetch the requested/first message for the active tab, and mark messages read when appropriate.
+- Ensure ViewBag.HideSidebars is set for Index/View responses.
+
+Phase 3 – Razor Layout Overhaul
+- Replace tabbed Bootstrap table UI in Views/Mail/Index.cshtml with the three-column grid (categories, message list, message viewer/compose).
+- Integrate categories sidebar, search bar (non-functional placeholder), unread indicators, and New Message button; wire category links to existing tab querystring.
+- Build responsive/mobile variants (stacked columns, overlay toggles disabled without JS).
+
+Phase 4 – List, Viewer, & Compose Integration
+- Render inbox/outbox/drafts data inside the messages list column with per-message metadata, unread styling, and active-state binding tied to the SelectedMessage id.
+- Show SelectedMessage in the viewer column (subject, metadata, body, Reply/Forward/Delete buttons hooking to existing actions/routes); display empty state when nothing selected.
+- When ActiveTab == "new", swap the viewer column contents for the compose form, ensuring existing send/save draft endpoints and validation messages surface inline.
+
+Phase 5 – Polish, Verify, & Deploy
+- Add view-scoped CSS (no JS) for dark theme grid, buttons, scrollbars, and responsive adjustments.
+- Manually test each tab, draft sending, and SelectedMessage navigation across Desktop + narrow viewport.
+- Execute ./redeploy.sh and confirm health checks; capture any residual warnings for follow-up.

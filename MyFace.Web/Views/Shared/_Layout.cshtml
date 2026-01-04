@@ -17,6 +17,7 @@
         : HtmlString.Empty;
     var isChatPage = string.Equals(ViewContext.RouteData.Values["controller"]?.ToString(), "Chat", StringComparison.OrdinalIgnoreCase);
     var hideSidebars = (ViewBag.HideSidebars as bool?) ?? false;
+    var metaRefreshSeconds = ViewData["MetaRefreshSeconds"] as int?;
 }
 <!DOCTYPE html>
 <html lang="en">
@@ -25,6 +26,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="referrer" content="no-referrer" />
     <title>@ViewData["Title"] - Sigil</title>
+    @if (metaRefreshSeconds.HasValue && metaRefreshSeconds.Value > 0)
+    {
+        <meta http-equiv="refresh" content="@metaRefreshSeconds.Value" />
+    }
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     @RenderSection("HeadExtras", required: false)
 </head>

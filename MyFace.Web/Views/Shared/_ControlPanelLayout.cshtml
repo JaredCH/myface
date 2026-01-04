@@ -1,0 +1,41 @@
+@using MyFace.Web.Models.ControlPanel
+@{
+    Layout = "_Layout";
+    var navLinks = ViewData["ControlPanelNav"] as IReadOnlyList<ControlPanelNavLink> ?? Array.Empty<ControlPanelNavLink>();
+    var roleLabel = ViewData["ControlPanelRole"] as string ?? "Moderator";
+    var pageTitle = ViewData["Title"] as string ?? "Control Panel";
+}
+
+<div class="control-panel-wrapper">
+    <header class="cp-header">
+        <div>
+            <p class="cp-eyebrow">MyFace Control Panel</p>
+            <h1>@pageTitle</h1>
+        </div>
+        <div class="cp-header-meta">
+            <span class="cp-status-dot" aria-hidden="true"></span>
+            <span class="cp-role">@roleLabel</span>
+            <a class="cp-logout" asp-controller="Account" asp-action="Logout">Logout</a>
+        </div>
+    </header>
+
+    <div class="cp-shell">
+        <nav class="cp-nav" aria-label="Control panel">
+            <ul>
+                @foreach (var link in navLinks)
+                {
+                    <li class="@(link.IsActive ? "active" : string.Empty)">
+                        <a href="@link.Url">@link.Label</a>
+                        @if (link.RequiresAdmin)
+                        {
+                            <span class="cp-badge">Admin</span>
+                        }
+                    </li>
+                }
+            </ul>
+        </nav>
+        <main class="cp-content">
+            @RenderBody()
+        </main>
+    </div>
+</div>

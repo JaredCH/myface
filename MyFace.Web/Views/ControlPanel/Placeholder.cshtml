@@ -1,0 +1,16 @@
+@model ControlPanelPageViewModel
+
+<section class="cp-section">
+    <h2>@Model.SectionTitle</h2>
+    <p class="cp-subhead">Phase roadmap</p>
+    <div class="cp-placeholder">
+        @if (!string.IsNullOrWhiteSpace(Model.PlaceholderBody))
+        {
+            @Model.PlaceholderBody
+        }
+        else
+        {
+            <text>The build is tracking Phase 1. This surface will populate once the corresponding phase starts.</text>
+        }
+    </div>
+</section>

@@ -70,6 +70,54 @@ build_metadata.AdditionalFiles.CssScope =
 build_metadata.AdditionalFiles.TargetPath = Vmlld3MvQ2hhdC9WaWV3ZXJzUGFuZWwuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
+[/home/server/myface/MyFace.Web/Views/ControlPanel/AuditLog.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvQ29udHJvbFBhbmVsL0F1ZGl0TG9nLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[/home/server/myface/MyFace.Web/Views/ControlPanel/Chat.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvQ29udHJvbFBhbmVsL0NoYXQuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[/home/server/myface/MyFace.Web/Views/ControlPanel/Content.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvQ29udHJvbFBhbmVsL0NvbnRlbnQuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[/home/server/myface/MyFace.Web/Views/ControlPanel/Index.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvQ29udHJvbFBhbmVsL0luZGV4LmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[/home/server/myface/MyFace.Web/Views/ControlPanel/ManageUser.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvQ29udHJvbFBhbmVsL01hbmFnZVVzZXIuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[/home/server/myface/MyFace.Web/Views/ControlPanel/Placeholder.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvQ29udHJvbFBhbmVsL1BsYWNlaG9sZGVyLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[/home/server/myface/MyFace.Web/Views/ControlPanel/Security.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvQ29udHJvbFBhbmVsL1NlY3VyaXR5LmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[/home/server/myface/MyFace.Web/Views/ControlPanel/Settings.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvQ29udHJvbFBhbmVsL1NldHRpbmdzLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[/home/server/myface/MyFace.Web/Views/ControlPanel/Traffic.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvQ29udHJvbFBhbmVsL1RyYWZmaWMuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[/home/server/myface/MyFace.Web/Views/ControlPanel/Users.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvQ29udHJvbFBhbmVsL1VzZXJzLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[/home/server/myface/MyFace.Web/Views/ControlPanel/_MetricTable.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvQ29udHJvbFBhbmVsL19NZXRyaWNUYWJsZS5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[/home/server/myface/MyFace.Web/Views/ControlPanel/_ViewStart.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvQ29udHJvbFBhbmVsL19WaWV3U3RhcnQuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
 [/home/server/myface/MyFace.Web/Views/Home/Index.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3MvSG9tZS9JbmRleC5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
@@ -136,6 +184,10 @@ build_metadata.AdditionalFiles.CssScope =
 
 [/home/server/myface/MyFace.Web/Views/Shared/_ChatSection.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3MvU2hhcmVkL19DaGF0U2VjdGlvbi5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[/home/server/myface/MyFace.Web/Views/Shared/_ControlPanelLayout.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvU2hhcmVkL19Db250cm9sUGFuZWxMYXlvdXQuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
 [/home/server/myface/MyFace.Web/Views/Shared/_PostImageGallery.cshtml]

@@ -1,0 +1,343 @@
+@model UserManagementViewModel
+
+<section class="cp-section">
+    <h2>User Lookup</h2>
+    <div class="cp-card-grid" style="grid-template-columns:repeat(auto-fit,minmax(260px,1fr));">
+        <article class="cp-card">
+            <form method="get" asp-action="ManageUser" class="cp-form">
+                <label class="cp-label" for="lookup-id">User ID</label>
+                <input type="number" id="lookup-id" name="userId" min="1" placeholder="123" />
+                <p class="cp-caption">or lookup by username</p>
+                <label class="cp-label" for="lookup-username">Username</label>
+                <input type="text" id="lookup-username" name="username" value="@Convert.ToString(ViewData["LookupUsername"] ?? string.Empty)" placeholder="myfacefan" />
+                <button type="submit">Load</button>
+            </form>
+        </article>
+        @if (Model.HasUser)
+        {
+            <article class="cp-card">
+                <p class="cp-label">Quick Links</p>
+                <ul style="margin:0; padding-left:1.2rem;">
+                    <li><a href="/profile/@Model.Detail!.User.Username" target="_blank">View public profile</a></li>
+                    <li><a href="/messages/@Model.Detail.User.Username" target="_blank">Open private messages</a></li>
+                    <li><a href="/control-panel/users?highlight=@Model.Detail.User.UserId">Jump to engagement stats</a></li>
+                </ul>
+            </article>
+        }
+    </div>
+</section>
+
+@if (!Model.HasUser)
+{
+    <section class="cp-section">
+        <div class="cp-placeholder">
+            <p style="margin:0; color:var(--muted);">Select a user to manage their account.</p>
+        </div>
+    </section>
+}
+else
+{
+    var detail = Model.Detail!;
+    <section class="cp-section">
+        <h2>Account Overview</h2>
+        <div class="cp-card-grid">
+            <article class="cp-card">
+                <p class="cp-label">Username</p>
+                <p class="cp-value">@detail.User.Username</p>
+                <p class="cp-caption">Login: @detail.User.LoginName</p>
+            </article>
+            <article class="cp-card">
+                <p class="cp-label">Role</p>
+                <p class="cp-value">@Model.Role</p>
+            </article>
+            <article class="cp-card">
+                <p class="cp-label">Status</p>
+                <p class="cp-value">@Model.StatusLabel</p>
+                <p class="cp-caption">@Model.PgpStatus</p>
+            </article>
+            <article class="cp-card">
+                <p class="cp-label">Joined</p>
+                <p class="cp-value">@Model.FormatDate(detail.User.CreatedAt)</p>
+            </article>
+            <article class="cp-card">
+                <p class="cp-label">Last seen</p>
+                <p class="cp-value">@Model.FormatDate(detail.User.LastSeenAt)</p>
+            </article>
+        </div>
+    </section>
+
+    <section class="cp-section">
+        <h2>Moderation Controls</h2>
+        <div class="cp-card-grid" style="grid-template-columns:repeat(auto-fit,minmax(280px,1fr));">
+            <article class="cp-card">
+                <p class="cp-label">Suspend user</p>
+                <form asp-action="SuspendUser" method="post" class="cp-form">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="UserId" value="@detail.User.UserId" />
+                    <label class="cp-label" for="suspend-minutes">Minutes</label>
+                    <input type="number" id="suspend-minutes" name="Minutes" min="5" max="43200" value="120" required />
+                    <label class="cp-label" for="suspend-reason">Reason</label>
+                    <input type="text" id="suspend-reason" name="Reason" placeholder="Spam links" required />
+                    <button type="submit">Suspend</button>
+                </form>
+            </article>
+            <article class="cp-card">
+                <p class="cp-label">Lift suspension</p>
+                <form asp-action="UnsuspendUser" method="post" class="cp-form">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="UserId" value="@detail.User.UserId" />
+                    <label class="cp-label" for="unsuspend-reason">Reason</label>
+                    <input type="text" id="unsuspend-reason" name="Reason" placeholder="Completed review" required />
+                    <button type="submit">Clear suspension</button>
+                </form>
+            </article>
+            <article class="cp-card">
+                <p class="cp-label">Lock / unlock thread</p>
+                <form asp-action="SetThreadLock" method="post" class="cp-form">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="ReturnUserId" value="@detail.User.UserId" />
+                    <label class="cp-label" for="thread-id">Thread ID</label>
+                    <input type="number" id="thread-id" name="ThreadId" min="1" required />
+                    <label class="cp-label" for="thread-lock">Action</label>
+                    <select id="thread-lock" name="Lock">
+                        <option value="true">Lock thread</option>
+                        <option value="false">Unlock thread</option>
+                    </select>
+                    <label class="cp-label" for="thread-reason">Reason</label>
+                    <input type="text" id="thread-reason" name="Reason" placeholder="Off-topic brawl" required />
+                    <button type="submit">Apply</button>
+                </form>
+            </article>
+            <article class="cp-card">
+                <p class="cp-label">Remove or hide post</p>
+                <form asp-action="DeletePost" method="post" class="cp-form" style="margin-bottom:0.5rem;">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="ReturnUserId" value="@detail.User.UserId" />
+                    <label class="cp-label" for="post-id-delete">Post ID</label>
+                    <input type="number" id="post-id-delete" name="PostId" min="1" required />
+                    <label class="cp-label" for="post-reason-delete">Reason</label>
+                    <input type="text" id="post-reason-delete" name="Reason" placeholder="Policy violation" required />
+                    <button type="submit">Delete post</button>
+                </form>
+                <form asp-action="HidePost" method="post" class="cp-form" style="margin-top:0.75rem;">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="ReturnUserId" value="@detail.User.UserId" />
+                    <label class="cp-label" for="post-id-hide">Post ID</label>
+                    <input type="number" id="post-id-hide" name="PostId" min="1" required />
+                    <label class="cp-label" for="post-reason-hide">Reason</label>
+                    <input type="text" id="post-reason-hide" name="Reason" placeholder="Escalated to review" required />
+                    <button type="submit">Hide from feed</button>
+                </form>
+            </article>
+        </div>
+    </section>
+
+    @if (Model.IsAdmin)
+    {
+        <section class="cp-section">
+            <h2>Admin Controls</h2>
+            <div class="cp-card-grid" style="grid-template-columns:repeat(auto-fit,minmax(280px,1fr));">
+                <article class="cp-card">
+                    <p class="cp-label">Activate / deactivate</p>
+                    <form asp-action="SetActivation" method="post" class="cp-form">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="UserId" value="@detail.User.UserId" />
+                        <label class="cp-label" for="activation-state">State</label>
+                        <select id="activation-state" name="IsActive">
+                            <option value="false" selected='@(!Model.IsActive)'>Deactivate</option>
+                            <option value="true" selected='@Model.IsActive'>Activate</option>
+                        </select>
+                        <label class="cp-label" for="activation-reason">Reason</label>
+                        <input type="text" id="activation-reason" name="Reason" placeholder="Chargeback" required />
+                        <button type="submit">Apply</button>
+                    </form>
+                </article>
+                <article class="cp-card">
+                    <p class="cp-label">Reset password</p>
+                    <form asp-action="ResetPassword" method="post" class="cp-form">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="UserId" value="@detail.User.UserId" />
+                        <label class="cp-label" for="new-password">Temporary password</label>
+                        <input type="text" id="new-password" name="NewPassword" minlength="10" placeholder="Generate strong value" required />
+                        <label class="cp-label" for="password-reason">Reason</label>
+                        <input type="text" id="password-reason" name="Reason" placeholder="Account compromise" required />
+                        <button type="submit">Reset password</button>
+                    </form>
+                </article>
+                <article class="cp-card">
+                    <p class="cp-label">Force username change</p>
+                    <form asp-action="ForceUsername" method="post" class="cp-form">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="UserId" value="@detail.User.UserId" />
+                        <label class="cp-label" for="new-username">New username</label>
+                        <input type="text" id="new-username" name="NewUsername" minlength="3" required />
+                        <label class="cp-label" for="username-reason">Reason</label>
+                        <input type="text" id="username-reason" name="Reason" placeholder="Impersonation" required />
+                        <button type="submit">Enforce change</button>
+                    </form>
+                </article>
+                <article class="cp-card">
+                    <p class="cp-label">Role &amp; account lifecycle</p>
+                    <form asp-action="SetRole" method="post" class="cp-form" style="margin-bottom:0.75rem;">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="UserId" value="@detail.User.UserId" />
+                        <label class="cp-label" for="role-select">Role</label>
+                        <select id="role-select" name="Role">
+                            <option value="User" selected='@string.Equals(Model.Role, "User", System.StringComparison.OrdinalIgnoreCase)'>User</option>
+                            <option value="Moderator" selected='@string.Equals(Model.Role, "Moderator", System.StringComparison.OrdinalIgnoreCase)'>Moderator</option>
+                            <option value="Admin" selected='@string.Equals(Model.Role, "Admin", System.StringComparison.OrdinalIgnoreCase)'>Admin</option>
+                        </select>
+                        <label class="cp-label" for="role-reason">Reason</label>
+                        <input type="text" id="role-reason" name="Reason" placeholder="Promotion" required />
+                        <button type="submit">Update role</button>
+                    </form>
+                    <form asp-action="DeleteUser" method="post" class="cp-form" style="margin-top:0.5rem;">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="UserId" value="@detail.User.UserId" />
+                        <label class="cp-label" for="delete-reason">Delete user (type reason)</label>
+                        <input type="text" id="delete-reason" name="Reason" placeholder="GDPR request" required />
+                        <button type="submit" class="danger">Delete account</button>
+                    </form>
+                </article>
+            </div>
+        </section>
+    }
+
+    <section class="cp-section">
+        <h2>Recent Activity &amp; Signals</h2>
+        <div class="cp-placeholder" style="padding:0; overflow-x:auto;">
+            <table style="width:100%; border-collapse:collapse; font-size:0.9rem;">
+                <thead>
+                    <tr>
+                        <th style="text-align:left; padding:0.75rem; border-bottom:1px solid var(--border);">Login attempts (hash)</th>
+                        <th style="text-align:left; padding:0.75rem; border-bottom:1px solid var(--border);">IP hash</th>
+                        <th style="text-align:left; padding:0.75rem; border-bottom:1px solid var(--border);">Result</th>
+                        <th style="text-align:left; padding:0.75rem; border-bottom:1px solid var(--border);">Timestamp</th>
+                    </tr>
+                </thead>
+                <tbody>
+                @foreach (var attempt in detail.LoginAttempts)
+                {
+                    <tr>
+                        <td style="padding:0.65rem; border-bottom:1px solid var(--border);">@attempt.LoginNameHash</td>
+                        <td style="padding:0.65rem; border-bottom:1px solid var(--border);">@(string.IsNullOrWhiteSpace(attempt.IpAddressHash) ? "—" : attempt.IpAddressHash)</td>
+                        <td style="padding:0.65rem; border-bottom:1px solid var(--border);">@(attempt.Success ? "Success" : "Failure")</td>
+                        <td style="padding:0.65rem; border-bottom:1px solid var(--border);">@Model.FormatDate(attempt.AttemptedAt)</td>
+                    </tr>
+                }
+                @if (detail.LoginAttempts.Count == 0)
+                {
+                    <tr>
+                        <td colspan="4" style="padding:0.85rem; text-align:center; color:var(--muted);">No login attempts captured.</td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    <section class="cp-section">
+        <h2>Recent Sessions</h2>
+        <div class="cp-placeholder" style="padding:0; overflow-x:auto;">
+            <table style="width:100%; border-collapse:collapse; font-size:0.9rem;">
+                <thead>
+                    <tr>
+                        <th style="text-align:left; padding:0.75rem; border-bottom:1px solid var(--border);">Visited</th>
+                        <th style="text-align:left; padding:0.75rem; border-bottom:1px solid var(--border);">Path</th>
+                        <th style="text-align:left; padding:0.75rem; border-bottom:1px solid var(--border);">IP hash</th>
+                        <th style="text-align:left; padding:0.75rem; border-bottom:1px solid var(--border);">Session fingerprint</th>
+                        <th style="text-align:left; padding:0.75rem; border-bottom:1px solid var(--border);">Referrer</th>
+                    </tr>
+                </thead>
+                <tbody>
+                @foreach (var visit in detail.RecentSessions)
+                {
+                    <tr>
+                        <td style="padding:0.65rem; border-bottom:1px solid var(--border);">@Model.FormatDate(visit.VisitedAt)</td>
+                        <td style="padding:0.65rem; border-bottom:1px solid var(--border);">@visit.Path</td>
+                        <td style="padding:0.65rem; border-bottom:1px solid var(--border);">@(string.IsNullOrWhiteSpace(visit.IpHash) ? "—" : visit.IpHash)</td>
+                        <td style="padding:0.65rem; border-bottom:1px solid var(--border);">@(string.IsNullOrWhiteSpace(visit.SessionFingerprint) ? "—" : visit.SessionFingerprint)</td>
+                        <td style="padding:0.65rem; border-bottom:1px solid var(--border);">@(string.IsNullOrWhiteSpace(visit.Referrer) ? "—" : visit.Referrer)</td>
+                    </tr>
+                }
+                @if (detail.RecentSessions.Count == 0)
+                {
+                    <tr>
+                        <td colspan="5" style="padding:0.85rem; text-align:center; color:var(--muted);">No recent sessions recorded.</td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    <section class="cp-section">
+        <h2>User Posts</h2>
+        <div class="cp-placeholder" style="padding:0; overflow-x:auto;">
+            <table style="width:100%; border-collapse:collapse; font-size:0.9rem;">
+                <thead>
+                    <tr>
+                        <th style="text-align:left; padding:0.75rem; border-bottom:1px solid var(--border);">Post ID</th>
+                        <th style="text-align:left; padding:0.75rem; border-bottom:1px solid var(--border);">Thread</th>
+                        <th style="text-align:left; padding:0.75rem; border-bottom:1px solid var(--border);">Created</th>
+                        <th style="text-align:left; padding:0.75rem; border-bottom:1px solid var(--border);">Reports</th>
+                        <th style="text-align:left; padding:0.75rem; border-bottom:1px solid var(--border);">State</th>
+                    </tr>
+                </thead>
+                <tbody>
+                @foreach (var post in detail.RecentPosts)
+                {
+                    <tr>
+                        <td style="padding:0.65rem; border-bottom:1px solid var(--border);">@post.PostId</td>
+                        <td style="padding:0.65rem; border-bottom:1px solid var(--border);">@post.ThreadTitle (#@post.ThreadId)</td>
+                        <td style="padding:0.65rem; border-bottom:1px solid var(--border);">@Model.FormatDate(post.CreatedAt)</td>
+                        <td style="padding:0.65rem; border-bottom:1px solid var(--border);">@post.ReportCount</td>
+                        <td style="padding:0.65rem; border-bottom:1px solid var(--border);">
+                            @(post.IsDeleted ? "Deleted" : post.IsReportHidden ? "Hidden" : "Visible")
+                        </td>
+                    </tr>
+                }
+                @if (detail.RecentPosts.Count == 0)
+                {
+                    <tr>
+                        <td colspan="5" style="padding:0.85rem; text-align:center; color:var(--muted);">No posts available.</td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    <section class="cp-section">
+        <h2>Audit Trail</h2>
+        <div class="cp-placeholder" style="padding:0; overflow-x:auto;">
+            <table style="width:100%; border-collapse:collapse; font-size:0.9rem;">
+                <thead>
+                    <tr>
+                        <th style="text-align:left; padding:0.75rem; border-bottom:1px solid var(--border);">Timestamp</th>
+                        <th style="text-align:left; padding:0.75rem; border-bottom:1px solid var(--border);">Actor</th>
+                        <th style="text-align:left; padding:0.75rem; border-bottom:1px solid var(--border);">Action</th>
+                        <th style="text-align:left; padding:0.75rem; border-bottom:1px solid var(--border);">Details</th>
+                    </tr>
+                </thead>
+                <tbody>
+                @foreach (var entry in Model.AuditEntries)
+                {
+                    <tr>
+                        <td style="padding:0.65rem; border-bottom:1px solid var(--border);">@Model.FormatDate(entry.CreatedAt)</td>
+                        <td style="padding:0.65rem; border-bottom:1px solid var(--border);">@entry.ActorUsername (@entry.ActorRole)</td>
+                        <td style="padding:0.65rem; border-bottom:1px solid var(--border);">@entry.Action</td>
+                        <td style="padding:0.65rem; border-bottom:1px solid var(--border);">@entry.Details</td>
+                    </tr>
+                }
+                @if (Model.AuditEntries.Count == 0)
+                {
+                    <tr>
+                        <td colspan="4" style="padding:0.85rem; text-align:center; color:var(--muted);">No audit activity recorded for this user.</td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+        </div>
+    </section>
+}

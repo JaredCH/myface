@@ -1,0 +1,116 @@
+@model ControlSettingsViewModel
+
+<section class="cp-section">
+    <h2>Dynamic Configuration</h2>
+    <p class="cp-subhead">Edit runtime limits without redeploying. Every change is audited and snapshotted for rollbacks.</p>
+    <div class="cp-placeholder" style="padding:1rem;">
+        <ul style="margin:0; padding-left:1.4rem; line-height:1.4; color:var(--muted);">
+            <li>Numeric inputs represent raw values (seconds, minutes, or bytes) as noted in each description.</li>
+            <li>Reason fields are optional but highly recommended for future operators.</li>
+            <li>Use the history controls to restore a previous snapshot if a change misbehaves.</li>
+        </ul>
+    </div>
+</section>
+
+@foreach (var category in Model.Categories)
+{
+    <section class="cp-section">
+        <div class="cp-section-header" style="display:flex; justify-content:space-between; align-items:center;">
+            <h2 style="margin:0;">@category.Name</h2>
+        </div>
+        <div class="cp-card-grid" style="grid-template-columns:repeat(auto-fit,minmax(280px,1fr));">
+        @foreach (var setting in category.Settings)
+        {
+            var cardClasses = setting.IsHighlighted ? "cp-card" + " cp-card-highlight" : "cp-card";
+            <article class="@cardClasses" style="display:flex; flex-direction:column; gap:0.65rem;">
+                <div>
+                    <p class="cp-label" style="margin-bottom:0.2rem;">@setting.Label</p>
+                    <p class="cp-caption" style="margin-bottom:0.35rem;">@setting.Description</p>
+                    <div style="font-size:0.85rem; color:var(--muted); display:flex; gap:1.25rem;">
+                        <span>Current: <strong>@setting.CurrentValueDisplay</strong></span>
+                        <span>Default: @setting.DefaultValueDisplay</span>
+                    </div>
+                    <div style="font-size:0.75rem; color:var(--muted);">
+                        Last update: @setting.UpdatedAtDisplay @if (!string.IsNullOrEmpty(setting.UpdatedBy)) { <text>by @setting.UpdatedBy</text> }
+                    </div>
+                </div>
+                <form asp-action="UpdateSetting" asp-controller="ControlPanel" method="post" style="display:flex; flex-direction:column; gap:0.4rem;">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="Key" value="@setting.Key" />
+                    <label class="cp-label" style="margin-bottom:0.1rem;">New value</label>
+                    @if (setting.IsBoolean)
+                    {
+                        var currentBool = bool.TryParse(setting.CurrentValue, out var parsed) && parsed;
+                        <select name="Value">
+                            <option value="true" selected="@(currentBool ? "selected" : null)">Enabled</option>
+                            <option value="false" selected="@(!currentBool ? "selected" : null)">Disabled</option>
+                        </select>
+                    }
+                    else
+                    {
+                        <input type="number" name="Value" value="@setting.CurrentValue" min="@setting.Min" max="@setting.Max" step="1" required />
+                    }
+                    <label class="cp-label" style="margin-top:0.4rem;">Reason (optional)</label>
+                    <input type="text" name="Reason" placeholder="Document why this is changing" />
+                    <button type="submit">Save</button>
+                </form>
+                @if (setting.History.Count > 0)
+                {
+                    <div class="cp-placeholder" style="padding:0.5rem;">
+                        <p class="cp-label" style="font-size:0.8rem; text-transform:uppercase; letter-spacing:0.12em; color:var(--muted);">History</p>
+                        <table style="width:100%; border-collapse:collapse; font-size:0.8rem;">
+                            <thead>
+                                <tr>
+                                    <th style="text-align:left; padding:0.25rem;">Value</th>
+                                    <th style="text-align:left; padding:0.25rem;">When</th>
+                                    <th style="text-align:left; padding:0.25rem;">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                            @foreach (var history in setting.History)
+                            {
+                                <tr>
+                                    <td style="padding:0.25rem;">@history.ValueDisplay</td>
+                                    <td style="padding:0.25rem; white-space:nowrap;">@history.CreatedAtDisplay</td>
+                                    <td style="padding:0.25rem;">
+                                        <form asp-action="RestoreSetting" asp-controller="ControlPanel" method="post" style="display:flex; gap:0.3rem; align-items:center;">
+                                            @Html.AntiForgeryToken()
+                                            <input type="hidden" name="HistoryId" value="@history.Id" />
+                                            <input type="text" name="Reason" placeholder="Reason" style="max-width:120px;" />
+                                            <button type="submit" class="link-button">Restore</button>
+                                        </form>
+                                    </td>
+                                </tr>
+                                if (!string.IsNullOrEmpty(history.Reason))
+                                {
+                                    <tr>
+                                        <td colspan="3" style="padding:0.25rem; font-style:italic; color:var(--muted);">Reason: @history.Reason (by @history.UpdatedBy)</td>
+                                    </tr>
+                                }
+                            }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+            </article>
+        }
+        </div>
+    </section>
+}
+
+<style>
+    .cp-card-highlight {
+        border: 2px solid var(--accent, #7a9bff);
+        box-shadow: 0 0 12px rgba(122, 155, 255, 0.35);
+    }
+    .link-button {
+        border: none;
+        background: none;
+        color: var(--accent, #7a9bff);
+        cursor: pointer;
+        padding: 0.1rem 0.4rem;
+    }
+    .link-button:hover {
+        text-decoration: underline;
+    }
+</style>

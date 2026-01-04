@@ -1,0 +1,28 @@
+@model IReadOnlyList<MyFace.Services.MetricCount>
+
+<table style="width:100%; border-collapse:collapse; font-size:0.9rem;">
+    <thead>
+        <tr>
+            <th style="text-align:left; padding:0.75rem; border-bottom:1px solid var(--border); color:var(--muted); text-transform:uppercase; font-size:0.68rem; letter-spacing:0.16em;">Label</th>
+            <th style="text-align:left; padding:0.75rem; border-bottom:1px solid var(--border); color:var(--muted); text-transform:uppercase; font-size:0.68rem; letter-spacing:0.16em;">Count</th>
+        </tr>
+    </thead>
+    <tbody>
+    @if (Model.Count == 0)
+    {
+        <tr>
+            <td colspan="2" style="padding:0.75rem; text-align:center; color:var(--muted);">No data for this window.</td>
+        </tr>
+    }
+    else
+    {
+        foreach (var row in Model)
+        {
+            <tr>
+                <td style="padding:0.65rem; border-bottom:1px solid var(--border); white-space:nowrap; max-width:0; overflow:hidden; text-overflow:ellipsis; color:var(--fg);">@row.Label</td>
+                <td style="padding:0.65rem; border-bottom:1px solid var(--border); color:var(--fg);">@row.Count</td>
+            </tr>
+        }
+    }
+    </tbody>
+</table>

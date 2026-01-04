@@ -7,10 +7,12 @@ namespace MyFace.Web.Controllers;
 public class PostController : Controller
 {
     private readonly ForumService _forumService;
+    private readonly ControlSettingsReader _settingsReader;
 
-    public PostController(ForumService forumService)
+    public PostController(ForumService forumService, ControlSettingsReader settingsReader)
     {
         _forumService = forumService;
+        _settingsReader = settingsReader;
     }
 
     [HttpPost]
@@ -38,7 +40,13 @@ public class PostController : Controller
         }
 
         int? userId = GetCurrentUserId();
-        bool isAnonymous = postAsAnonymous || userId == null;
+        var allowAnonymous = await _settingsReader.GetBoolAsync(ControlSettingKeys.PostAllowAnonymous, true, HttpContext.RequestAborted);
+        if (postAsAnonymous && !allowAnonymous)
+        {
+            TempData["Error"] = "Anonymous posting is currently disabled by administrators.";
+        }
+
+        bool isAnonymous = (postAsAnonymous && allowAnonymous) || userId == null;
 
         await _forumService.CreatePostAsync(threadId, content, userId, isAnonymous);
         return RedirectToAction("View", "Thread", new { id = threadId });

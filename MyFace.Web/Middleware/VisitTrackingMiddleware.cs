@@ -20,6 +20,7 @@ public class VisitTrackingMiddleware
         // Track the visit after the request is processed (fire and forget)
         var path = context.Request.Path.ToString();
         var userAgent = context.Request.Headers["User-Agent"].ToString();
+        var referrer = context.Request.Headers["Referer"].ToString();
         var sessionId = context.Session?.Id;
         var user = context.User;
         var username = user?.Identity?.IsAuthenticated == true ? user.Identity?.Name : null;
@@ -37,7 +38,7 @@ public class VisitTrackingMiddleware
         {
             try
             {
-                await visitTracking.TrackVisitAsync(path, userAgent, userId, username, sessionId);
+                await visitTracking.TrackVisitAsync(path, userAgent, userId, username, sessionId, null, referrer);
             }
             catch
             {

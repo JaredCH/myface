@@ -1,5 +1,4 @@
 using System.Security.Cryptography;
-using System.Security.Claims;
 
 namespace MyFace.Web.Services;
 
@@ -8,40 +7,6 @@ public class CaptchaChallenge
     public string Context { get; set; } = string.Empty;
     public string Question { get; set; } = string.Empty;
     public string Answer { get; set; } = string.Empty;
-}
-
-public static class CaptchaSettings
-{
-    public const int MinPageViewsBeforeCaptcha = 20;
-    public const int MaxPageViewsBeforeCaptcha = 40;
-
-    public const int AnonymousMinPageViews = 10;
-    public const int AnonymousMaxPageViews = 20;
-
-    public const int AdminModMinPageViews = 50;
-    public const int AdminModMaxPageViews = 75;
-
-    public static int NextThreshold(System.Security.Claims.ClaimsPrincipal user)
-    {
-        var (min, max) = GetRangeForUser(user);
-        return RandomNumberGenerator.GetInt32(min, max + 1);
-    }
-
-    public static (int Min, int Max) GetRangeForUser(System.Security.Claims.ClaimsPrincipal user)
-    {
-        if (user?.Identity?.IsAuthenticated != true)
-        {
-            return (AnonymousMinPageViews, AnonymousMaxPageViews);
-        }
-
-        var role = user.FindFirstValue(System.Security.Claims.ClaimTypes.Role)?.ToLowerInvariant();
-        if (role == "admin" || role == "moderator")
-        {
-            return (AdminModMinPageViews, AdminModMaxPageViews);
-        }
-
-        return (MinPageViewsBeforeCaptcha, MaxPageViewsBeforeCaptcha);
-    }
 }
 
 public class CaptchaService

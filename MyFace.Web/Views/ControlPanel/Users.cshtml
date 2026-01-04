@@ -1,0 +1,195 @@
+@model UserEngagementViewModel
+
+<section class="cp-section">
+    <h2>Population Overview</h2>
+    <div class="cp-card-grid">
+        <article class="cp-card">
+            <p class="cp-label">Total users</p>
+            <p class="cp-value">@Model.Data.TotalUsers</p>
+        </article>
+        <article class="cp-card">
+            <p class="cp-label">Active users (7d)</p>
+            <p class="cp-value">@Model.Data.ActiveUsers7Days</p>
+            <p class="cp-caption">Signed-in within the last 7 days.</p>
+        </article>
+        <article class="cp-card">
+            <p class="cp-label">New users (30d)</p>
+            <p class="cp-value">@Model.Data.NewUsers30Days</p>
+        </article>
+        @if (Model.Data.IncludeAdmin)
+        {
+            <article class="cp-card">
+                <p class="cp-label">PGP verified</p>
+                <p class="cp-value">@Model.Data.PgpVerifiedUsers</p>
+            </article>
+            <article class="cp-card">
+                <p class="cp-label">Banned users</p>
+                <p class="cp-value">@Model.Data.BannedUsers</p>
+            </article>
+        }
+    </div>
+</section>
+
+<section class="cp-section">
+    <h2>Top Contributors (30d)</h2>
+    <div class="cp-placeholder" style="padding:0; overflow-x:auto;">
+        <table style="width:100%; border-collapse:collapse; font-size:0.9rem;">
+            <thead>
+                <tr>
+                    <th style="text-align:left; padding:0.75rem; border-bottom:1px solid var(--border);">Username</th>
+                    <th style="text-align:left; padding:0.75rem; border-bottom:1px solid var(--border);">Posts</th>
+                    <th style="text-align:left; padding:0.75rem; border-bottom:1px solid var(--border);">Role</th>
+                    <th style="text-align:left; padding:0.75rem; border-bottom:1px solid var(--border);">Last seen</th>
+                    <th style="text-align:left; padding:0.75rem; border-bottom:1px solid var(--border);">Action</th>
+                </tr>
+            </thead>
+            <tbody>
+            @if (Model.Data.TopContributors.Count == 0)
+            {
+                <tr>
+                    <td colspan="5" style="padding:0.85rem; text-align:center; color:var(--muted);">No contributor data yet.</td>
+                </tr>
+            }
+            else
+            {
+                foreach (var contributor in Model.Data.TopContributors)
+                {
+                    <tr>
+                        <td style="padding:0.65rem; border-bottom:1px solid var(--border);">@contributor.Username</td>
+                        <td style="padding:0.65rem; border-bottom:1px solid var(--border);">@contributor.PostsLast30Days</td>
+                        <td style="padding:0.65rem; border-bottom:1px solid var(--border);">@contributor.Role</td>
+                        <td style="padding:0.65rem; border-bottom:1px solid var(--border);">@Model.FormatDate(contributor.LastSeenAt)</td>
+                        <td style="padding:0.65rem; border-bottom:1px solid var(--border);"><a href="@Url.Action("ManageUser", "ControlPanel", new { userId = contributor.UserId })">Manage</a></td>
+                    </tr>
+                }
+            }
+            </tbody>
+        </table>
+    </div>
+</section>
+
+<section class="cp-section">
+    <h2>Most Voted Posts</h2>
+    <div class="cp-placeholder" style="padding:0; overflow-x:auto;">
+        <table style="width:100%; border-collapse:collapse; font-size:0.9rem;">
+            <thead>
+                <tr>
+                    <th style="text-align:left; padding:0.75rem; border-bottom:1px solid var(--border);">Post</th>
+                    <th style="text-align:left; padding:0.75rem; border-bottom:1px solid var(--border);">Score</th>
+                    <th style="text-align:left; padding:0.75rem; border-bottom:1px solid var(--border);">Author</th>
+                </tr>
+            </thead>
+            <tbody>
+            @if (Model.Data.TopPosts.Count == 0)
+            {
+                <tr>
+                    <td colspan="3" style="padding:0.85rem; text-align:center; color:var(--muted);">No vote data available.</td>
+                </tr>
+            }
+            else
+            {
+                foreach (var post in Model.Data.TopPosts)
+                {
+                    <tr>
+                        <td style="padding:0.65rem; border-bottom:1px solid var(--border);">
+                            <p style="margin:0; font-weight:600;">@post.Title</p>
+                            <p style="margin:0; color:var(--muted);">@Model.FormatSnippet(post.Snippet)</p>
+                        </td>
+                        <td style="padding:0.65rem; border-bottom:1px solid var(--border);">@post.Score</td>
+                        <td style="padding:0.65rem; border-bottom:1px solid var(--border);">@post.Author</td>
+                    </tr>
+                }
+            }
+            </tbody>
+        </table>
+    </div>
+</section>
+
+<section class="cp-section">
+    <h2>Suspended Users</h2>
+    <div class="cp-placeholder" style="padding:0; overflow-x:auto;">
+        <table style="width:100%; border-collapse:collapse; font-size:0.9rem;">
+            <thead>
+                <tr>
+                    <th style="text-align:left; padding:0.75rem; border-bottom:1px solid var(--border);">Username</th>
+                    <th style="text-align:left; padding:0.75rem; border-bottom:1px solid var(--border);">Role</th>
+                    <th style="text-align:left; padding:0.75rem; border-bottom:1px solid var(--border);">Suspended until</th>
+                    <th style="text-align:left; padding:0.75rem; border-bottom:1px solid var(--border);">Last seen</th>
+                </tr>
+            </thead>
+            <tbody>
+            @if (Model.Data.SuspendedUsers.Count == 0)
+            {
+                <tr>
+                    <td colspan="4" style="padding:0.85rem; text-align:center; color:var(--muted);">No users are currently suspended.</td>
+                </tr>
+            }
+            else
+            {
+                foreach (var suspended in Model.Data.SuspendedUsers)
+                {
+                    <tr>
+                        <td style="padding:0.65rem; border-bottom:1px solid var(--border);">@suspended.Username</td>
+                        <td style="padding:0.65rem; border-bottom:1px solid var(--border);">@suspended.Role</td>
+                        <td style="padding:0.65rem; border-bottom:1px solid var(--border);">@Model.FormatDate(suspended.SuspendedUntil)</td>
+                        <td style="padding:0.65rem; border-bottom:1px solid var(--border);">@Model.FormatDate(suspended.LastSeenAt)</td>
+                    </tr>
+                }
+            }
+            </tbody>
+        </table>
+    </div>
+</section>
+
+@if (Model.Data.IncludeAdmin)
+{
+    <section class="cp-section">
+        <h2>Private Messages (7d)</h2>
+        <div class="cp-card-grid">
+            <article class="cp-card">
+                <p class="cp-label">Sent</p>
+                <p class="cp-value">@Model.Data.PrivateMessages.SentLast7Days</p>
+            </article>
+            <article class="cp-card">
+                <p class="cp-label">Drafts</p>
+                <p class="cp-value">@Model.Data.PrivateMessages.DraftsLast7Days</p>
+            </article>
+            <article class="cp-card">
+                <p class="cp-label">Total drafts</p>
+                <p class="cp-value">@Model.Data.PrivateMessages.TotalDrafts</p>
+            </article>
+        </div>
+    </section>
+
+    <section class="cp-section">
+        <h2>User Growth (30d)</h2>
+        <div class="cp-placeholder" style="padding:0; overflow-x:auto;">
+            <table style="width:100%; border-collapse:collapse; font-size:0.9rem;">
+                <thead>
+                    <tr>
+                        <th style="text-align:left; padding:0.75rem; border-bottom:1px solid var(--border);">Day</th>
+                        <th style="text-align:left; padding:0.75rem; border-bottom:1px solid var(--border);">New users</th>
+                    </tr>
+                </thead>
+                <tbody>
+                @if (!Model.HasGrowthData)
+                {
+                    <tr>
+                        <td colspan="2" style="padding:0.85rem; text-align:center; color:var(--muted);">No new users within this window.</td>
+                    </tr>
+                }
+                else
+                {
+                    foreach (var point in Model.Data.GrowthSeries)
+                    {
+                        <tr>
+                            <td style="padding:0.65rem; border-bottom:1px solid var(--border);">@point.Day.ToString("yyyy-MM-dd")</td>
+                            <td style="padding:0.65rem; border-bottom:1px solid var(--border);">@point.Count</td>
+                        </tr>
+                    }
+                }
+                </tbody>
+            </table>
+        </div>
+    </section>
+}

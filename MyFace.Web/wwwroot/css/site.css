@@ -399,6 +399,62 @@ label { display: block; margin-top: .75rem; font-weight: 600; color: var(--fg); 
 .btn-mod.btn-delete { background: #dc2626; color: white; border-color: #991b1b; }
 .btn-mod.btn-delete:hover { background: #991b1b; }
 
+/* Control Panel */
+.control-panel-wrapper { max-width: 1200px; margin: 0 auto; padding: 2.5rem 0 3rem; }
+.cp-header { background: var(--card-bg); border: 1px solid var(--border); border-radius: 1rem; padding: 1.5rem 2rem; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 1rem; box-shadow: 0 25px 60px rgba(15,23,42,0.08); }
+.cp-eyebrow { text-transform: uppercase; letter-spacing: 0.18em; font-size: 0.75rem; margin: 0; color: var(--muted); }
+.cp-header h1 { font-size: 1.9rem; margin: 0.15rem 0 0; color: var(--fg); }
+.cp-header-meta { display: inline-flex; align-items: center; gap: 0.9rem; font-size: 0.95rem; color: var(--muted); }
+.cp-status-dot { width: 0.65rem; height: 0.65rem; border-radius: 999px; background: var(--accent); box-shadow: 0 0 0 6px rgba(47,111,228,0.18); animation: cp-pulse 2s ease-in-out infinite; }
+.cp-role { font-weight: 600; color: var(--fg); }
+.cp-logout { border: 1px solid var(--border); padding: 0.45rem 1rem; border-radius: 999px; text-decoration: none; font-weight: 600; color: var(--accent); background: var(--accent-light); }
+.cp-logout:hover { color: white; background: var(--accent); border-color: transparent; }
+.cp-shell { margin-top: 1.75rem; display: grid; grid-template-columns: 230px 1fr; gap: 1.5rem; align-items: start; }
+.cp-nav { background: var(--sidebar-bg); border: 1px solid var(--border); border-radius: 1rem; padding: 1.25rem 1rem; box-shadow: 0 20px 45px rgba(15,23,42,0.08); }
+.cp-nav ul { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 0.35rem; }
+.cp-nav li { border-radius: 0.75rem; padding: 0.55rem 0.85rem; display: flex; align-items: center; justify-content: space-between; gap: 0.4rem; border: 1px solid transparent; transition: all 0.2s ease; }
+.cp-nav li:hover { border-color: var(--accent-light); background: rgba(47,111,228,0.08); }
+.cp-nav li.active { border-color: var(--accent); background: rgba(47,111,228,0.12); box-shadow: inset 0 0 0 1px rgba(47,111,228,0.25); }
+.cp-nav a { text-decoration: none; font-weight: 600; color: var(--fg); flex: 1; display: inline-flex; align-items: center; }
+.cp-badge { font-size: 0.62rem; text-transform: uppercase; letter-spacing: 0.18em; padding: 0.12rem 0.5rem; border-radius: 999px; border: 1px solid rgba(47,111,228,0.35); color: var(--accent); background: rgba(47,111,228,0.08); }
+.cp-content { background: var(--card-bg); border: 1px solid var(--border); border-radius: 1rem; padding: 2rem; box-shadow: 0 35px 70px rgba(15,23,42,0.08); }
+.cp-section { margin-bottom: 2.25rem; }
+.cp-section h2 { margin: 0 0 0.35rem; font-size: 1.3rem; color: var(--fg); }
+.cp-section p.cp-subhead { margin: 0 0 1rem; color: var(--muted); font-size: 0.95rem; }
+.cp-card-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 1rem; }
+.cp-card { border: 1px solid var(--border); border-radius: 0.9rem; padding: 1.1rem; background: var(--card-bg); box-shadow: 0 18px 45px rgba(15,23,42,0.08); }
+.cp-card .cp-label { text-transform: uppercase; font-size: 0.68rem; letter-spacing: 0.18em; color: var(--muted); margin: 0; }
+.cp-card .cp-value { font-size: 1.9rem; font-weight: 700; margin: 0.4rem 0 0; color: var(--fg); }
+.cp-card .cp-caption { font-size: 0.85rem; color: var(--muted); margin-top: 0.4rem; }
+.cp-actions { display: flex; flex-wrap: wrap; gap: 0.85rem; }
+.cp-actions form { margin: 0; }
+.cp-actions button { border-radius: 0.7rem; padding: 0.65rem 1.2rem; border: none; background: var(--accent); color: #fff; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; cursor: pointer; box-shadow: 0 10px 25px rgba(47,111,228,0.35); transition: transform 0.15s ease, box-shadow 0.15s ease; }
+.cp-actions button:hover { transform: translateY(-1px); box-shadow: 0 18px 40px rgba(47,111,228,0.3); }
+.cp-placeholder { padding: 1.5rem; border: 1px dashed var(--border); border-radius: 0.9rem; color: var(--muted); background: rgba(47,111,228,0.04); }
+.cp-placeholder table { background: transparent; }
+.cp-placeholder h3 { font-size: 1rem; color: var(--fg); }
+.cp-nav .cp-badge { flex-shrink: 0; }
+.cp-card-grid .cp-placeholder { border-style: solid; background: var(--card-bg); }
+.cp-value--secondary { font-size: 1.25rem; color: var(--muted); }
+
+@keyframes cp-pulse {
+  0% { opacity: 0.4; }
+  50% { opacity: 1; }
+  100% { opacity: 0.4; }
+}
+
+@media (max-width: 1024px) {
+  .cp-shell { grid-template-columns: 1fr; }
+  .cp-nav ul { flex-direction: row; flex-wrap: wrap; }
+  .cp-nav li { flex: 1 1 calc(50% - 0.4rem); }
+}
+
+@media (max-width: 640px) {
+  .control-panel-wrapper { padding: 1rem 0.5rem 2rem; }
+  .cp-content { padding: 1.25rem; }
+  .cp-nav li { flex: 1 1 100%; }
+}
+
 .pagination { display: flex; justify-content: space-between; align-items: center; padding: 1rem; background: var(--card-bg); border: 1px solid var(--border); border-radius: .5rem; margin-bottom: 1.5rem; box-shadow: 0 1px 2px rgba(0,0,0,0.03); }
 .btn-pagination { padding: 0.5rem 1rem; border: 1px solid var(--accent); border-radius: .375rem; color: var(--accent); background: transparent; font-weight: 500; transition: all 0.2s; }
 .btn-pagination:hover { background: var(--accent); color: white; transform: translateX(2px); }

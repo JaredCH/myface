@@ -9,10 +9,12 @@ public class ForumService
 {
     private readonly ApplicationDbContext _context;
     private const int ReportHideThreshold = 2;
+    private readonly ControlSettingsReader _settings;
 
-    public ForumService(ApplicationDbContext context)
+    public ForumService(ApplicationDbContext context, ControlSettingsReader settings)
     {
         _context = context;
+        _settings = settings;
     }
 
     // Helper to track activity (just adds to context, doesn't save)
@@ -105,6 +107,18 @@ public class ForumService
 
     public async Task<Post> CreatePostAsync(int threadId, string content, int? userId, bool isAnonymous)
     {
+        var maxLength = await _settings.GetIntAsync(ControlSettingKeys.PostMaxLength, 4000);
+        if (!string.IsNullOrEmpty(content) && content.Length > maxLength)
+        {
+            content = content[..maxLength];
+        }
+
+        var allowAnonymous = await _settings.GetBoolAsync(ControlSettingKeys.PostAllowAnonymous, true);
+        if (!allowAnonymous)
+        {
+            isAnonymous = false;
+        }
+
         var post = new Post
         {
             ThreadId = threadId,
@@ -203,6 +217,12 @@ public class ForumService
             return false;
         }
 
+        var maxLength = await _settings.GetIntAsync(ControlSettingKeys.PostMaxLength, 4000);
+        if (!string.IsNullOrEmpty(content) && content.Length > maxLength)
+        {
+            content = content[..maxLength];
+        }
+
         post.Content = content;
         post.EditedAt = DateTime.UtcNow;
         post.EditedByUserId = userId;
@@ -236,6 +256,22 @@ public class ForumService
 
         post.IsDeleted = true;
         post.Content = "[removed by moderator]";
+        post.WasModerated = true;
+        await _context.SaveChangesAsync();
+        return true;
+    }
+
+    public async Task<bool> AdminHidePostAsync(int postId)
+    {
+        var post = await _context.Posts.FindAsync(postId);
+        if (post == null)
+        {
+            return false;
+        }
+
+        post.IsReportHidden = true;
+        post.WasModerated = true;
+        post.ReportCount = Math.Max(post.ReportCount, 1);
         await _context.SaveChangesAsync();
         return true;
     }

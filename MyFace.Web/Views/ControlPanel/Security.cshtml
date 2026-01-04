@@ -1,0 +1,88 @@
+@model SecurityOverviewViewModel
+
+<section class="cp-section">
+    <h2>Authentication Load</h2>
+    <div class="cp-card-grid">
+        <article class="cp-card">
+            <p class="cp-label">Failed logins (1h)</p>
+            <p class="cp-value">@Model.Data.FailedLoginsLastHour</p>
+        </article>
+        <article class="cp-card">
+            <p class="cp-label">Failed logins (24h)</p>
+            <p class="cp-value">@Model.Data.FailedLoginsLastDay</p>
+        </article>
+        <article class="cp-card">
+            <p class="cp-label">Successful logins (24h)</p>
+            <p class="cp-value">@Model.Data.SuccessfulLoginsLastDay</p>
+        </article>
+        <article class="cp-card">
+            <p class="cp-label">Password reset requests (24h)</p>
+            <p class="cp-value">@Model.Data.PasswordResetRequestsLastDay</p>
+        </article>
+    </div>
+</section>
+
+<section class="cp-section">
+    <h2>Top Targets (24h)</h2>
+    <div class="cp-card-grid">
+        <div class="cp-placeholder" style="padding:0; overflow-x:auto;">
+            <h3 style="padding:1rem 1rem 0; margin:0;">Login hashes</h3>
+            @Html.Partial("_MetricTable", Model.Data.TopLoginTargets.Select(m => new MyFace.Services.MetricCount(m.Label, m.Count)).ToList())
+        </div>
+        <div class="cp-placeholder" style="padding:0; overflow-x:auto;">
+            <h3 style="padding:1rem 1rem 0; margin:0;">IP hashes</h3>
+            @Html.Partial("_MetricTable", Model.Data.TopIpHashes.Select(m => new MyFace.Services.MetricCount(m.Label, m.Count)).ToList())
+        </div>
+    </div>
+</section>
+
+<section class="cp-section">
+    <h2>Captcha Pressure (last hour)</h2>
+    <div class="cp-placeholder" style="padding:0; overflow-x:auto;">
+        <table style="width:100%; border-collapse:collapse; font-size:0.9rem;">
+            <thead>
+                <tr>
+                    <th style="text-align:left; padding:0.75rem; border-bottom:1px solid var(--border);">User</th>
+                    <th style="text-align:left; padding:0.75rem; border-bottom:1px solid var(--border);">Activity count</th>
+                </tr>
+            </thead>
+            <tbody>
+            @if (Model.Data.CaptchaPressureUsers.Count == 0)
+            {
+                <tr>
+                    <td colspan="2" style="padding:0.85rem; text-align:center; color:var(--muted);">No captcha pressure detected.</td>
+                </tr>
+            }
+            else
+            {
+                foreach (var user in Model.Data.CaptchaPressureUsers)
+                {
+                    <tr>
+                        <td style="padding:0.65rem; border-bottom:1px solid var(--border);">@user.Username</td>
+                        <td style="padding:0.65rem; border-bottom:1px solid var(--border);">@user.ActivityCount</td>
+                    </tr>
+                }
+            }
+            </tbody>
+        </table>
+    </div>
+</section>
+
+<section class="cp-section">
+    <h2>Alerts</h2>
+    <div class="cp-placeholder">
+        @if (!Model.HasAlerts)
+        {
+            <p style="margin:0; color:var(--muted);">No active alerts.</p>
+        }
+        else
+        {
+            <ul>
+                @foreach (var alert in Model.Data.Alerts)
+                {
+                    <li style="margin-bottom:0.4rem;"><strong>@alert.Title:</strong> @alert.Details</li>
+                }
+            </ul>
+        }
+    </div>
+</section>
