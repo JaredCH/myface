@@ -111,10 +111,20 @@ While ViewState is not applicable, here's the security status of equivalent feat
 **Current Configuration:**
 ```csharp
 // Program.cs (lines 132-143)
-builder.Services.AddAntiforgery(options =>
+if (builder.Environment.IsDevelopment())
 {
-    options.Cookie.SecurePolicy = CookieSecurePolicy.None;
-});
+    builder.Services.AddAntiforgery(options =>
+    {
+        options.Cookie.SecurePolicy = CookieSecurePolicy.None;
+    });
+}
+else
+{
+    builder.Services.AddAntiforgery(options =>
+    {
+        options.Cookie.SecurePolicy = CookieSecurePolicy.None;
+    });
+}
 ```
 
 **Usage:** Properly implemented on all state-changing actions
@@ -140,7 +150,7 @@ builder.Services.AddSession(options =>
     options.IdleTimeout = TimeSpan.FromHours(2);
     options.Cookie.HttpOnly = true;
     options.Cookie.IsEssential = true;
-    options.Cookie.SecurePolicy = CookieSecurePolicy.None; // Tor compatibility
+    options.Cookie.SecurePolicy = CookieSecurePolicy.None; // Required for Tor (HTTP)
 });
 ```
 
