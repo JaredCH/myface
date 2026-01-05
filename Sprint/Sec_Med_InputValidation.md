@@ -105,7 +105,7 @@ Apply to ViewModels:
 public class ThreadReplyViewModel
 {
     [Required]
-    [StringLength(10000, MinimumLength = 1)]
+    [StringLength(10000)]
     [SafeHtml]
     public string Content { get; set; }
 }

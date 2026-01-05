@@ -276,15 +276,15 @@ The application is **correctly configured** for Tor hosting:
 ## Detailed Reports
 
 For detailed findings on each security category, see:
-- `/VIEWSTATE_SECURITY_INSPECTION.md` - ViewState inspection
-- `/Sprint/Sec_Crit_CSP.md` - Content Security Policy
-- `/Sprint/Sec_Crit_CustomErrors.md` - Error handling
-- `/Sprint/Sec_Crit_ServerHeaders.md` - HTTP headers
-- `/Sprint/Sec_Crit_ViewState.md` - ViewState (N/A)
-- `/Sprint/Sec_Med_InputValidation.md` - Input validation
-- `/Sprint/Sec_Med_ParamQueries.md` - SQL queries
-- `/Sprint/Sec_Med_RateLimiting.md` - Rate limiting
-- `/Sprint/Sec_Med_SecHeaderHardening.md` - Security headers
+- `VIEWSTATE_SECURITY_INSPECTION.md` - ViewState inspection
+- `Sprint/Sec_Crit_CSP.md` - Content Security Policy
+- `Sprint/Sec_Crit_CustomErrors.md` - Error handling
+- `Sprint/Sec_Crit_ServerHeaders.md` - HTTP headers
+- `Sprint/Sec_Crit_ViewState.md` - ViewState (N/A)
+- `Sprint/Sec_Med_InputValidation.md` - Input validation
+- `Sprint/Sec_Med_ParamQueries.md` - SQL queries
+- `Sprint/Sec_Med_RateLimiting.md` - Rate limiting
+- `Sprint/Sec_Med_SecHeaderHardening.md` - Security headers
 
 ---
 
