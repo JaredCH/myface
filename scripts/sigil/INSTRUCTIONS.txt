@@ -1,0 +1,53 @@
+Sigil Automation Notes
+======================
+
+Live assets that must be preserved
+----------------------------------
+1. PostgreSQL database `myface` on localhost:5432 (contains users, posts, private messages).
+2. Tor hidden service keys in tor/hidden_service (hostname + Ed25519 keys) plus tor/torrc.
+3. User-uploaded media under wwwroot/uploads (thread images full + thumbs).
+4. Environment configuration templates (MyFace.Web/appsettings*.json) and operational scripts (redeploy.sh, start-tor.sh).
+
+Nightly backup from live VPS: backup-live-assets.sh
+--------------------------------------------------
+- Location: scripts/sigil/backup-live-assets.sh (copy also placed on ~/Desktop/Sigil/).
+- What it does: pg_dump -> gzip, packages tor keys + uploads + config snapshots, optional rsync to neutral storage, prunes old runs.
+- Required environment variables (override as needed):
+  * PROJECT_ROOT=/home/nessy/myface/myface
+  * BACKUP_ROOT=/home/nessy/backups/sigil
+  * NEUTRAL_TARGET=user@backup-host:/srv/sigil (leave empty for local-only)
+  * PGHOST/PGPORT/PGDATABASE/PGUSER (match Postgres settings)
+  * RETENTION_DAYS=14
+- Credentials: rely on ~/.pgpass or export PGPASSWORD before running.
+- Cron example (runs every night at 02:00 UTC):
+  0 2 * * * PROJECT_ROOT=/home/nessy/myface/myface BACKUP_ROOT=/home/nessy/backups/sigil NEUTRAL_TARGET=backup@10.0.0.5:/srv/sigil /home/nessy/myface/myface/scripts/sigil/backup-live-assets.sh >> /home/nessy/backups/sigil/backup.log 2>&1
+
+Dev/test database sync: fetch-live-db.sh
+----------------------------------------
+- Location: scripts/sigil/fetch-live-db.sh (copy also on ~/Desktop/Sigil/).
+- Usage: REMOTE_SSH=nessy@173.212.225.125 REMOTE_BACKUP_DIR=/home/nessy/backups/sigil ./fetch-live-db.sh [--import]
+- Default pattern grabs postgres-myface.sql.gz from newest backup folder (sorted descending by timestamp).
+- When called with --import (or IMPORT_AFTER=true) the dump is piped into local Postgres using LOCAL_DB_* variables.
+- LOCAL_WORK_DIR controls where dumps are saved on the dev machine (default ~/sigil-db-sync).
+
+New deploy pipeline: deploy-latest.sh
+------------------------------------
+- Location: scripts/sigil/deploy-latest.sh (copy also on ~/Desktop/Sigil/).
+- Steps: guard dirty git trees, git fetch/reset to origin/main, update submodules, execute redeploy.sh.
+- Override REPO_DIR to point at the checked-out repo, BRANCH to deploy a different branch, or set FORCE_UPDATE=true to skip the dirty check.
+- Typical usage on live VPS: FORCE_UPDATE=true ~/Desktop/Sigil/deploy-latest.sh
+
+Stand down Tor site: stand-down.sh
+----------------------------------
+- Location: scripts/sigil/stand-down.sh (copy also on ~/Desktop/Sigil/).
+- Stops the Kestrel process tracked by web.pid, kills any remaining MyFace.Web.dll workers, then terminates the Tor instance launched with tor/torrc.
+- Safe to run before maintenance windows or prior to patching Tor/system packages.
+
+Test environment expectations
+-----------------------------
+1. Provision a second Ubuntu VM reachable via SSH.
+2. Clone github.com/.../myface (same repo) onto the dev/test machine.
+3. Use fetch-live-db.sh to pull nightly dumps from the neutral location (or directly from live) and restore into a local Postgres database dedicated to testing.
+4. Point the test app at that DB via appsettings.Development.json connection string override.
+5. Expose the dev deployment via a separate Tor hidden service OR a standard HTTPS endpoint; never reuse tor/hidden_service keys from production.
+6. Once feature work is validated, push to GitHub main, SSH into the live VPS, and run deploy-latest.sh. Use stand-down.sh beforehand if you need a clean stop.
