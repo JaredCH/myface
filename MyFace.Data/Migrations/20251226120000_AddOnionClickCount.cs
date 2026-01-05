@@ -13,20 +13,13 @@ namespace MyFace.Data.Migrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.AddColumn<int>(
-                name: "ClickCount",
-                table: "OnionStatuses",
-                type: "integer",
-                nullable: false,
-                defaultValue: 0);
+            migrationBuilder.Sql("ALTER TABLE \"OnionStatuses\" ADD COLUMN IF NOT EXISTS \"ClickCount\" integer NOT NULL DEFAULT 0;");
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DropColumn(
-                name: "ClickCount",
-                table: "OnionStatuses");
+            migrationBuilder.Sql("ALTER TABLE \"OnionStatuses\" DROP COLUMN IF EXISTS \"ClickCount\";");
         }
     }
 }

@@ -38,10 +38,38 @@ namespace MyFace.Data.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
+                    b.Property<double?>("AverageLatency")
+                        .HasColumnType("double precision");
+
+                    b.Property<int>("ClickCount")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(0);
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("text")
+                        .HasDefaultValue(string.Empty);
+
+                    b.Property<DateTime?>("LastChecked")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("text")
+                        .HasDefaultValue(string.Empty);
+
                     b.Property<string>("OnionUrl")
                         .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("character varying(100)");
+
+                    b.Property<int>("ReachableAttempts")
+                        .HasColumnType("integer");
 
                     b.Property<double?>("ResponseTime")
                         .HasColumnType("double precision");
@@ -50,6 +78,9 @@ namespace MyFace.Data.Migrations
                         .IsRequired()
                         .HasMaxLength(50)
                         .HasColumnType("character varying(50)");
+
+                    b.Property<int>("TotalAttempts")
+                        .HasColumnType("integer");
 
                     b.HasKey("Id");
 

@@ -1,8 +1,7 @@
-DataDirectory /home/server/myface/tor/data
-HiddenServiceDir /home/server/myface/tor/hidden_service/
+DataDirectory /home/nessy/myface/myface/tor/data
+HiddenServiceDir /home/nessy/myface/myface/tor/hidden_service/
 HiddenServicePort 80 127.0.0.1:5000
 SocksPort 9052
-SocksPort 9050
 HiddenServiceEnableIntroDoSDefense 1
 HiddenServicePoWDefensesEnabled 1
 HiddenServicePoWQueueRate 250

@@ -14,6 +14,28 @@ namespace MyFace.Data.Migrations
         {
             migrationBuilder.Sql(
                 """
+                CREATE TABLE IF NOT EXISTS "PrivateMessages" (
+                    "Id" SERIAL PRIMARY KEY,
+                    "SenderId" integer NULL,
+                    "RecipientId" integer NULL,
+                    "SenderUsernameSnapshot" varchar(50) NOT NULL,
+                    "RecipientUsernameSnapshot" varchar(50) NOT NULL,
+                    "Subject" varchar(200) NOT NULL,
+                    "Body" text NOT NULL,
+                    "IsDraft" boolean NOT NULL DEFAULT false,
+                    "CreatedAt" timestamptz NOT NULL DEFAULT NOW(),
+                    "SentAt" timestamptz NULL,
+                    "ReadAt" timestamptz NULL,
+                    "SenderDeleted" boolean NOT NULL DEFAULT false,
+                    "RecipientDeleted" boolean NOT NULL DEFAULT false
+                );
+                CREATE INDEX IF NOT EXISTS "IX_PrivateMessages_RecipientId_CreatedAt" ON "PrivateMessages" ("RecipientId", "CreatedAt");
+                CREATE INDEX IF NOT EXISTS "IX_PrivateMessages_SenderId_CreatedAt" ON "PrivateMessages" ("SenderId", "CreatedAt");
+                """
+            );
+
+            migrationBuilder.Sql(
+                """
                 ALTER TABLE "PrivateMessages"
                 ADD COLUMN IF NOT EXISTS "RecipientDeleted" boolean NOT NULL DEFAULT FALSE;
                 """

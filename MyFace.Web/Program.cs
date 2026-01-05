@@ -190,7 +190,10 @@ if (app.Environment.IsDevelopment())
     try
     {
         db.Database.EnsureCreated();
-        mailService.EnsureSchemaAsync().GetAwaiter().GetResult();
+        if (db.Database.IsRelational())
+        {
+            mailService.EnsureSchemaAsync().GetAwaiter().GetResult();
+        }
     }
     catch (Exception ex)
     {

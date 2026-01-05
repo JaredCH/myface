@@ -675,10 +675,7 @@
       "System.Threading.Channels/6.0.0": {},
       "MyFace.Core/1.0.0": {
         "runtime": {
-          "MyFace.Core.dll": {
-            "assemblyVersion": "1.0.0",
-            "fileVersion": "1.0.0.0"
-          }
+          "MyFace.Core.dll": {}
         }
       }
     }

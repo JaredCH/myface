@@ -45,6 +45,7 @@ public class OnionStatusService
 
     private record struct ProbeOutcome(int Id, int Reachable, int Attempts, double? AverageLatency, string Status, DateTime CheckedAt);
     private record struct ProbeAttemptResult(bool Success, double? LatencyMs, bool WasChallenged);
+    private sealed record SeedEntry(string Name, string Category, string StoredUrl, string CanonicalKey);
 
     public OnionStatusService(ApplicationDbContext context, IHttpClientFactory httpClientFactory, MonitorLogService monitorLog)
     {
@@ -60,9 +61,20 @@ public class OnionStatusService
     public async Task EnsureSeedDataAsync()
     {
         var seeds = OnionMonitorSeedData.All
-            .Select(seed => (seed.Name, Category: NormalizeCategoryLabel(seed.Category), Url: NormalizeOnionUrl(seed.Url)?.ToString()))
-            .Where(seed => seed.Url is not null)
-            .Select(seed => (seed.Name, seed.Category, Url: seed.Url!))
+            .Select(seed =>
+            {
+                var storedUrl = NormalizeUrlForStorage(seed.Url);
+                var key = BuildUrlComparisonKey(seed.Url);
+                if (string.IsNullOrWhiteSpace(storedUrl) || string.IsNullOrWhiteSpace(key))
+                {
+                    return null;
+                }
+
+                return new SeedEntry(seed.Name, NormalizeCategoryLabel(seed.Category), storedUrl, key);
+            })
+            .Where(seed => seed is not null)
+            .Cast<SeedEntry>()
+            .DistinctBy(seed => seed.CanonicalKey, StringComparer.OrdinalIgnoreCase)
             .ToList();
 
         if (seeds.Count == 0)
@@ -70,24 +82,33 @@ public class OnionStatusService
             return;
         }
 
-        var seedUrls = new HashSet<string>(seeds.Select(s => s.Url), StringComparer.OrdinalIgnoreCase);
-        var existingEntities = await _context.OnionStatuses.ToListAsync();
-        var existingByUrl = new Dictionary<string, OnionStatus>(StringComparer.OrdinalIgnoreCase);
+        var existingEntities = await _context.OnionStatuses
+            .Include(o => o.Proofs)
+            .ToListAsync();
+
+        var existingByKey = new Dictionary<string, OnionStatus>(StringComparer.OrdinalIgnoreCase);
+        var exactUrlIndex = new Dictionary<string, OnionStatus>(StringComparer.Ordinal);
 
         foreach (var entity in existingEntities)
         {
-            var key = NormalizeOnionUrl(entity.OnionUrl)?.ToString();
-            if (string.IsNullOrWhiteSpace(key) || existingByUrl.ContainsKey(key))
+            var exact = entity.OnionUrl ?? string.Empty;
+            if (!exactUrlIndex.ContainsKey(exact))
+            {
+                exactUrlIndex[exact] = entity;
+            }
+
+            var key = BuildUrlComparisonKey(entity.OnionUrl);
+            if (string.IsNullOrWhiteSpace(key) || existingByKey.ContainsKey(key))
             {
                 continue;
             }
 
-            existingByUrl[key] = entity;
+            existingByKey[key] = entity;
         }
 
         foreach (var seed in seeds)
         {
-            if (existingByUrl.TryGetValue(seed.Url, out var entity))
+            if (existingByKey.TryGetValue(seed.CanonicalKey, out var entity))
             {
                 if (!string.Equals(entity.Name, seed.Name, StringComparison.Ordinal))
                 {
@@ -99,19 +120,36 @@ public class OnionStatusService
                     entity.Description = seed.Category;
                 }
 
-                if (!string.Equals(entity.OnionUrl, seed.Url, StringComparison.Ordinal))
+                if (!string.Equals(entity.OnionUrl, seed.StoredUrl, StringComparison.Ordinal))
                 {
-                    entity.OnionUrl = seed.Url;
+                    if (!exactUrlIndex.TryGetValue(seed.StoredUrl, out var owner) || owner.Id == entity.Id)
+                    {
+                        var previousKey = entity.OnionUrl ?? string.Empty;
+                        if (exactUrlIndex.TryGetValue(previousKey, out var currentOwner) && currentOwner.Id == entity.Id)
+                        {
+                            exactUrlIndex.Remove(previousKey);
+                        }
+
+                        entity.OnionUrl = seed.StoredUrl;
+                        exactUrlIndex[seed.StoredUrl] = entity;
+                    }
                 }
 
                 continue;
             }
 
-            _context.OnionStatuses.Add(new OnionStatus
+            if (exactUrlIndex.ContainsKey(seed.StoredUrl))
+            {
+                // A record already exists with the exact same stored URL (possibly migrated data).
+                // Skip creating a duplicate to keep the unique index satisfied.
+                continue;
+            }
+
+            var status = new OnionStatus
             {
                 Name = seed.Name,
                 Description = seed.Category,
-                OnionUrl = seed.Url,
+                OnionUrl = seed.StoredUrl,
                 Status = "Unknown",
                 LastChecked = null,
                 ResponseTime = null,
@@ -119,7 +157,11 @@ public class OnionStatusService
                 TotalAttempts = 0,
                 AverageLatency = null,
                 ClickCount = 0
-            });
+            };
+
+            _context.OnionStatuses.Add(status);
+            existingByKey[seed.CanonicalKey] = status;
+            exactUrlIndex[seed.StoredUrl] = status;
         }
 
         if (_context.ChangeTracker.HasChanges())

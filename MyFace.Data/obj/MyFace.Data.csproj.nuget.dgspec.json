@@ -1,20 +1,20 @@
 {
   "format": 1,
   "restore": {
-    "/home/server/myface/MyFace.Data/MyFace.Data.csproj": {}
+    "/home/nessy/myface/myface/MyFace.Data/MyFace.Data.csproj": {}
   },
   "projects": {
-    "/home/server/myface/MyFace.Core/MyFace.Core.csproj": {
+    "/home/nessy/myface/myface/MyFace.Core/MyFace.Core.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "/home/server/myface/MyFace.Core/MyFace.Core.csproj",
+        "projectUniqueName": "/home/nessy/myface/myface/MyFace.Core/MyFace.Core.csproj",
         "projectName": "MyFace.Core",
-        "projectPath": "/home/server/myface/MyFace.Core/MyFace.Core.csproj",
-        "packagesPath": "/home/server/.nuget/packages/",
-        "outputPath": "/home/server/myface/MyFace.Core/obj/",
+        "projectPath": "/home/nessy/myface/myface/MyFace.Core/MyFace.Core.csproj",
+        "packagesPath": "/home/nessy/.nuget/packages/",
+        "outputPath": "/home/nessy/myface/myface/MyFace.Core/obj/",
         "projectStyle": "PackageReference",
         "configFilePaths": [
-          "/home/server/.nuget/NuGet/NuGet.Config"
+          "/home/nessy/.nuget/NuGet/NuGet.Config"
         ],
         "originalTargetFrameworks": [
           "net8.0"
@@ -32,11 +32,6 @@
           "warnAsError": [
             "NU1605"
           ]
-        },
-        "restoreAuditProperties": {
-          "enableAudit": "true",
-          "auditLevel": "low",
-          "auditMode": "direct"
         }
       },
       "frameworks": {
@@ -58,21 +53,21 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "/usr/share/dotnet/sdk/8.0.416/PortableRuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "/usr/lib/dotnet/sdk/8.0.122/PortableRuntimeIdentifierGraph.json"
         }
       }
     },
-    "/home/server/myface/MyFace.Data/MyFace.Data.csproj": {
+    "/home/nessy/myface/myface/MyFace.Data/MyFace.Data.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "/home/server/myface/MyFace.Data/MyFace.Data.csproj",
+        "projectUniqueName": "/home/nessy/myface/myface/MyFace.Data/MyFace.Data.csproj",
         "projectName": "MyFace.Data",
-        "projectPath": "/home/server/myface/MyFace.Data/MyFace.Data.csproj",
-        "packagesPath": "/home/server/.nuget/packages/",
-        "outputPath": "/home/server/myface/MyFace.Data/obj/",
+        "projectPath": "/home/nessy/myface/myface/MyFace.Data/MyFace.Data.csproj",
+        "packagesPath": "/home/nessy/.nuget/packages/",
+        "outputPath": "/home/nessy/myface/myface/MyFace.Data/obj/",
         "projectStyle": "PackageReference",
         "configFilePaths": [
-          "/home/server/.nuget/NuGet/NuGet.Config"
+          "/home/nessy/.nuget/NuGet/NuGet.Config"
         ],
         "originalTargetFrameworks": [
           "net8.0"
@@ -84,8 +79,8 @@
           "net8.0": {
             "targetAlias": "net8.0",
             "projectReferences": {
-              "/home/server/myface/MyFace.Core/MyFace.Core.csproj": {
-                "projectPath": "/home/server/myface/MyFace.Core/MyFace.Core.csproj"
+              "/home/nessy/myface/myface/MyFace.Core/MyFace.Core.csproj": {
+                "projectPath": "/home/nessy/myface/myface/MyFace.Core/MyFace.Core.csproj"
               }
             }
           }
@@ -94,11 +89,6 @@
           "warnAsError": [
             "NU1605"
           ]
-        },
-        "restoreAuditProperties": {
-          "enableAudit": "true",
-          "auditLevel": "low",
-          "auditMode": "direct"
         }
       },
       "frameworks": {
@@ -148,7 +138,7 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "/usr/share/dotnet/sdk/8.0.416/PortableRuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "/usr/lib/dotnet/sdk/8.0.122/PortableRuntimeIdentifierGraph.json"
         }
       }
     }

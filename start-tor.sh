@@ -16,7 +16,7 @@ fi
 mkdir -p "$TOR_DIR/data"
 chmod 700 "$HS_DIR"
 
-if pgrep -a tor | grep -Fq -- "$TORRC" || pgrep -a tor | grep -Fq -- "$TORRC_REL"; then
+if pgrep -a -f -- "-f $TORRC" >/dev/null 2>&1 || { [ -n "$TORRC_REL" ] && pgrep -a -f -- "-f $TORRC_REL" >/dev/null 2>&1; }; then
 	echo "[ok] Tor hidden service already running"
 	exit 0
 fi

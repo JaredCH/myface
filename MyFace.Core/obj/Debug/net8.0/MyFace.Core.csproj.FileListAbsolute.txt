@@ -22,3 +22,15 @@ C:/myface/MyFace.Core/obj/Debug/net8.0/MyFace.Core.sourcelink.json
 /home/server/myface/MyFace.Core/obj/Debug/net8.0/refint/MyFace.Core.dll
 /home/server/myface/MyFace.Core/obj/Debug/net8.0/MyFace.Core.pdb
 /home/server/myface/MyFace.Core/obj/Debug/net8.0/ref/MyFace.Core.dll
+/home/nessy/myface/myface/MyFace.Core/bin/Debug/net8.0/MyFace.Core.deps.json
+/home/nessy/myface/myface/MyFace.Core/bin/Debug/net8.0/MyFace.Core.dll
+/home/nessy/myface/myface/MyFace.Core/bin/Debug/net8.0/MyFace.Core.pdb
+/home/nessy/myface/myface/MyFace.Core/obj/Debug/net8.0/MyFace.Core.GeneratedMSBuildEditorConfig.editorconfig
+/home/nessy/myface/myface/MyFace.Core/obj/Debug/net8.0/MyFace.Core.AssemblyInfoInputs.cache
+/home/nessy/myface/myface/MyFace.Core/obj/Debug/net8.0/MyFace.Core.AssemblyInfo.cs
+/home/nessy/myface/myface/MyFace.Core/obj/Debug/net8.0/MyFace.Core.csproj.CoreCompileInputs.cache
+/home/nessy/myface/myface/MyFace.Core/obj/Debug/net8.0/MyFace.Core.sourcelink.json
+/home/nessy/myface/myface/MyFace.Core/obj/Debug/net8.0/MyFace.Core.dll
+/home/nessy/myface/myface/MyFace.Core/obj/Debug/net8.0/refint/MyFace.Core.dll
+/home/nessy/myface/myface/MyFace.Core/obj/Debug/net8.0/MyFace.Core.pdb
+/home/nessy/myface/myface/MyFace.Core/obj/Debug/net8.0/ref/MyFace.Core.dll

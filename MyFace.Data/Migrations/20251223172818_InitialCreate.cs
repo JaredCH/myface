@@ -18,10 +18,16 @@ namespace MyFace.Data.Migrations
                 {
                     Id = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    Name = table.Column<string>(type: "text", nullable: false, defaultValue: string.Empty),
+                    Description = table.Column<string>(type: "text", nullable: false, defaultValue: string.Empty),
                     OnionUrl = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
                     Status = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
                     LastChecked = table.Column<DateTime>(type: "timestamp with time zone", nullable: true, defaultValueSql: "CURRENT_TIMESTAMP"),
-                    ResponseTime = table.Column<double>(type: "double precision", nullable: true)
+                    ResponseTime = table.Column<double>(type: "double precision", nullable: true),
+                    ReachableAttempts = table.Column<int>(type: "integer", nullable: false, defaultValue: 0),
+                    TotalAttempts = table.Column<int>(type: "integer", nullable: false, defaultValue: 0),
+                    AverageLatency = table.Column<double>(type: "double precision", nullable: true),
+                    ClickCount = table.Column<int>(type: "integer", nullable: false, defaultValue: 0)
                 },
                 constraints: table =>
                 {
