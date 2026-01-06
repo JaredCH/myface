@@ -1,0 +1,9 @@
+DataDirectory /home/server/myface/tor/data_test
+HiddenServiceDir /home/server/myface/tor/hidden_service_test/
+HiddenServicePort 80 127.0.0.1:5001
+SocksPort 9053
+ControlPort 9054
+HiddenServiceEnableIntroDoSDefense 1
+HiddenServicePoWDefensesEnabled 1
+HiddenServicePoWQueueRate 250
+HiddenServicePoWQueueBurst 2500

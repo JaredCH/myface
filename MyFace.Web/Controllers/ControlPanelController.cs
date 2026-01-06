@@ -773,6 +773,9 @@ public class ControlPanelController : Controller
             new("users", "Users", Url.Action("Users", "ControlPanel") ?? "#"),
             new("chat", "Chat", Url.Action("Chat", "ControlPanel") ?? "#"),
             new("security", "Security", Url.Action("Security", "ControlPanel") ?? "#", requiresAdmin: true),
+            new("monitor", "Monitor Queue", Url.Action("Rollup", "Monitor") ?? "#", requiresAdmin: true),
+            new("moderator", "Moderation", Url.Action("Index", "Moderator") ?? "#"),
+            new("admin", "Admin Panel", Url.Action("Index", "Admin") ?? "#", requiresAdmin: true),
             new("settings", "Settings", Url.Action("Settings", "ControlPanel") ?? "#", requiresAdmin: true)
         };
 

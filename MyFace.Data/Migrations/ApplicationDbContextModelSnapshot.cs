@@ -312,6 +312,10 @@ namespace MyFace.Data.Migrations
                     b.Property<double?>("AverageLatency")
                         .HasColumnType("double precision");
 
+                    b.Property<string>("CanonicalName")
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
                     b.Property<int>("ClickCount")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("integer")
@@ -321,19 +325,36 @@ namespace MyFace.Data.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
+                    b.Property<bool>("IsMirror")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(false);
+
                     b.Property<DateTime?>("LastChecked")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
                         .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
+                    b.Property<int>("MirrorPriority")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(0);
+
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("text");
+
+                    b.Property<string>("NormalizedKey")
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
 
                     b.Property<string>("OnionUrl")
                         .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("character varying(100)");
+
+                    b.Property<int?>("ParentId")
+                        .HasColumnType("integer");
 
                     b.Property<int>("ReachableAttempts")
                         .HasColumnType("integer");
@@ -351,10 +372,80 @@ namespace MyFace.Data.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("NormalizedKey");
+
                     b.HasIndex("OnionUrl")
                         .IsUnique();
 
+                    b.HasIndex("ParentId");
+
                     b.ToTable("OnionStatuses");
+                });
+
+            modelBuilder.Entity("MyFace.Core.Entities.OnionSubmission", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<string>("OnionUrl")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<string>("PgpFingerprint")
+                        .HasColumnType("text");
+
+                    b.Property<string>("PgpSignedMessage")
+                        .HasColumnType("text");
+
+                    b.Property<string>("ReviewNotes")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime?>("ReviewedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int?>("ReviewedByUserId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("ReviewedByUsername")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
+                    b.Property<DateTime>("SubmittedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+                    b.Property<int?>("SubmittedByUserId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("SubmittedByUsername")
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Status");
+
+                    b.HasIndex("SubmittedAt");
+
+                    b.ToTable("OnionSubmissions");
                 });
 
             modelBuilder.Entity("MyFace.Core.Entities.PGPVerification", b =>
@@ -1179,6 +1270,16 @@ namespace MyFace.Data.Migrations
                     b.Navigation("OnionStatus");
                 });
 
+            modelBuilder.Entity("MyFace.Core.Entities.OnionStatus", b =>
+                {
+                    b.HasOne("MyFace.Core.Entities.OnionStatus", "Parent")
+                        .WithMany("Mirrors")
+                        .HasForeignKey("ParentId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("Parent");
+                });
+
             modelBuilder.Entity("MyFace.Core.Entities.PGPVerification", b =>
                 {
                     b.HasOne("MyFace.Core.Entities.User", "User")
@@ -1355,6 +1456,8 @@ namespace MyFace.Data.Migrations
 
             modelBuilder.Entity("MyFace.Core.Entities.OnionStatus", b =>
                 {
+                    b.Navigation("Mirrors");
+
                     b.Navigation("Proofs");
                 });
 

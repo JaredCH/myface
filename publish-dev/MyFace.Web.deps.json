@@ -500,6 +500,14 @@
       "System.Text.Encoding.CodePages/6.0.0": {
         "dependencies": {
           "System.Runtime.CompilerServices.Unsafe": "6.0.0"
+        },
+        "runtimeTargets": {
+          "runtimes/win/lib/net6.0/System.Text.Encoding.CodePages.dll": {
+            "rid": "win",
+            "assetType": "runtime",
+            "assemblyVersion": "6.0.0.0",
+            "fileVersion": "6.0.21.52210"
+          }
         }
       },
       "System.Text.Encodings.Web/9.0.0": {
@@ -533,7 +541,10 @@
       "System.Threading.Channels/6.0.0": {},
       "MyFace.Core/1.0.0": {
         "runtime": {
-          "MyFace.Core.dll": {}
+          "MyFace.Core.dll": {
+            "assemblyVersion": "1.0.0",
+            "fileVersion": "1.0.0.0"
+          }
         }
       },
       "MyFace.Data/1.0.0": {
@@ -546,7 +557,10 @@
           "Npgsql.EntityFrameworkCore.PostgreSQL": "8.0.4"
         },
         "runtime": {
-          "MyFace.Data.dll": {}
+          "MyFace.Data.dll": {
+            "assemblyVersion": "1.0.0",
+            "fileVersion": "1.0.0.0"
+          }
         }
       },
       "MyFace.Services/1.0.0": {
@@ -558,7 +572,10 @@
           "MyFace.Data": "1.0.0"
         },
         "runtime": {
-          "MyFace.Services.dll": {}
+          "MyFace.Services.dll": {
+            "assemblyVersion": "1.0.0",
+            "fileVersion": "1.0.0.0"
+          }
         }
       }
     }

@@ -231,7 +231,11 @@ public class OnionStatusService
             ReachableAttempts = 0,
             TotalAttempts = 0,
             AverageLatency = null,
-            ClickCount = 0
+            ClickCount = 0,
+            CanonicalName = LinkNormalizationService.NormalizeToCanonical(canonicalName),
+            NormalizedKey = LinkNormalizationService.GenerateNormalizedKey(canonicalName),
+            IsMirror = false,
+            MirrorPriority = 0
         };
 
         if (!string.IsNullOrWhiteSpace(pgpProof))
@@ -263,33 +267,56 @@ public class OnionStatusService
         var item = await _context.OnionStatuses.FindAsync(id);
         if (item == null) return null;
 
-        item.ClickCount++;
+        // If this is a mirror, increment the parent's click count instead
+        if (item.IsMirror && item.ParentId.HasValue)
+        {
+            var parent = await _context.OnionStatuses.FindAsync(item.ParentId.Value);
+            if (parent != null)
+            {
+                parent.ClickCount++;
+            }
+        }
+        else
+        {
+            // Primary service - increment its own count
+            item.ClickCount++;
+        }
+        
         await _context.SaveChangesAsync();
         return item.OnionUrl;
     }
 
     public async Task<List<OnionStatus>> GetTopByClicksAsync(int take = 4)
     {
-        var top = await _context.OnionStatuses
+        // Get only primary services (non-mirrors) or services without parents
+        var primaryServices = await _context.OnionStatuses
+            .Include(o => o.Mirrors)
+            .Where(o => !o.IsMirror || o.ParentId == null)
             .OrderByDescending(o => o.ClickCount)
-            .ThenBy(o => o.Name)
+            .ThenBy(o => o.CanonicalName ?? o.Name)
             .Take(take)
             .ToListAsync();
 
-        if (top.Count >= take && top.Any(o => o.ClickCount > 0))
+        if (primaryServices.Count >= take && primaryServices.Any(o => o.ClickCount > 0))
         {
-            return top;
+            return primaryServices;
         }
 
-        var fallbackNames = new[] { "Dread", "DIG", "Pitch (1)", "Pitch" };
-        var fallbackCandidates = await _context.OnionStatuses.ToListAsync();
-        var fallback = fallbackCandidates
-            .Where(o => fallbackNames.Any(f => o.Name.Contains(f, StringComparison.OrdinalIgnoreCase)))
-            .OrderBy(o => Array.FindIndex(fallbackNames, f => o.Name.Contains(f, StringComparison.OrdinalIgnoreCase)))
+        // Fallback: find popular services by canonical name
+        var fallbackNames = new[] { "Dread", "DIG", "Pitch", "Dark Matter" };
+        var allServices = await _context.OnionStatuses
+            .Where(o => !o.IsMirror || o.ParentId == null)
+            .ToListAsync();
+        
+        var fallback = allServices
+            .Where(o => fallbackNames.Any(f => 
+                (o.CanonicalName ?? o.Name).Contains(f, StringComparison.OrdinalIgnoreCase)))
+            .OrderBy(o => Array.FindIndex(fallbackNames, f => 
+                (o.CanonicalName ?? o.Name).Contains(f, StringComparison.OrdinalIgnoreCase)))
             .Take(take)
             .ToList();
 
-        return fallback.Any() ? fallback : top;
+        return fallback.Any() ? fallback : primaryServices;
     }
 
     public async Task CheckAllAsync(CancellationToken cancellationToken = default)

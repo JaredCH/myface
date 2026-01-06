@@ -101,11 +101,13 @@
     @if (isAdminOrMod)
     {
         <a href="@Url.Action("Add")" class="button">➕ Add Service</a>
+        <a href="@Url.Action("Rollup")" class="button">📊 Rollup Stats</a>
         <form asp-action="CheckAll" method="post" style="display:inline">
             <input type="hidden" name="returnUrl" value="@currentReturnUrl" />
             <button class="button" type="submit">🔄 Check All</button>
         </form>
     }
+    <a href="@Url.Action("Submit")" class="button">📝 Submit Link</a>
     <a href="@Url.Action("Log")" class="button">🗒️ Monitor Log</a>
 </div>
 

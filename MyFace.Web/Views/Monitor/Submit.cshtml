@@ -1,0 +1,49 @@
+@model MyFace.Web.Models.AddMonitorViewModel
+@{
+    ViewData["Title"] = "Submit Monitor Link";
+}
+
+<h1>Submit Monitor Link</h1>
+
+<div class="alert alert-info">
+    <p><strong>Submit a new onion service for the monitor list.</strong></p>
+    <p><strong>PGP signed proof required.</strong> All submissions require admin approval before appearing on the site.</p>
+    <p class="small">Provide a PGP signed message containing your onion URL to prove ownership.</p>
+</div>
+
+@if (TempData["Message"] != null)
+{
+    <div class="alert alert-success">@TempData["Message"]</div>
+}
+
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger">@TempData["Error"]</div>
+}
+
+<div asp-validation-summary="All" class="alert alert-danger"></div>
+
+<form asp-action="Submit" method="post">
+    <label asp-for="Name">Service Name</label>
+    <input asp-for="Name" class="input" placeholder="e.g., Dread" required maxlength="200" />
+    <span asp-validation-for="Name"></span>
+    <p class="text-muted small">The display name for the service</p>
+
+    <label asp-for="Description">Description / Category</label>
+    <textarea asp-for="Description" class="input" rows="3" placeholder="Brief description of the service (e.g., Forum, Marketplace, Wiki, etc.)" maxlength="500"></textarea>
+    <span asp-validation-for="Description"></span>
+    <p class="text-muted small">Optional: Describe what type of service this is</p>
+
+    <label asp-for="PgpSignedMessages">PGP Signed Proof (Required)</label>
+    <textarea asp-for="PgpSignedMessages" class="input" rows="18" placeholder="-----BEGIN PGP SIGNED MESSAGE-----&#10;Hash: SHA512&#10;&#10;yourservice...onion&#10;-----BEGIN PGP SIGNATURE-----&#10;&#10;iQIzBAEBCgAdFiEE...&#10;-----END PGP SIGNATURE-----" required></textarea>
+    <span asp-validation-for="PgpSignedMessages"></span>
+    <p class="text-muted" style="font-size:0.85rem;">
+        <strong>Required:</strong> Paste a PGP signed message containing your onion URL. This proves you control the service.
+        The signature will be verified by the admin during approval. Example format shown in placeholder.
+    </p>
+
+    <div class="form-actions">
+        <button type="submit" class="button">Submit for Review</button>
+        <a href="@Url.Action("Index")" class="button button-secondary">Cancel</a>
+    </div>
+</form>

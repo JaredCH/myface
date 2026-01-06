@@ -17,6 +17,7 @@ public class ApplicationDbContext : DbContext
     public DbSet<Vote> Votes { get; set; }
     public DbSet<OnionStatus> OnionStatuses { get; set; }
     public DbSet<OnionProof> OnionProofs { get; set; }
+    public DbSet<OnionSubmission> OnionSubmissions { get; set; }
     public DbSet<PGPVerification> PGPVerifications { get; set; }
     public DbSet<UserContact> UserContacts { get; set; }
     public DbSet<UserNews> UserNews { get; set; }
@@ -167,6 +168,19 @@ public class ApplicationDbContext : DbContext
             entity.Property(e => e.ResponseTime);
             entity.Property(e => e.LastChecked).HasDefaultValueSql("CURRENT_TIMESTAMP");
             entity.Property(e => e.ClickCount).HasDefaultValue(0);
+            
+            // Link Rollup fields
+            entity.Property(e => e.CanonicalName).HasMaxLength(200);
+            entity.Property(e => e.NormalizedKey).HasMaxLength(200);
+            entity.HasIndex(e => e.NormalizedKey);
+            entity.HasIndex(e => e.ParentId);
+            entity.Property(e => e.IsMirror).HasDefaultValue(false);
+            entity.Property(e => e.MirrorPriority).HasDefaultValue(0);
+            
+            entity.HasOne(e => e.Parent)
+                .WithMany(e => e.Mirrors)
+                .HasForeignKey(e => e.ParentId)
+                .OnDelete(DeleteBehavior.Restrict);
         });
 
         modelBuilder.Entity<OnionProof>(entity =>
@@ -181,6 +195,19 @@ public class ApplicationDbContext : DbContext
                 .WithMany(o => o.Proofs)
                 .HasForeignKey(e => e.OnionStatusId)
                 .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        // OnionSubmission configuration
+        modelBuilder.Entity<OnionSubmission>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Name).HasMaxLength(200).IsRequired();
+            entity.Property(e => e.Description).HasMaxLength(500);
+            entity.Property(e => e.OnionUrl).HasMaxLength(200).IsRequired();
+            entity.Property(e => e.Status).HasMaxLength(20).IsRequired();
+            entity.Property(e => e.SubmittedAt).HasDefaultValueSql("CURRENT_TIMESTAMP");
+            entity.HasIndex(e => e.Status);
+            entity.HasIndex(e => e.SubmittedAt);
         });
 
         // UserContact configuration

@@ -1,0 +1,626 @@
+@using System.Linq
+@model IEnumerable<dynamic>
+@{
+    ViewData["Title"] = "Monitor Link Rollup & Submissions";
+    var pendingSubmissions = ViewBag.PendingSubmissions as List<MyFace.Core.Entities.OnionSubmission> ?? new List<MyFace.Core.Entities.OnionSubmission>();
+    var categories = new[] { "Markets", "Shops", "Forums", "Services", "Uncategorized" };
+}
+
+@section HeadExtras {
+    <style>
+        .rollup-shell {
+            --rollup-border: rgba(15, 23, 42, 0.12);
+            --rollup-card-bg: rgba(255, 255, 255, 0.9);
+            --rollup-muted: #6b7280;
+            --rollup-primary: #2f6fe4;
+            --rollup-primary-dark: #1c4ac2;
+            --rollup-chip-bg: rgba(15, 23, 42, 0.05);
+            display: flex;
+            flex-direction: column;
+            gap: 1.25rem;
+            padding: 0.25rem 0 1.75rem;
+        }
+
+        .rollup-hero {
+            background: linear-gradient(135deg, rgba(47, 111, 228, 0.1), rgba(16, 185, 129, 0.12));
+            border: 1px solid var(--rollup-border);
+            border-radius: 1.15rem;
+            padding: 1.4rem 1.6rem;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            gap: 1rem;
+            box-shadow: 0 12px 45px rgba(15, 23, 42, 0.08);
+        }
+
+        .rollup-kicker {
+            text-transform: uppercase;
+            font-size: 0.68rem;
+            letter-spacing: 0.3em;
+            color: var(--rollup-muted);
+            margin: 0 0 0.35rem 0;
+        }
+
+        .rollup-hero h2 {
+            margin: 0;
+            font-size: 1.6rem;
+            font-family: 'Space Grotesk', 'Segoe UI', sans-serif;
+            letter-spacing: -0.02em;
+        }
+
+        .rollup-subtitle {
+            margin: 0.25rem 0 0;
+            color: var(--rollup-muted);
+            max-width: 46ch;
+            font-size: 0.95rem;
+        }
+
+        .rollup-hero__stats {
+            display: flex;
+            gap: 0.8rem;
+            flex-wrap: wrap;
+        }
+
+        .hero-stat {
+            min-width: 120px;
+            padding: 0.85rem 1rem;
+            border-radius: 0.9rem;
+            background: rgba(255, 255, 255, 0.65);
+            border: 1px solid var(--rollup-border);
+            display: flex;
+            flex-direction: column;
+            gap: 0.2rem;
+        }
+
+        .hero-stat span {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.12em;
+            color: var(--rollup-muted);
+        }
+
+        .hero-stat strong {
+            font-size: 1.6rem;
+            font-weight: 700;
+            letter-spacing: -0.04em;
+        }
+
+        .rollup-flash {
+            border-radius: 0.75rem;
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            background: rgba(16, 185, 129, 0.08);
+            padding: 0.85rem 1rem;
+            font-weight: 600;
+            color: #065f46;
+        }
+
+        .rollup-panel {
+            border: 1px solid var(--rollup-border);
+            border-radius: 1rem;
+            padding: 1.15rem 1.35rem;
+            background: var(--rollup-card-bg);
+            box-shadow: 0 18px 45px rgba(15, 23, 42, 0.08);
+        }
+
+        .panel-head {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 0.85rem;
+            margin-bottom: 0.85rem;
+        }
+
+        .panel-head h3 {
+            margin: 0.15rem 0 0;
+            font-size: 1.1rem;
+        }
+
+        .panel-kicker {
+            margin: 0;
+            text-transform: uppercase;
+            font-size: 0.65rem;
+            letter-spacing: 0.25em;
+            color: var(--rollup-muted);
+        }
+
+        .panel-count {
+            font-size: 0.8rem;
+            letter-spacing: 0.18em;
+            text-transform: uppercase;
+            color: var(--rollup-muted);
+            border: 1px solid var(--rollup-border);
+            border-radius: 999px;
+            padding: 0.25rem 0.85rem;
+        }
+
+        .submission-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 0.75rem;
+        }
+
+        .submission-card {
+            border: 1px solid var(--rollup-border);
+            border-radius: 0.85rem;
+            padding: 0.9rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.6rem;
+            background: rgba(255, 255, 255, 0.8);
+        }
+
+        .submission-card__meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.35rem;
+        }
+
+        .rollup-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+            padding: 0.18rem 0.65rem;
+            border-radius: 999px;
+            background: var(--rollup-chip-bg);
+            font-size: 0.66rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: var(--rollup-muted);
+        }
+
+        .rollup-chip--ghost {
+            background: transparent;
+            border: 1px solid var(--rollup-border);
+        }
+
+        .rollup-chip--url {
+            font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+            font-size: 0.6rem;
+            letter-spacing: 0.04em;
+        }
+
+        .submission-card__fields label {
+            font-size: 0.68rem;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: var(--rollup-muted);
+            margin-bottom: 0.15rem;
+            display: block;
+        }
+
+        .rollup-input {
+            width: 100%;
+            border-radius: 0.65rem;
+            border: 1px solid var(--rollup-border);
+            padding: 0.45rem 0.6rem;
+            font-size: 0.86rem;
+            background: rgba(255, 255, 255, 0.9);
+            transition: border-color 0.15s ease;
+        }
+
+        .rollup-input:focus {
+            outline: none;
+            border-color: var(--rollup-primary);
+            box-shadow: 0 0 0 3px rgba(47, 111, 228, 0.15);
+        }
+
+        .submission-card__actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.4rem;
+            align-items: center;
+        }
+
+        .rollup-btn {
+            border: none;
+            border-radius: 999px;
+            padding: 0.35rem 0.95rem;
+            font-size: 0.75rem;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            font-weight: 700;
+            cursor: pointer;
+            transition: transform 0.15s ease, box-shadow 0.15s ease;
+        }
+
+        .rollup-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 14px rgba(15, 23, 42, 0.12);
+        }
+
+        .rollup-btn--approve {
+            background: #0f9a72;
+            color: #fff;
+        }
+
+        .rollup-btn--deny {
+            background: #dc2626;
+            color: #fff;
+        }
+
+        .rollup-btn--ghost {
+            background: transparent;
+            border: 1px solid var(--rollup-border);
+            color: var(--rollup-muted);
+        }
+
+        .panel-empty {
+            border: 1px dashed var(--rollup-border);
+            border-radius: 0.85rem;
+            padding: 0.85rem;
+            font-size: 0.85rem;
+            color: var(--rollup-muted);
+            text-align: center;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 0.65rem;
+        }
+
+        .stats-card {
+            border: 1px solid var(--rollup-border);
+            border-radius: 0.9rem;
+            padding: 0.8rem 0.9rem;
+            background: rgba(255, 255, 255, 0.85);
+        }
+
+        .stats-card span {
+            display: block;
+            font-size: 0.62rem;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            color: var(--rollup-muted);
+        }
+
+        .stats-card strong {
+            display: block;
+            font-size: 1.4rem;
+            letter-spacing: -0.04em;
+            margin-top: 0.35rem;
+        }
+
+        .service-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.65rem;
+        }
+
+        .service-card {
+            border: 1px solid rgba(15, 23, 42, 0.08);
+            border-radius: 0.9rem;
+            padding: 0.85rem 1rem;
+            background: rgba(249, 250, 251, 0.85);
+        }
+
+        .service-card__head {
+            display: flex;
+            justify-content: space-between;
+            gap: 0.65rem;
+            align-items: flex-start;
+            margin-bottom: 0.45rem;
+        }
+
+        .service-name {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            font-size: 1rem;
+        }
+
+        .verified-dot {
+            width: 1.1rem;
+            height: 1.1rem;
+            border-radius: 999px;
+            background: #15803d;
+            color: #fff;
+            font-size: 0.7rem;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 0 0 4px rgba(21, 128, 61, 0.15);
+        }
+
+        .service-tags {
+            display: flex;
+            gap: 0.35rem;
+            flex-wrap: wrap;
+            margin-top: 0.15rem;
+        }
+
+        .service-metrics {
+            text-align: right;
+        }
+
+        .metric-label {
+            display: block;
+            font-size: 0.6rem;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            color: var(--rollup-muted);
+        }
+
+        .metric-value {
+            font-size: 1.1rem;
+            font-weight: 700;
+        }
+
+        .rollup-service-links {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+        }
+
+        .rollup-service-links li {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            border-bottom: 1px dashed rgba(15, 23, 42, 0.08);
+            padding: 0.18rem 0;
+        }
+
+        .rollup-service-links li:last-child {
+            border-bottom: none;
+        }
+
+        .link-pill {
+            min-width: 62px;
+            text-align: center;
+            font-size: 0.58rem;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            border-radius: 999px;
+            padding: 0.12rem 0.35rem;
+        }
+
+        .link-pill--primary {
+            background: rgba(47, 111, 228, 0.2);
+            color: #1d4ed8;
+        }
+
+        .link-pill--mirror {
+            background: rgba(15, 23, 42, 0.08);
+            color: var(--rollup-muted);
+        }
+
+        .link-url {
+            font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+            font-size: 0.63rem;
+            letter-spacing: 0.03em;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .rollup-actions {
+            display: flex;
+            justify-content: flex-start;
+        }
+
+        @@media (max-width: 768px) {
+            .rollup-hero {
+                padding: 1rem;
+            }
+
+            .rollup-panel {
+                padding: 1rem;
+            }
+
+            .service-card__head {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .submission-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+}
+
+<div class="rollup-shell">
+    <section class="rollup-hero">
+        <div>
+            <p class="rollup-kicker">Monitor Operations</p>
+            <h2>Monitor Link Rollup &amp; Submissions</h2>
+            <p class="rollup-subtitle">
+                Curated view of canonical services, mirrors, and inbound submissions so you can approve updates without digging through raw logs.
+            </p>
+        </div>
+        <div class="rollup-hero__stats">
+            <div class="hero-stat">
+                <span>Pending</span>
+                <strong>@pendingSubmissions.Count</strong>
+            </div>
+            <div class="hero-stat">
+                <span>Services</span>
+                <strong>@ViewBag.TotalServices</strong>
+            </div>
+            <div class="hero-stat">
+                <span>Mirrors</span>
+                <strong>@ViewBag.MirrorServices</strong>
+            </div>
+        </div>
+    </section>
+
+    @if (TempData["Message"] != null)
+    {
+        <div class="rollup-flash">@TempData["Message"]</div>
+    }
+
+    <section class="rollup-panel">
+        <div class="panel-head">
+            <div>
+                <p class="panel-kicker">Queue Health</p>
+                <h3>Pending Submissions</h3>
+            </div>
+            <span class="panel-count">@pendingSubmissions.Count</span>
+        </div>
+
+        @if (pendingSubmissions.Any())
+        {
+            <div class="submission-grid">
+                @foreach (var sub in pendingSubmissions)
+                {
+                    <article class="submission-card">
+                        <div class="submission-card__meta">
+                            <span class="rollup-chip">@sub.SubmittedAt.ToString("yyyy-MM-dd HH:mm")</span>
+                            <span class="rollup-chip rollup-chip--ghost">@(sub.SubmittedByUsername ?? "Anonymous")</span>
+                            <span class="rollup-chip rollup-chip--url" title="@sub.OnionUrl">@sub.OnionUrl</span>
+                        </div>
+
+                        <div class="submission-card__fields">
+                            <label for="name_@sub.Id">Service name</label>
+                            <input type="text" id="name_@sub.Id" value="@sub.Name" class="rollup-input" />
+                        </div>
+
+                        <div class="submission-card__fields">
+                            <label for="category_@sub.Id">Category</label>
+                            <select id="category_@sub.Id" class="rollup-input">
+                                @foreach (var category in categories)
+                                {
+                                    var selected = string.Equals(sub.Description ?? string.Empty, category, StringComparison.OrdinalIgnoreCase);
+                                    <option value="@category" selected="@(selected ? "selected" : null)">@category</option>
+                                }
+                            </select>
+                        </div>
+
+                        <div class="submission-card__actions">
+                            @if (!string.IsNullOrEmpty(sub.PgpSignedMessage))
+                            {
+                                <button type="button"
+                                        class="rollup-btn rollup-btn--ghost"
+                                        data-pgp="@sub.PgpSignedMessage"
+                                        onclick="alert('PGP Signed Message:\n\n' + this.getAttribute('data-pgp'));">
+                                    PGP Proof
+                                </button>
+                            }
+
+                            <form asp-action="ApproveSubmission" method="post" style="display:inline-flex;">
+                                <input type="hidden" name="id" value="@sub.Id" />
+                                <input type="hidden" name="name" id="approve_name_@sub.Id" />
+                                <input type="hidden" name="category" id="approve_category_@sub.Id" />
+                                <button type="submit"
+                                        class="rollup-btn rollup-btn--approve"
+                                        onclick="document.getElementById('approve_name_@sub.Id').value = document.getElementById('name_@sub.Id').value; document.getElementById('approve_category_@sub.Id').value = document.getElementById('category_@sub.Id').value; return confirm('Approve this submission?');">
+                                    Approve
+                                </button>
+                            </form>
+
+                            <form asp-action="DenySubmission" method="post" style="display:inline-flex;">
+                                <input type="hidden" name="id" value="@sub.Id" />
+                                <button type="submit"
+                                        class="rollup-btn rollup-btn--deny"
+                                        onclick="return confirm('Deny this submission?');">
+                                    Deny
+                                </button>
+                            </form>
+                        </div>
+                    </article>
+                }
+            </div>
+        }
+        else
+        {
+            <div class="panel-empty">No pending submissions. Everything is up to date.</div>
+        }
+    </section>
+
+    <section class="rollup-panel">
+        <div class="panel-head">
+            <div>
+                <p class="panel-kicker">Network Coverage</p>
+                <h3>Service Statistics</h3>
+            </div>
+        </div>
+        <div class="stats-grid">
+            <div class="stats-card">
+                <span>Total Services</span>
+                <strong>@ViewBag.TotalServices</strong>
+            </div>
+            <div class="stats-card">
+                <span>Primary Services</span>
+                <strong>@ViewBag.PrimaryServices</strong>
+            </div>
+            <div class="stats-card">
+                <span>Mirror Links</span>
+                <strong>@ViewBag.MirrorServices</strong>
+            </div>
+            <div class="stats-card">
+                <span>Services w/ Mirrors</span>
+                <strong>@ViewBag.ServicesWithMirrors</strong>
+            </div>
+        </div>
+    </section>
+
+    <section class="rollup-panel">
+        <div class="panel-head">
+            <div>
+                <p class="panel-kicker">Canonical Directory</p>
+                <h3>Service Rollup</h3>
+            </div>
+            <div class="service-tags">
+                <span class="rollup-chip">Primary</span>
+                <span class="rollup-chip rollup-chip--ghost">Mirror</span>
+            </div>
+        </div>
+
+        <div class="service-list">
+            @foreach (var group in Model)
+            {
+                var canonicalName = !string.IsNullOrWhiteSpace(group.CanonicalName) ? group.CanonicalName : group.Name;
+                var verified = group.PrimaryService != null && group.PrimaryService.Proofs.Count > 0;
+                var mirrorCount = group.Mirrors?.Count ?? 0;
+                var categoryLabel = string.IsNullOrWhiteSpace(group.Category) ? "Uncategorized" : group.Category;
+
+                <article class="service-card">
+                    <div class="service-card__head">
+                        <div>
+                            <div class="service-name">
+                                <strong>@canonicalName</strong>
+                                @if (verified)
+                                {
+                                    <span class="verified-dot" title="PGP verified">✓</span>
+                                }
+                            </div>
+                            <div class="service-tags">
+                                <span class="rollup-chip rollup-chip--ghost">@categoryLabel</span>
+                                <span class="rollup-chip rollup-chip--ghost">@mirrorCount mirror@(mirrorCount == 1 ? string.Empty : "s")</span>
+                            </div>
+                        </div>
+                        <div class="service-metrics">
+                            <span class="metric-label">Clicks</span>
+                            <span class="metric-value">@group.TotalClicks</span>
+                        </div>
+                    </div>
+
+                    <ul class="rollup-service-links">
+                        @if (group.PrimaryService != null)
+                        {
+                            <li>
+                                <span class="link-pill link-pill--primary">Primary</span>
+                                <span class="link-url">@group.PrimaryService.OnionUrl</span>
+                            </li>
+                        }
+                        @foreach (var mirror in group.Mirrors)
+                        {
+                            <li>
+                                <span class="link-pill link-pill--mirror">Mirror</span>
+                                <span class="link-url">@mirror.OnionUrl</span>
+                            </li>
+                        }
+                    </ul>
+                </article>
+            }
+        </div>
+    </section>
+
+    <div class="rollup-actions">
+        <a href="@Url.Action("Index")" class="rollup-btn rollup-btn--ghost">Back to Monitor</a>
+    </div>
+</div>

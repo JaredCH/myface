@@ -45,13 +45,9 @@
                     <li><a href="@Url.Action("Index", "Mail")">Mail @MailBadge()</a></li>
                     @if (User.Identity?.IsAuthenticated == true)
                     {
-                        @if (User.IsInRole("Admin"))
-                        {
-                            <li><a href="@Url.Action("Index", "Admin")">Admin</a></li>
-                        }
                         @if (User.IsInRole("Admin") || User.IsInRole("Moderator"))
                         {
-                            <li><a href="@Url.Action("Index", "Moderator")">Mod</a></li>
+                            <li><a href="@Url.Action("Index", "ControlPanel")">Control Panel</a></li>
                         }
                         <li><a href="@Url.Action("Index", "User", new { username = User.Identity.Name })">My Profile</a></li>
                         <li><a href="@Url.Action("Logout", "Account")">Logout</a></li>
@@ -78,13 +74,9 @@
                         <li><a href="@Url.Action("Index", "Mail")">Mail @MailBadge()</a></li>
                         @if (User.Identity?.IsAuthenticated == true)
                         {
-                            @if (User.IsInRole("Admin"))
-                            {
-                                <li><a href="@Url.Action("Index", "Admin")">Admin Panel</a></li>
-                            }
                             @if (User.IsInRole("Admin") || User.IsInRole("Moderator"))
                             {
-                                <li><a href="@Url.Action("Index", "Moderator")">Moderation</a></li>
+                                <li><a href="@Url.Action("Index", "ControlPanel")">Control Panel</a></li>
                             }
                             <li><a href="@Url.Action("Index", "User", new { username = User.Identity.Name })">My Profile</a></li>
                         }
@@ -109,6 +101,8 @@
                 <div class="onion-cards onion-cards--compact">
                     @foreach (var link in topOnions)
                     {
+                        var displayName = string.IsNullOrEmpty(link.CanonicalName) ? link.Name : link.CanonicalName;
+                        var mirrorCount = link.Mirrors?.Count ?? 0;
                         var normalized = (link.Status ?? "offline").Trim().ToUpperInvariant();
                         var statusClass = normalized switch
                         {
@@ -124,12 +118,12 @@
                         };
                         <a href="@Url.Action("Go", "Monitor", new { id = link.Id })" class="onion-card onion-card--compact">
                             <div class="onion-card__line">
-                                <span class="onion-name" title="@link.Name">@link.Name</span>
+                                <span class="onion-name" title="@displayName">@displayName</span>
                                 <span class="status-pill @statusClass"><span class="status-dot @statusClass"></span>@statusLabel</span>
                             </div>
                             <div class="onion-card__line onion-card__line--sub">
                                 <span class="onion-url" title="@link.OnionUrl">@link.OnionUrl</span>
-                                <span class="onion-clicks">@link.ClickCount clicks</span>
+                                <span class="onion-clicks">@link.ClickCount clicks@(mirrorCount > 0 ? $" · {mirrorCount} mirror" + (mirrorCount > 1 ? "s" : "") : "")</span>
                             </div>
                         </a>
                     }
