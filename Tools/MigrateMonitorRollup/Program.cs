@@ -2,12 +2,24 @@ using Microsoft.EntityFrameworkCore;
 using MyFace.Data;
 using MyFace.Services;
 
-var connectionString = Environment.GetEnvironmentVariable("MYFACE_TEST_CONNECTION")
+var connectionString = Environment.GetEnvironmentVariable("MYFACE_CONNECTION")
+    ?? Environment.GetEnvironmentVariable("MYFACE_TEST_CONNECTION")
     ?? "Host=localhost;Database=myface_test;Username=postgres;Password=postgres";
+
+static string DescribeConnection(string raw)
+{
+    var parts = raw.Split(';', StringSplitOptions.RemoveEmptyEntries);
+    return parts.Length switch
+    {
+        >= 2 => string.Join(';', parts.Take(2)) + ";…",
+        > 0 => parts[0] + ";…",
+        _ => raw
+    };
+}
 
 Console.WriteLine("Monitor Link Rollup - Data Migration Script");
 Console.WriteLine("=============================================");
-Console.WriteLine($"Connection: {connectionString.Split(';')[0..2].Aggregate((a,b) => a + ";" + b)}...");
+Console.WriteLine($"Connection: {DescribeConnection(connectionString)}");
 Console.WriteLine();
 
 var optionsBuilder = new DbContextOptionsBuilder<ApplicationDbContext>();
@@ -15,71 +27,116 @@ optionsBuilder.UseNpgsql(connectionString);
 
 await using var context = new ApplicationDbContext(optionsBuilder.Options);
 
-Console.WriteLine("Step 1: Populating CanonicalName and NormalizedKey for existing records...");
+Console.WriteLine("Step 1: Recomputing CanonicalName and NormalizedKey for all records...");
 
 var allRecords = await context.OnionStatuses.ToListAsync();
-var updated = 0;
+var canonicalUpdates = 0;
 
 foreach (var record in allRecords)
 {
-    if (string.IsNullOrEmpty(record.CanonicalName) || string.IsNullOrEmpty(record.NormalizedKey))
+    var canonicalName = LinkNormalizationService.NormalizeToCanonical(record.Name);
+    var normalizedKey = LinkNormalizationService.GenerateNormalizedKey(canonicalName);
+
+    if (!string.Equals(record.CanonicalName, canonicalName, StringComparison.Ordinal))
     {
-        record.CanonicalName = LinkNormalizationService.NormalizeToCanonical(record.Name);
-        record.NormalizedKey = LinkNormalizationService.GenerateNormalizedKey(record.Name);
-        updated++;
+        record.CanonicalName = canonicalName;
+        canonicalUpdates++;
+    }
+
+    if (!string.Equals(record.NormalizedKey, normalizedKey, StringComparison.Ordinal))
+    {
+        record.NormalizedKey = normalizedKey;
+        canonicalUpdates++;
     }
 }
 
-if (updated > 0)
+if (canonicalUpdates > 0)
 {
     await context.SaveChangesAsync();
-    Console.WriteLine($"  ✓ Updated {updated} records with canonical names");
+    Console.WriteLine($"  ✓ Recomputed metadata on {canonicalUpdates} fields");
 }
 else
 {
-    Console.WriteLine($"  ✓ All records already have canonical names");
+    Console.WriteLine("  ✓ Canonical metadata already aligned");
 }
 
 Console.WriteLine();
-Console.WriteLine("Step 2: Identifying and linking mirror URLs...");
+Console.WriteLine("Step 2: Normalizing categories and linking mirror URLs...");
 
-// Group by normalized key + category to find potential mirrors
 var grouped = allRecords
-    .Where(r => !r.IsMirror && r.ParentId == null) // Only process primary services
-    .GroupBy(r => (r.NormalizedKey ?? string.Empty) + "|" + r.Description)
-    .Where(g => g.Count() > 1) // Only groups with potential duplicates
+    .Where(r => !string.IsNullOrEmpty(r.NormalizedKey))
+    .GroupBy(r => r.NormalizedKey!, StringComparer.OrdinalIgnoreCase)
     .ToList();
 
 var mirrorsLinked = 0;
+var categoriesUpdated = 0;
 
 foreach (var group in grouped)
 {
-    var services = group.OrderBy(s => s.Id).ToList();
-    var primary = services[0]; // First by ID is the primary
-    
-    Console.WriteLine($"  Found duplicate group: {primary.CanonicalName} ({services.Count} entries)");
-    
-    for (int i = 1; i < services.Count; i++)
+    var services = group
+        .OrderBy(s => s.IsMirror ? 1 : 0)
+        .ThenBy(s => s.MirrorPriority)
+        .ThenBy(s => s.Id)
+        .ToList();
+
+    if (services.Count == 0)
     {
-        var mirror = services[i];
-        mirror.ParentId = primary.Id;
-        mirror.IsMirror = true;
-        mirror.MirrorPriority = i;
-        mirrorsLinked++;
-        
-        Console.WriteLine($"    - Linked {mirror.OnionUrl} as mirror #{i}");
+        continue;
+    }
+
+    var preferredCategory = services
+        .Select(s => (s.Description ?? string.Empty).Trim())
+        .Where(s => !string.IsNullOrWhiteSpace(s))
+        .GroupBy(s => s, StringComparer.OrdinalIgnoreCase)
+        .OrderByDescending(g => g.Count())
+        .ThenBy(g => g.Key, StringComparer.OrdinalIgnoreCase)
+        .Select(g => g.Key)
+        .FirstOrDefault() ?? (services[0].Description ?? "Other");
+
+    var primary = services[0];
+    var canonicalLabel = string.IsNullOrWhiteSpace(primary.CanonicalName) ? primary.Name : primary.CanonicalName;
+
+    Console.WriteLine($"  Group: {canonicalLabel} ({services.Count} entries)");
+
+    for (var i = 0; i < services.Count; i++)
+    {
+        var service = services[i];
+        var desiredMirrorFlag = i > 0;
+        var desiredParent = desiredMirrorFlag ? primary.Id : (int?)null;
+
+        if (!string.Equals(service.Description, preferredCategory, StringComparison.Ordinal))
+        {
+            service.Description = preferredCategory;
+            categoriesUpdated++;
+        }
+
+        if (service.IsMirror != desiredMirrorFlag ||
+            service.ParentId != desiredParent ||
+            service.MirrorPriority != i)
+        {
+            service.IsMirror = desiredMirrorFlag;
+            service.ParentId = desiredParent;
+            service.MirrorPriority = i;
+            if (desiredMirrorFlag)
+            {
+                mirrorsLinked++;
+            }
+        }
     }
 }
 
-if (mirrorsLinked > 0)
+if (categoriesUpdated > 0 || mirrorsLinked > 0)
 {
     await context.SaveChangesAsync();
-    Console.WriteLine($"  ✓ Linked {mirrorsLinked} mirrors");
 }
-else
-{
-    Console.WriteLine($"  ✓ No new mirrors to link");
-}
+
+Console.WriteLine(categoriesUpdated > 0
+    ? $"  ✓ Normalized categories on {categoriesUpdated} rows"
+    : "  ✓ Categories already consistent");
+
+Console.WriteLine(mirrorsLinked > 0
+    ? $"  ✓ Linked or refreshed {mirrorsLinked} mirrors"
+    : "  ✓ Mirror relationships already up to date");
 
 Console.WriteLine();
 Console.WriteLine("Step 3: Generating summary statistics...");

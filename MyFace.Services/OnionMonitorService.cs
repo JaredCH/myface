@@ -145,6 +145,8 @@ public class OnionStatusService
                 continue;
             }
 
+            var canonicalName = LinkNormalizationService.NormalizeToCanonical(seed.Name);
+            var normalizedKey = LinkNormalizationService.GenerateNormalizedKey(canonicalName);
             var status = new OnionStatus
             {
                 Name = seed.Name,
@@ -156,7 +158,11 @@ public class OnionStatusService
                 ReachableAttempts = 0,
                 TotalAttempts = 0,
                 AverageLatency = null,
-                ClickCount = 0
+                ClickCount = 0,
+                CanonicalName = canonicalName,
+                NormalizedKey = normalizedKey,
+                IsMirror = false,
+                MirrorPriority = 0
             };
 
             _context.OnionStatuses.Add(status);
@@ -165,6 +171,78 @@ public class OnionStatusService
         }
 
         if (_context.ChangeTracker.HasChanges())
+        {
+            await _context.SaveChangesAsync();
+        }
+
+        await EnsureCanonicalMetadataAsync();
+    }
+
+    private async Task EnsureCanonicalMetadataAsync()
+    {
+        var statuses = await _context.OnionStatuses.ToListAsync();
+        if (statuses.Count == 0)
+        {
+            return;
+        }
+
+        var changed = false;
+
+        foreach (var status in statuses)
+        {
+            var canonicalName = LinkNormalizationService.NormalizeToCanonical(status.Name ?? string.Empty);
+            var normalizedKey = LinkNormalizationService.GenerateNormalizedKey(canonicalName);
+
+            if (!string.Equals(status.CanonicalName, canonicalName, StringComparison.Ordinal))
+            {
+                status.CanonicalName = canonicalName;
+                changed = true;
+            }
+
+            if (!string.Equals(status.NormalizedKey, normalizedKey, StringComparison.Ordinal))
+            {
+                status.NormalizedKey = normalizedKey;
+                changed = true;
+            }
+        }
+
+        var grouped = statuses
+            .Where(s => !string.IsNullOrEmpty(s.NormalizedKey))
+            .GroupBy(s => s.NormalizedKey!, StringComparer.OrdinalIgnoreCase);
+
+        foreach (var group in grouped)
+        {
+            var ordered = group
+                .OrderByDescending(s => ComputePrimaryPreference(string.IsNullOrWhiteSpace(s.Name) ? s.CanonicalName : s.Name))
+                .ThenBy(s => s.Id)
+                .ToList();
+
+            if (ordered.Count == 0)
+            {
+                continue;
+            }
+
+            var primaryId = ordered[0].Id;
+
+            for (var i = 0; i < ordered.Count; i++)
+            {
+                var status = ordered[i];
+                var shouldBeMirror = i > 0;
+                var desiredParentId = shouldBeMirror ? primaryId : (int?)null;
+
+                if (status.IsMirror != shouldBeMirror ||
+                    status.MirrorPriority != i ||
+                    status.ParentId != desiredParentId)
+                {
+                    status.IsMirror = shouldBeMirror;
+                    status.MirrorPriority = i;
+                    status.ParentId = desiredParentId;
+                    changed = true;
+                }
+            }
+        }
+
+        if (changed)
         {
             await _context.SaveChangesAsync();
         }
