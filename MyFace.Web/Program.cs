@@ -59,6 +59,8 @@ builder.Services.AddScoped<ControlPanelDataService>();
 builder.Services.AddSingleton<ControlSettingsCache>();
 builder.Services.AddScoped<ControlSettingsReader>();
 builder.Services.AddScoped<ControlSettingsService>();
+builder.Services.AddScoped<ContentFilteringService>();
+builder.Services.AddScoped<InfractionsService>();
 builder.Services.AddScoped<ICustomHtmlSanitizer, CustomHtmlSanitizer>();
 builder.Services.AddScoped<ICustomHtmlStorageService, MyFace.Web.Services.CustomHtmlStorageService>();
 builder.Services.AddScoped<IProfileTemplateService, ProfileTemplateService>();

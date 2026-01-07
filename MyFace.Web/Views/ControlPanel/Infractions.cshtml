@@ -1,0 +1,190 @@
+@model MyFace.Web.Models.ControlPanel.InfractionsViewModel
+@using MyFace.Services
+@{
+    ViewData["Title"] = "Infractions · Control Panel";
+}
+
+<div class="control-panel-section">
+    <h2>Content Infractions & Mutes</h2>
+    
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-body text-center">
+                    <h5 class="card-title">Last Hour</h5>
+                    <h2>@Model.Metrics.LastHour</h2>
+                    <small class="text-muted">infractions</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-body text-center">
+                    <h5 class="card-title">Last 24 Hours</h5>
+                    <h2>@Model.Metrics.TotalInWindow</h2>
+                    <small class="text-muted">infractions</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-body text-center">
+                    <h5 class="card-title">Active Mutes</h5>
+                    <h2 class="text-danger">@Model.Metrics.ActiveMutes</h2>
+                    <small class="text-muted">currently muted users</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-body text-center">
+                    <h5 class="card-title">Rate</h5>
+                    <h4>@Model.Metrics.PerHour.ToString("F1")/hr</h4>
+                    <small class="text-muted">@Model.Metrics.PerMinute.ToString("F2")/min</small>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h3>Recent Infractions</h3>
+            <div>
+                <a href="@Url.Action("Infractions", new { onlyActive = true })" class="btn btn-sm btn-outline-danger">
+                    Active Mutes Only
+                </a>
+                <a href="@Url.Action("Infractions")" class="btn btn-sm btn-outline-primary">
+                    Show All
+                </a>
+            </div>
+        </div>
+        <div class="card-body">
+            @if (Model.Infractions.Any())
+            {
+                <div class="table-responsive">
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>Time</th>
+                                <th>User</th>
+                                <th>Type</th>
+                                <th>Matched Pattern</th>
+                                <th>Action</th>
+                                <th>Mute Expires</th>
+                                <th>Modified</th>
+                                <th>Escalation</th>
+                                <th>Admin Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var infraction in Model.Infractions)
+                            {
+                                var isActive = infraction.MuteExpiresAt.HasValue && infraction.MuteExpiresAt > DateTime.UtcNow;
+                                <tr class="@(isActive ? "table-danger" : "")">
+                                    <td>
+                                        <small>@infraction.OccurredAt.ToString("MM/dd HH:mm:ss")</small>
+                                    </td>
+                                    <td>
+                                        <a href="@Url.Action("ManageUser", new { userId = infraction.UserId })">
+                                            @(infraction.User?.Username ?? $"User {infraction.UserId}")
+                                        </a>
+                                    </td>
+                                    <td>@infraction.ContentType</td>
+                                    <td><code>@infraction.MatchedPattern</code></td>
+                                    <td>@infraction.ActionTaken</td>
+                                    <td>
+                                        @if (infraction.MuteExpiresAt.HasValue)
+                                        {
+                                            if (isActive)
+                                            {
+                                                <span class="badge badge-danger">
+                                                    @infraction.MuteExpiresAt.Value.ToString("MM/dd HH:mm")
+                                                </span>
+                                            }
+                                            else
+                                            {
+                                                <span class="text-muted">Expired</span>
+                                            }
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted">-</span>
+                                        }
+                                    </td>
+                                    <td>
+                                        @if (infraction.ContentModified)
+                                        {
+                                            <span class="badge badge-warning">Yes</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted">-</span>
+                                        }
+                                    </td>
+                                    <td>
+                                        @if (infraction.IsEscalation)
+                                        {
+                                            <span class="badge badge-info">Escalated</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted">-</span>
+                                        }
+                                    </td>
+                                    <td>
+                                        <form asp-action="ResetUserInfractions" asp-route-userId="@infraction.UserId" method="post" style="display:inline;" onsubmit="return confirm('Reset ALL infractions for this user?');">
+                                            @Html.AntiForgeryToken()
+                                            <button type="submit" class="btn btn-sm btn-warning" title="Reset all infractions">
+                                                Reset
+                                            </button>
+                                        </form>
+                                        @if (infraction.User?.SuspendedUntil != null)
+                                        {
+                                            <form asp-action="LiftBan" asp-route-userId="@infraction.UserId" method="post" style="display:inline;" onsubmit="return confirm('Lift ban for this user?');">
+                                                @Html.AntiForgeryToken()
+                                                <button type="submit" class="btn btn-sm btn-success" title="Lift ban">
+                                                    Unban
+                                                </button>
+                                            </form>
+                                        }
+                                    </td>
+                                </tr>
+                                @if (!string.IsNullOrEmpty(infraction.OriginalContent) && infraction.ContentModified)
+                                {
+                                    <tr>
+                                        <td colspan="9">
+                                            <details>
+                                                <summary class="text-muted" style="cursor:pointer;">
+                                                    <small>Show original content (admin only)</small>
+                                                </summary>
+                                                <div class="mt-2 p-2 bg-light border rounded">
+                                                    <small><pre class="mb-0">@infraction.OriginalContent</pre></small>
+                                                </div>
+                                            </details>
+                                        </td>
+                                    </tr>
+                                }
+                            }
+                        </tbody>
+                    </table>
+                </div>
+                
+                <div class="mt-3">
+                    <p class="text-muted">
+                        <small>
+                            Showing @Model.Infractions.Count recent infractions.
+                            @if (Model.FilterOnlyActive == true)
+                            {
+                                <span>Filtering: <strong>Active mutes only</strong></span>
+                            }
+                        </small>
+                    </p>
+                </div>
+            }
+            else
+            {
+                <p class="text-muted">No infractions recorded yet.</p>
+            }
+        </div>
+    </div>
+</div>

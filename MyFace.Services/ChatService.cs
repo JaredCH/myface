@@ -19,15 +19,25 @@ public class ChatService
     private readonly IMemoryCache _cache;
     private readonly ChatSnapshotService _snapshotService;
     private readonly ControlSettingsReader _settings;
+    private readonly ContentFilteringService _contentFilteringService;
+    private readonly InfractionsService _infractionsService;
     private readonly ConcurrentDictionary<int, DateTime> _muteExpirations = new();
     private readonly ConcurrentDictionary<string, DateTime> _pauseExpirations = new(StringComparer.OrdinalIgnoreCase);
 
-    public ChatService(ApplicationDbContext db, IMemoryCache cache, ChatSnapshotService snapshotService, ControlSettingsReader settings)
+    public ChatService(
+        ApplicationDbContext db, 
+        IMemoryCache cache, 
+        ChatSnapshotService snapshotService, 
+        ControlSettingsReader settings,
+        ContentFilteringService contentFilteringService,
+        InfractionsService infractionsService)
     {
         _db = db;
         _cache = cache;
         _snapshotService = snapshotService;
         _settings = settings;
+        _contentFilteringService = contentFilteringService;
+        _infractionsService = infractionsService;
     }
 
     public bool IsValidRoom(string room) => AllowedRooms.Contains(room);
@@ -231,7 +241,36 @@ public class ChatService
             content = content[..maxLength];
         }
 
-        var encoded = System.Web.HttpUtility.HtmlEncode(content);
+        // Apply content filtering
+        var filterResult = await _contentFilteringService.FilterContentAsync(
+            content,
+            ContentScope.Chats,
+            sender.Id);
+
+        Console.WriteLine($"[ChatFilter] Original: '{content}', Modified: {filterResult.WasModified}, Sanitized: '{filterResult.SanitizedContent}', Triggered: {filterResult.TriggeredFilters.Count}");
+
+        string filteredContent = filterResult.WasModified 
+            ? filterResult.SanitizedContent 
+            : content;
+
+        // Log infractions for each triggered filter
+        if (filterResult.WasModified)
+        {
+            foreach (var triggeredFilter in filterResult.TriggeredFilters)
+            {
+                await _infractionsService.LogInfractionAsync(
+                    sender.Id,
+                    null,
+                    "Chat",
+                    triggeredFilter,
+                    filterResult.OriginalContent,
+                    null,
+                    null,
+                    contentModified: true);
+            }
+        }
+
+        var encoded = System.Web.HttpUtility.HtmlEncode(filteredContent);
 
         var isVerified = sender.PGPVerifications.Any(v => v.Verified);
         var entity = new ChatMessage

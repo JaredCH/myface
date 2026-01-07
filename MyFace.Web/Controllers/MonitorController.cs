@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using MyFace.Services;
 using MyFace.Web.Models;
+using MyFace.Web.Models.ControlPanel;
 using MyFace.Web.Services;
 using MyFace.Data;
 using MyFace.Core.Entities;
@@ -143,6 +144,21 @@ public class MonitorController : Controller
         return RedirectBack(returnUrl);
     }
 
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    [MyFace.Web.Services.AdminAuthorization]
+    public async Task<IActionResult> RemoveMultiple(int[] ids, string? returnUrl)
+    {
+        if (ids != null && ids.Length > 0)
+        {
+            foreach (var id in ids)
+            {
+                await _statusService.RemoveAsync(id);
+            }
+        }
+        return RedirectBack(returnUrl);
+    }
+
     [HttpGet]
     [MyFace.Web.Services.AdminAuthorization]
     public async Task<IActionResult> Edit(int id, string? returnUrl)
@@ -208,7 +224,7 @@ public class MonitorController : Controller
         return RedirectToAction("Index");
     }
 
-    [HttpGet]
+    [HttpGet("~/SigilStaff/MonitorQueue")]
     [MyFace.Web.Services.AdminAuthorization]
     public async Task<IActionResult> Rollup()
     {
@@ -244,6 +260,11 @@ public class MonitorController : Controller
             .ToListAsync();
         
         ViewBag.PendingSubmissions = pendingSubmissions;
+        ViewBag.HideSidebars = true;
+        ViewData["Title"] = "Sigil Staff · Monitor Queue";
+        ViewData["ControlPanelActive"] = "monitor";
+        ViewData["ControlPanelRole"] = "Administrator";
+        ViewData["ControlPanelNav"] = BuildNavigation("monitor", true);
         
         return View(grouped);
     }
@@ -483,5 +504,45 @@ public class MonitorController : Controller
         }
 
         return null;
+    }
+
+    private IReadOnlyList<ControlPanelNavLink> BuildNavigation(string activeKey, bool isAdmin)
+    {
+        // Moderator links (alphabetical)
+        var moderatorLinks = new List<ControlPanelNavLink>
+        {
+            new("chat", "Chat", "/SigilStaff/Chat"),
+            new("content", "Content", "/SigilStaff/Content"),
+            new("dashboard", "Dashboard", "/SigilStaff"),
+            new("users", "Users", "/SigilStaff/Users"),
+            new("usercontrol", "UserControl", "/SigilStaff/UserControl")
+        };
+
+        // Admin-only links (alphabetical)
+        var adminLinks = new List<ControlPanelNavLink>
+        {
+            new("infractions", "Infractions", "/SigilStaff/Infractions", requiresAdmin: true),
+            new("monitor", "Monitor Queue", "/SigilStaff/MonitorQueue", requiresAdmin: true),
+            new("overview", "Overview", "/SigilStaff/Overview", requiresAdmin: true),
+            new("security", "Security", "/SigilStaff/Security", requiresAdmin: true),
+            new("settings", "Settings", "/SigilStaff/Settings", requiresAdmin: true),
+            new("traffic", "Traffic", "/SigilStaff/Traffic", requiresAdmin: true),
+            new("wordlist", "Word Filters", "/SigilStaff/WordList", requiresAdmin: true)
+        };
+
+        // Combine lists: moderator first, then admin
+        var items = new List<ControlPanelNavLink>();
+        items.AddRange(moderatorLinks);
+        if (isAdmin)
+        {
+            items.AddRange(adminLinks);
+        }
+
+        foreach (var link in items)
+        {
+            link.IsActive = string.Equals(link.Key, activeKey, StringComparison.OrdinalIgnoreCase);
+        }
+
+        return items;
     }
 }

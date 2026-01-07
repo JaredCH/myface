@@ -63,12 +63,43 @@ else
                 <p class="cp-label">Last seen</p>
                 <p class="cp-value">@Model.FormatDate(detail.User.LastSeenAt)</p>
             </article>
+            <article class="cp-card">
+                <p class="cp-label">Content Infractions</p>
+                <p class="cp-value">@detail.InfractionStats.TotalCount total</p>
+                <p class="cp-caption">@detail.InfractionStats.Last7DaysCount in last 7 days, @detail.InfractionStats.Last24HoursCount in last 24h</p>
+                @if (detail.InfractionStats.MostRecentAt.HasValue)
+                {
+                    <p class="cp-caption">Most recent: @Model.FormatDate(detail.InfractionStats.MostRecentAt)</p>
+                }
+            </article>
         </div>
     </section>
 
     <section class="cp-section">
         <h2>Moderation Controls</h2>
         <div class="cp-card-grid" style="grid-template-columns:repeat(auto-fit,minmax(280px,1fr));">
+            <article class="cp-card">
+                <p class="cp-label">Reset Infractions</p>
+                <form asp-action="ResetUserInfractions" method="post" class="cp-form" onsubmit="return confirm('Delete all infractions for this user?');">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="userId" value="@detail.User.UserId" />
+                    <input type="hidden" name="returnToManage" value="true" />
+                    <p class="cp-caption">Current: @detail.InfractionStats.TotalCount infractions</p>
+                    <button type="submit" class="btn-warning">Reset All Infractions</button>
+                </form>
+            </article>
+            @if (detail.User.SuspendedUntil.HasValue && detail.User.SuspendedUntil.Value > DateTime.UtcNow)
+            {
+                <article class="cp-card">
+                    <p class="cp-label">Lift Auto-Ban</p>
+                    <form asp-action="LiftBan" method="post" class="cp-form" onsubmit="return confirm('Lift the ban for this user?');">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="userId" value="@detail.User.UserId" />
+                        <p class="cp-caption">Currently suspended until @Model.FormatDate(detail.User.SuspendedUntil)</p>
+                        <button type="submit" class="btn-success">Lift Ban Now</button>
+                    </form>
+                </article>
+            }
             <article class="cp-card">
                 <p class="cp-label">Suspend user</p>
                 <form asp-action="SuspendUser" method="post" class="cp-form">

@@ -1,0 +1,420 @@
+@using MyFace.Services
+@{
+    ViewData["Title"] = "Sigil Staff · Overview";
+    Layout = "_ControlPanelLayout";
+    var stats = ViewBag.Statistics as MyFace.Services.SiteStatistics;
+    var snapshot = ViewBag.Snapshot as MyFace.Services.ControlPanelSnapshot;
+}
+
+<style>
+    .overview-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 0.75rem;
+        margin-bottom: 1rem;
+    }
+
+    .metric-card {
+        background: linear-gradient(135deg, rgba(47, 111, 228, 0.05), rgba(16, 185, 129, 0.05));
+        border: 1px solid rgba(15, 23, 42, 0.12);
+        border-radius: 8px;
+        padding: 0.85rem;
+        display: flex;
+        flex-direction: column;
+        gap: 0.25rem;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .metric-card:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(15, 23, 42, 0.08);
+    }
+
+    .metric-card.highlight {
+        background: linear-gradient(135deg, rgba(16, 185, 129, 0.12), rgba(47, 111, 228, 0.08));
+        border-color: rgba(16, 185, 129, 0.3);
+    }
+
+    .metric-icon {
+        font-size: 1.5rem;
+        opacity: 0.8;
+    }
+
+    .metric-value {
+        font-size: 1.75rem;
+        font-weight: 700;
+        letter-spacing: -0.02em;
+        color: #1e293b;
+    }
+
+    .metric-label {
+        font-size: 0.75rem;
+        color: #64748b;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        font-weight: 600;
+    }
+
+    .metric-trend {
+        font-size: 0.7rem;
+        color: #10b981;
+        font-weight: 500;
+    }
+
+    .section-header {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        margin: 1.25rem 0 0.75rem;
+        padding-bottom: 0.35rem;
+        border-bottom: 2px solid rgba(15, 23, 42, 0.1);
+    }
+
+    .section-header h2 {
+        margin: 0;
+        font-size: 1.15rem;
+        font-weight: 700;
+        color: #1e293b;
+    }
+
+    .section-icon {
+        font-size: 1.25rem;
+    }
+
+    .stats-bar-chart {
+        display: grid;
+        gap: 0.5rem;
+        margin-top: 0.75rem;
+    }
+
+    .stat-bar-row {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    .stat-bar-label {
+        min-width: 100px;
+        font-weight: 600;
+        font-size: 0.8rem;
+        color: #475569;
+    }
+
+    .stat-bar-container {
+        flex: 1;
+        height: 24px;
+        background: rgba(15, 23, 42, 0.05);
+        border-radius: 4px;
+        overflow: hidden;
+        position: relative;
+    }
+
+    .stat-bar-fill {
+        height: 100%;
+        background: linear-gradient(90deg, #3b82f6, #10b981);
+        border-radius: 4px;
+        display: flex;
+        align-items: center;
+        padding: 0 0.5rem;
+        color: white;
+        font-weight: 600;
+        font-size: 0.75rem;
+        transition: width 0.8s ease;
+    }
+
+    .activity-timeline {
+        display: grid;
+        gap: 0.5rem;
+        margin-top: 0.75rem;
+    }
+
+    .timeline-item {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        padding: 0.5rem;
+        background: rgba(255, 255, 255, 0.5);
+        border: 1px solid rgba(15, 23, 42, 0.08);
+        border-radius: 6px;
+    }
+
+    .timeline-time {
+        min-width: 85px;
+        font-weight: 600;
+        color: #3b82f6;
+        font-size: 0.8rem;
+    }
+
+    .timeline-metric {
+        flex: 1;
+        font-size: 0.85rem;
+    }
+
+    .timeline-value {
+        font-weight: 700;
+        color: #1e293b;
+        font-size: 0.95rem;
+    }
+
+    .refresh-indicator {
+        display: inline-block;
+        padding: 0.25rem 0.75rem;
+        background: rgba(16, 185, 129, 0.1);
+        border: 1px solid rgba(16, 185, 129, 0.3);
+        border-radius: 999px;
+        font-size: 0.8rem;
+        color: #059669;
+        font-weight: 600;
+    }
+</style>
+
+<div class="section-header">
+    <span class="section-icon">📊</span>
+    <h2>Site Overview</h2>
+    <span class="refresh-indicator">Auto-refresh: 30s</span>
+</div>
+
+@if (stats != null)
+{
+    <div class="overview-grid">
+        <div class="metric-card highlight">
+            <span class="metric-icon">🟢</span>
+            <div class="metric-value">@stats.LiveUserCount</div>
+            <div class="metric-label">Online Now</div>
+            <div class="metric-trend">Active in last 15 min</div>
+        </div>
+
+        <div class="metric-card">
+            <span class="metric-icon">👥</span>
+            <div class="metric-value">@stats.TotalUsers</div>
+            <div class="metric-label">Total Users</div>
+            <div class="metric-trend">Registered accounts</div>
+        </div>
+
+        <div class="metric-card">
+            <span class="metric-icon">📈</span>
+            <div class="metric-value">@stats.TodayCount.ToString("N0")</div>
+            <div class="metric-label">Today's Activity</div>
+            <div class="metric-trend">Page visits today</div>
+        </div>
+
+        <div class="metric-card highlight">
+            <span class="metric-icon">🌟</span>
+            <div class="metric-value">@stats.TotalCount.ToString("N0")</div>
+            <div class="metric-label">All-Time Visits</div>
+            <div class="metric-trend">Since tracking began</div>
+        </div>
+    </div>
+
+    <div class="section-header">
+        <span class="section-icon">⚡</span>
+        <h2>Activity Rates</h2>
+    </div>
+
+    <div class="overview-grid">
+        <div class="metric-card">
+            <span class="metric-icon">⏱️</span>
+            <div class="metric-value">@stats.ActionsPerMinute.ToString("F1")</div>
+            <div class="metric-label">Actions/Minute</div>
+            <div class="metric-trend">Last 60 seconds</div>
+        </div>
+
+        <div class="metric-card">
+            <span class="metric-icon">🕐</span>
+            <div class="metric-value">@stats.ActionsPerHour.ToString("F0")</div>
+            <div class="metric-label">Actions/Hour</div>
+            <div class="metric-trend">Last hour</div>
+        </div>
+
+        <div class="metric-card">
+            <span class="metric-icon">📅</span>
+            <div class="metric-value">@stats.ActionsPerDay.ToString("F0")</div>
+            <div class="metric-label">Actions/Day</div>
+            <div class="metric-trend">Last 24 hours</div>
+        </div>
+
+        <div class="metric-card">
+            <span class="metric-icon">📊</span>
+            <div class="metric-value">@stats.ActionsPerWeek.ToString("F0")</div>
+            <div class="metric-label">Actions/Week</div>
+            <div class="metric-trend">Last 7 days</div>
+        </div>
+    </div>
+
+    <div class="section-header">
+        <span class="section-icon">📈</span>
+        <h2>Traffic Timeline</h2>
+    </div>
+
+    <div class="stats-bar-chart">
+        @{
+            var maxVisits = new[] { stats.FourHourCount, stats.TodayCount, stats.WeekCount, stats.MonthCount, stats.QuarterCount, stats.YearCount }.Max();
+            double GetPercentage(int value) => maxVisits > 0 ? (value / (double)maxVisits * 100) : 0;
+        }
+
+        <div class="stat-bar-row">
+            <div class="stat-bar-label">Last 4 Hours</div>
+            <div class="stat-bar-container">
+                <div class="stat-bar-fill" style="width: @(GetPercentage(stats.FourHourCount))%">
+                    @stats.FourHourCount.ToString("N0") visits
+                </div>
+            </div>
+        </div>
+
+        <div class="stat-bar-row">
+            <div class="stat-bar-label">Today</div>
+            <div class="stat-bar-container">
+                <div class="stat-bar-fill" style="width: @(GetPercentage(stats.TodayCount))%">
+                    @stats.TodayCount.ToString("N0") visits
+                </div>
+            </div>
+        </div>
+
+        <div class="stat-bar-row">
+            <div class="stat-bar-label">This Week</div>
+            <div class="stat-bar-container">
+                <div class="stat-bar-fill" style="width: @(GetPercentage(stats.WeekCount))%">
+                    @stats.WeekCount.ToString("N0") visits
+                </div>
+            </div>
+        </div>
+
+        <div class="stat-bar-row">
+            <div class="stat-bar-label">This Month</div>
+            <div class="stat-bar-container">
+                <div class="stat-bar-fill" style="width: @(GetPercentage(stats.MonthCount))%">
+                    @stats.MonthCount.ToString("N0") visits
+                </div>
+            </div>
+        </div>
+
+        <div class="stat-bar-row">
+            <div class="stat-bar-label">This Quarter</div>
+            <div class="stat-bar-container">
+                <div class="stat-bar-fill" style="width: @(GetPercentage(stats.QuarterCount))%">
+                    @stats.QuarterCount.ToString("N0") visits
+                </div>
+            </div>
+        </div>
+
+        <div class="stat-bar-row">
+            <div class="stat-bar-label">This Year</div>
+            <div class="stat-bar-container">
+                <div class="stat-bar-fill" style="width: @(GetPercentage(stats.YearCount))%">
+                    @stats.YearCount.ToString("N0") visits
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @if (snapshot != null)
+    {
+        <div class="section-header">
+            <span class="section-icon">💡</span>
+            <h2>System Snapshot</h2>
+        </div>
+
+        <div class="activity-timeline">
+            <div class="timeline-item">
+                <div class="timeline-time">15 Minutes</div>
+                <div class="timeline-metric">Live Users</div>
+                <div class="timeline-value">@snapshot.LiveUsers15Minutes</div>
+            </div>
+
+            <div class="timeline-item">
+                <div class="timeline-time">1 Hour</div>
+                <div class="timeline-metric">Active Sessions</div>
+                <div class="timeline-value">@snapshot.ActiveSessionsHour</div>
+            </div>
+
+            <div class="timeline-item">
+                <div class="timeline-time">4 Hours</div>
+                <div class="timeline-metric">Users Online</div>
+                <div class="timeline-value">@snapshot.UsersOnlineFourHours</div>
+            </div>
+
+            <div class="timeline-item">
+                <div class="timeline-time">Today</div>
+                <div class="timeline-metric">Peak Users</div>
+                <div class="timeline-value">@snapshot.PeakUsersToday</div>
+            </div>
+
+            <div class="timeline-item">
+                <div class="timeline-time">24 Hours</div>
+                <div class="timeline-metric">Page Views</div>
+                <div class="timeline-value">@snapshot.PageViews24Hours.ToString("N0")</div>
+            </div>
+
+            <div class="timeline-item">
+                <div class="timeline-time">24 Hours</div>
+                <div class="timeline-metric">New Registrations</div>
+                <div class="timeline-value">@snapshot.NewRegistrations24Hours</div>
+            </div>
+
+            <div class="timeline-item">
+                <div class="timeline-time">24 Hours</div>
+                <div class="timeline-metric">Active Threads</div>
+                <div class="timeline-value">@snapshot.ActiveThreads24Hours</div>
+            </div>
+
+            <div class="timeline-item">
+                <div class="timeline-time">24 Hours</div>
+                <div class="timeline-metric">Posts Created</div>
+                <div class="timeline-value">@snapshot.Posts24Hours</div>
+            </div>
+        </div>
+    }
+
+    <div class="section-header">
+        <span class="section-icon">🏆</span>
+        <h2>Peak Records</h2>
+    </div>
+
+    <div class="overview-grid">
+        @if (stats.PeakDay > 0)
+        {
+            <div class="metric-card">
+                <span class="metric-icon">🌅</span>
+                <div class="metric-value">@stats.PeakDay.ToString("N0")</div>
+                <div class="metric-label">Peak Day</div>
+                <div class="metric-trend">Highest single day</div>
+            </div>
+        }
+
+        @if (stats.PeakWeek > 0)
+        {
+            <div class="metric-card">
+                <span class="metric-icon">📆</span>
+                <div class="metric-value">@stats.PeakWeek.ToString("N0")</div>
+                <div class="metric-label">Peak Week</div>
+                <div class="metric-trend">Busiest week</div>
+            </div>
+        }
+
+        @if (stats.PeakMonth > 0)
+        {
+            <div class="metric-card">
+                <span class="metric-icon">🗓️</span>
+                <div class="metric-value">@stats.PeakMonth.ToString("N0")</div>
+                <div class="metric-label">Peak Month</div>
+                <div class="metric-trend">Best performing month</div>
+            </div>
+        }
+
+        @if (stats.PeakYear > 0)
+        {
+            <div class="metric-card">
+                <span class="metric-icon">🎯</span>
+                <div class="metric-value">@stats.PeakYear.ToString("N0")</div>
+                <div class="metric-label">Peak Year</div>
+                <div class="metric-trend">Record year</div>
+            </div>
+        }
+    </div>
+}
+else
+{
+    <div style="padding: 2rem; text-align: center; color: #64748b;">
+        <p>Loading statistics...</p>
+    </div>
+}
