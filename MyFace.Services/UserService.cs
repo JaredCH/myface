@@ -160,59 +160,6 @@ public class UserService
             .FirstOrDefaultAsync(n => n.Id == id);
     }
 
-    public async Task UpdateProfileAsync(int userId, string aboutMe, string fontColor, string fontFamily)
-    {
-        var user = await _context.Users.FindAsync(userId);
-        if (user != null)
-        {
-            user.AboutMe = aboutMe ?? string.Empty;
-            user.FontColor = fontColor ?? "#e5e7eb";
-            user.FontFamily = fontFamily ?? "system-ui, -apple-system, sans-serif";
-            await _context.SaveChangesAsync();
-        }
-    }
-
-    public async Task UpdateFullProfileAsync(int userId, string aboutMe, string fontColor, string fontFamily,
-        string backgroundColor, string accentColor, string borderColor, string profileLayout,
-        string buttonBackgroundColor, string buttonTextColor, string buttonBorderColor,
-        string vendorShopDescription, string vendorPolicies, string vendorPayments, string vendorExternalReferences)
-    {
-        var user = await _context.Users.FindAsync(userId);
-        if (user != null)
-        {
-            user.AboutMe = aboutMe ?? string.Empty;
-            user.FontColor = fontColor ?? "#e5e7eb";
-            user.FontFamily = fontFamily ?? "system-ui, -apple-system, sans-serif";
-            const int defaultFontSize = 14;
-            user.FontSize = defaultFontSize;
-            user.BackgroundColor = backgroundColor ?? "#0f172a";
-            user.AccentColor = accentColor ?? "#3b82f6";
-            user.BorderColor = borderColor ?? "#334155";
-            user.ProfileLayout = profileLayout ?? "default";
-            user.ButtonBackgroundColor = string.IsNullOrWhiteSpace(buttonBackgroundColor) ? "#0ea5e9" : buttonBackgroundColor;
-            user.ButtonTextColor = string.IsNullOrWhiteSpace(buttonTextColor) ? "#ffffff" : buttonTextColor;
-            user.ButtonBorderColor = string.IsNullOrWhiteSpace(buttonBorderColor) ? "#0ea5e9" : buttonBorderColor;
-            user.VendorShopDescription = vendorShopDescription ?? string.Empty;
-            user.VendorPolicies = vendorPolicies ?? string.Empty;
-            user.VendorPayments = vendorPayments ?? string.Empty;
-            user.VendorExternalReferences = vendorExternalReferences ?? string.Empty;
-            await _context.SaveChangesAsync();
-        }
-    }
-
-    public async Task UpdateVendorAsync(int userId, string vendorShopDescription, string vendorPolicies, string vendorPayments, string vendorExternalReferences)
-    {
-        var user = await _context.Users.FindAsync(userId);
-        if (user != null)
-        {
-            user.VendorShopDescription = vendorShopDescription ?? string.Empty;
-            user.VendorPolicies = vendorPolicies ?? string.Empty;
-            user.VendorPayments = vendorPayments ?? string.Empty;
-            user.VendorExternalReferences = vendorExternalReferences ?? string.Empty;
-            await _context.SaveChangesAsync();
-        }
-    }
-
     public async Task<bool> SetUsernameAsync(int userId, string username)
     {
         // Check if username is already taken
@@ -234,72 +181,6 @@ public class UserService
     public async Task<bool> IsUsernameAvailableAsync(string username)
     {
         return !await _context.Users.AnyAsync(u => u.Username == username);
-    }
-
-    public async Task AddContactAsync(int userId, string service, string accountId)
-    {
-        var contact = new UserContact
-        {
-            UserId = userId,
-            ServiceName = service,
-            AccountId = accountId
-        };
-        _context.UserContacts.Add(contact);
-        await _context.SaveChangesAsync();
-    }
-
-    public async Task RemoveContactAsync(int userId, int contactId)
-    {
-        var contact = await _context.UserContacts.FindAsync(contactId);
-        if (contact != null && contact.UserId == userId)
-        {
-            _context.UserContacts.Remove(contact);
-            await _context.SaveChangesAsync();
-        }
-    }
-
-    public async Task RemoveContactByAdminAsync(int contactId)
-    {
-        var contact = await _context.UserContacts.FindAsync(contactId);
-        if (contact != null)
-        {
-            _context.UserContacts.Remove(contact);
-            await _context.SaveChangesAsync();
-        }
-    }
-
-    public async Task AddNewsAsync(int userId, string title, string content, bool applyTheme)
-    {
-        var news = new UserNews
-        {
-            UserId = userId,
-            Title = title,
-            Content = content,
-            CreatedAt = DateTime.UtcNow,
-            ApplyTheme = applyTheme
-        };
-        _context.UserNews.Add(news);
-        await _context.SaveChangesAsync();
-    }
-
-    public async Task RemoveNewsAsync(int userId, int newsId)
-    {
-        var news = await _context.UserNews.FindAsync(newsId);
-        if (news != null && news.UserId == userId)
-        {
-            _context.UserNews.Remove(news);
-            await _context.SaveChangesAsync();
-        }
-    }
-
-    public async Task RemoveNewsByAdminAsync(int newsId)
-    {
-        var news = await _context.UserNews.FindAsync(newsId);
-        if (news != null)
-        {
-            _context.UserNews.Remove(news);
-            await _context.SaveChangesAsync();
-        }
     }
 
     public async Task ClearPgpKeyAsync(int userId)

@@ -16,7 +16,7 @@ log() {
 cd "$ROOT"
 
 log "Building MyFace for test environment..."
-dotnet build --configuration Release
+dotnet build "$PROJECT_DIR" --configuration Release
 
 log "Publishing to $PUBLISH_DIR ..."
 rm -rf "$PUBLISH_DIR"

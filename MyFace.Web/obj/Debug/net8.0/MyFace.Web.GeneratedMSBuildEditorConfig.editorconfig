@@ -182,6 +182,42 @@ build_metadata.AdditionalFiles.CssScope =
 build_metadata.AdditionalFiles.TargetPath = Vmlld3MvUG9zdC9FZGl0LmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
+[/home/server/myface/MyFace.Web/Views/ProfileDisplay/CustomHtmlProfile.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvUHJvZmlsZURpc3BsYXkvQ3VzdG9tSHRtbFByb2ZpbGUuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[/home/server/myface/MyFace.Web/Views/ProfileDisplay/TemplateProfile.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvUHJvZmlsZURpc3BsYXkvVGVtcGxhdGVQcm9maWxlLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[/home/server/myface/MyFace.Web/Views/ProfileDisplay/Templates/_PanelCard.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvUHJvZmlsZURpc3BsYXkvVGVtcGxhdGVzL19QYW5lbENhcmQuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[/home/server/myface/MyFace.Web/Views/ProfileDisplay/Templates/_TemplateExpanded.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvUHJvZmlsZURpc3BsYXkvVGVtcGxhdGVzL19UZW1wbGF0ZUV4cGFuZGVkLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[/home/server/myface/MyFace.Web/Views/ProfileDisplay/Templates/_TemplateGuru.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvUHJvZmlsZURpc3BsYXkvVGVtcGxhdGVzL19UZW1wbGF0ZUd1cnUuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[/home/server/myface/MyFace.Web/Views/ProfileDisplay/Templates/_TemplateMinimal.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvUHJvZmlsZURpc3BsYXkvVGVtcGxhdGVzL19UZW1wbGF0ZU1pbmltYWwuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[/home/server/myface/MyFace.Web/Views/ProfileDisplay/Templates/_TemplatePro.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvUHJvZmlsZURpc3BsYXkvVGVtcGxhdGVzL19UZW1wbGF0ZVByby5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[/home/server/myface/MyFace.Web/Views/ProfileDisplay/Templates/_TemplateVendor.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvUHJvZmlsZURpc3BsYXkvVGVtcGxhdGVzL19UZW1wbGF0ZVZlbmRvci5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[/home/server/myface/MyFace.Web/Views/ProfileStudio/Index.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvUHJvZmlsZVN0dWRpby9JbmRleC5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
 [/home/server/myface/MyFace.Web/Views/Shared/Error.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3MvU2hhcmVkL0Vycm9yLmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
@@ -230,28 +266,36 @@ build_metadata.AdditionalFiles.CssScope =
 build_metadata.AdditionalFiles.TargetPath = Vmlld3MvVXNlci9BY3Rpdml0eS5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
-[/home/server/myface/MyFace.Web/Views/User/CreateNews.cshtml]
-build_metadata.AdditionalFiles.TargetPath = Vmlld3MvVXNlci9DcmVhdGVOZXdzLmNzaHRtbA==
-build_metadata.AdditionalFiles.CssScope = 
-
-[/home/server/myface/MyFace.Web/Views/User/Edit.cshtml]
-build_metadata.AdditionalFiles.TargetPath = Vmlld3MvVXNlci9FZGl0LmNzaHRtbA==
-build_metadata.AdditionalFiles.CssScope = 
-
-[/home/server/myface/MyFace.Web/Views/User/EditProfile.cshtml]
-build_metadata.AdditionalFiles.TargetPath = Vmlld3MvVXNlci9FZGl0UHJvZmlsZS5jc2h0bWw=
-build_metadata.AdditionalFiles.CssScope = 
-
-[/home/server/myface/MyFace.Web/Views/User/Index.cshtml]
-build_metadata.AdditionalFiles.TargetPath = Vmlld3MvVXNlci9JbmRleC5jc2h0bWw=
-build_metadata.AdditionalFiles.CssScope = 
-
 [/home/server/myface/MyFace.Web/Views/User/News.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3MvVXNlci9OZXdzLmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
 [/home/server/myface/MyFace.Web/Views/User/Reviews.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3MvVXNlci9SZXZpZXdzLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[/home/server/myface/MyFace.Web/Views/User/TemplateGallery.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvVXNlci9UZW1wbGF0ZUdhbGxlcnkuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[/home/server/myface/MyFace.Web/Views/User/Templates/_ExpandedTemplate.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvVXNlci9UZW1wbGF0ZXMvX0V4cGFuZGVkVGVtcGxhdGUuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[/home/server/myface/MyFace.Web/Views/User/Templates/_GuruTemplate.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvVXNlci9UZW1wbGF0ZXMvX0d1cnVUZW1wbGF0ZS5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[/home/server/myface/MyFace.Web/Views/User/Templates/_MinimalTemplate.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvVXNlci9UZW1wbGF0ZXMvX01pbmltYWxUZW1wbGF0ZS5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[/home/server/myface/MyFace.Web/Views/User/Templates/_ProTemplate.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvVXNlci9UZW1wbGF0ZXMvX1Byb1RlbXBsYXRlLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[/home/server/myface/MyFace.Web/Views/User/Templates/_VendorTemplate.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvVXNlci9UZW1wbGF0ZXMvX1ZlbmRvclRlbXBsYXRlLmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
 [/home/server/myface/MyFace.Web/Views/Vote/VoteCaptcha.cshtml]

@@ -54,4 +54,6 @@ public class User
     public ICollection<UserReview> ReviewsReceived { get; set; } = new List<UserReview>();
     public ICollection<ProfileChatMessage> ProfileChatMessagesAuthored { get; set; } = new List<ProfileChatMessage>();
     public ICollection<ProfileChatMessage> ProfileChatWall { get; set; } = new List<ProfileChatMessage>();
+    public UserProfileSettings? ProfileSettings { get; set; }
+    public ICollection<ProfilePanel> ProfilePanels { get; set; } = new List<ProfilePanel>();
 }

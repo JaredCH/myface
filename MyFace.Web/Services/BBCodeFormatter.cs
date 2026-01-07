@@ -119,8 +119,8 @@ public class BBCodeFormatter
             return IsInternalLink(href) ? RenderLink(href, href) : href;
         }, RegexOptions.IgnoreCase | RegexOptions.Singleline);
 
-        // 3. Mentions: @username -> <a href="/user/username">@username</a>
-        encoded = Regex.Replace(encoded, @"(?<=^|\s|&lt;br /&gt;)@([a-zA-Z0-9_]+)", "<a href=\"/user/$1\">@$1</a>");
+        // 3. Mentions: @username -> <a href="/u/username">@username</a>
+        encoded = Regex.Replace(encoded, @"(?<=^|\s|&lt;br /&gt;)@([a-zA-Z0-9_]+)", "<a href=\"/u/$1\">@$1</a>");
 
         // 4. Newlines to <br> (do this last!)
         encoded = encoded.Replace("\r\n", "<br />").Replace("\n", "<br />");

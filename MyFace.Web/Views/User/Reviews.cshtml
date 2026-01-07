@@ -188,7 +188,8 @@
 
     <div class="cta-row" style="justify-content:space-between; align-items:center;">
         <div>
-            <a href="@Url.Action("Index", "User", new { username = profileUser.Username })" style="color:#38bdf8; text-decoration:none;">← Back to profile</a>
+            @{ var profileUrl = Url.Action("ViewProfile", "ProfileDisplay", new { username = profileUser.Username }) ?? $"/u/{profileUser.Username}"; }
+            <a href="@profileUrl" style="color:#38bdf8; text-decoration:none;">← Back to profile</a>
         </div>
         <div style="color:rgba(148,163,184,0.85); font-size:0.9rem;">
             Page @Model.CurrentPage @((Model.HasMorePages || Model.CurrentPage > 1) ? $" · {(Model.HasMorePages ? "More available" : "End of feed")}" : string.Empty)

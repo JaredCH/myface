@@ -93,10 +93,7 @@ public class AccountController : Controller
     [HttpGet]
     public IActionResult Login()
     {
-        var challenge = _captchaService.GenerateChallenge();
-        HttpContext.Session.SetString("LoginCaptchaAnswer", challenge.Answer);
-        ViewBag.CaptchaContext = challenge.Context;
-        ViewBag.CaptchaQuestion = challenge.Question;
+        RefreshLoginCaptcha();
         return View();
     }
 
@@ -114,33 +111,28 @@ public class AccountController : Controller
                 ? $"{minutes} minute{(minutes > 1 ? "s" : "")} and {seconds} second{(seconds > 1 ? "s" : "")}"
                 : $"{seconds} second{(seconds > 1 ? "s" : "")}";
             
-            ModelState.AddModelError("", $"Too many failed login attempts. Please wait {timeMessage} before trying again.");
+            ModelState.AddModelError(nameof(LoginViewModel.Username), $"Too many failed login attempts. Please wait {timeMessage} before trying again.");
             
-            // Regenerate captcha
-            var challenge = _captchaService.GenerateChallenge();
-            HttpContext.Session.SetString("LoginCaptchaAnswer", challenge.Answer);
-            ViewBag.CaptchaContext = challenge.Context;
-            ViewBag.CaptchaQuestion = challenge.Question;
+            RefreshLoginCaptcha();
             return View(model);
         }
         
         // Verify captcha
         var correctAnswer = HttpContext.Session.GetString("LoginCaptchaAnswer");
-        if (string.IsNullOrEmpty(captchaAnswer) || captchaAnswer != correctAnswer)
+        var captchaIsValid = !string.IsNullOrEmpty(correctAnswer) &&
+                             _captchaService.Validate(correctAnswer, captchaAnswer);
+        if (!captchaIsValid)
         {
-            ModelState.AddModelError("", "Incorrect security check answer.");
+            ModelState.AddModelError("captchaAnswer", "Incorrect security check answer.");
             await _rateLimitService.RecordLoginAttemptAsync(model.Username, false);
             
-            // Regenerate captcha
-            var challenge = _captchaService.GenerateChallenge();
-            HttpContext.Session.SetString("LoginCaptchaAnswer", challenge.Answer);
-            ViewBag.CaptchaContext = challenge.Context;
-            ViewBag.CaptchaQuestion = challenge.Question;
+            RefreshLoginCaptcha();
             return View(model);
         }
 
         if (!ModelState.IsValid)
         {
+            RefreshLoginCaptcha();
             return View(model);
         }
 
@@ -152,13 +144,9 @@ public class AccountController : Controller
             await _rateLimitService.RecordLoginAttemptAsync(model.Username, false);
             
             // Generic error message to prevent account enumeration
-            ModelState.AddModelError("", "Invalid login credentials. Please check your login name and password.");
+            ModelState.AddModelError(nameof(LoginViewModel.Password), "Invalid login credentials. Please check your login name and password.");
             
-            // Regenerate captcha
-            var challenge = _captchaService.GenerateChallenge();
-            HttpContext.Session.SetString("LoginCaptchaAnswer", challenge.Answer);
-            ViewBag.CaptchaContext = challenge.Context;
-            ViewBag.CaptchaQuestion = challenge.Question;
+            RefreshLoginCaptcha();
             return View(model);
         }
         
@@ -242,6 +230,14 @@ public class AccountController : Controller
 
         await _userService.MarkUsernameChangeNotifiedAsync(logId);
         return View(changeLog);
+    }
+
+    private void RefreshLoginCaptcha()
+    {
+        var challenge = _captchaService.GenerateChallenge();
+        HttpContext.Session.SetString("LoginCaptchaAnswer", challenge.Answer);
+        ViewBag.CaptchaContext = challenge.Context;
+        ViewBag.CaptchaQuestion = challenge.Question;
     }
 
     [HttpGet]

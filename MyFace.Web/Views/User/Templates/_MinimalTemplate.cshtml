@@ -1,0 +1,50 @@
+@model MyFace.Web.Models.ProfileTemplates.TemplateShowcaseTemplate
+
+<div class="template-card template-minimal" data-template="minimal">
+    <div class="template-hero">
+        <div>
+            <small>@Model.Hero.Location</small>
+            <h3>@Model.Hero.Title</h3>
+            <p>@Model.Hero.Subtitle</p>
+            <p style="margin:0.4rem 0 0.6rem; color:rgba(248,250,252,0.8);">@Model.Hero.Tagline</p>
+            <span class="status-pill">@Model.Hero.Status</span>
+        </div>
+        <div class="template-metrics">
+            @foreach (var metric in Model.Metrics)
+            {
+                <div class="template-metric">
+                    <small>@metric.Label</small>
+                    <strong>@metric.Value</strong>
+                    @if (!string.IsNullOrWhiteSpace(metric.Hint))
+                    {
+                        <small>@metric.Hint</small>
+                    }
+                </div>
+            }
+        </div>
+    </div>
+    <div class="template-panels">
+        @foreach (var panel in Model.PrimaryPanels)
+        {
+            <article class="template-panel @(panel.Emphasized ? "emphasized" : string.Empty)">
+                <h4>@panel.Icon @panel.Title</h4>
+                <p>@panel.Body</p>
+            </article>
+        }
+    </div>
+    <div class="template-panels">
+        @foreach (var panel in Model.SecondaryPanels)
+        {
+            <article class="template-panel">
+                <h4>@panel.Icon @panel.Title</h4>
+                <p>@panel.Body</p>
+            </article>
+        }
+    </div>
+    <div class="template-actions">
+        @foreach (var action in Model.Actions)
+        {
+            <button class="@action.Variant">@action.Label</button>
+        }
+    </div>
+</div>

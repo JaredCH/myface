@@ -52,7 +52,7 @@
             <article class="mod-user-card @(isSuspended ? "mod-user-card--suspended" : string.Empty)">
                 <div class="mod-user-line">
                     <div class="mod-user-meta">
-                        <a class="mod-user-name" href="@Url.Action("Index", "User", new { username = user.Username })">@user.Username</a>
+                        <a class="mod-user-name" href="@Url.Action("ViewProfile", "ProfileDisplay", new { username = user.Username })">@user.Username</a>
                         <span class="role-badge role-@roleClass">@user.Role</span>
                     </div>
                     <div class="@statusClass">@statusCopy</div>

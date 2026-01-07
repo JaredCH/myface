@@ -7,6 +7,7 @@
     var text = useTheme ? Model.User.FontColor ?? "#1f2937" : "#1f2937";
     var accent = useTheme ? Model.User.AccentColor ?? "#0ea5e9" : "#0ea5e9";
     var border = useTheme ? Model.User.BorderColor ?? "#e2e8f0" : "#e2e8f0";
+    var profileUrl = Url.Action("ViewProfile", "ProfileDisplay", new { username = Model.User.Username }) ?? $"/u/{Model.User.Username}";
 }
 
 <div style="color: @text; font-family: @Model.User.FontFamily; background: @bg; padding: 1.5rem; border-radius: 12px; border: 1px solid @border;">
@@ -20,6 +21,6 @@
     </div>
 
     <p>
-        <a href="/user/@Model.User.Username" class="button">Back to Profile</a>
+        <a href="@profileUrl" class="button">Back to Profile</a>
     </p>
 </div>

@@ -3,6 +3,7 @@
     var username = Model?.Username ?? "Anonymous";
     var isVerified = Model?.PGPVerifications?.Any(v => v.Verified) == true;
     var role = Model?.Role ?? "User";
+    var profileUrl = Url.Action("ViewProfile", "ProfileDisplay", new { username }) ?? $"/u/{username}";
     
     // Color coding based on role and verification
     var usernameColor = role switch
@@ -14,7 +15,7 @@
 }
 @if (Model != null && !string.IsNullOrEmpty(Model.Username))
 {
-    <a href="/user/@username" style="display: inline-flex; align-items: center; gap: 0.25rem;">
+    <a href="@profileUrl" style="display: inline-flex; align-items: center; gap: 0.25rem;">
         <span style="color: @usernameColor; font-weight: @(role == "Admin" || role == "Moderator" ? "700" : "500");">@username</span>
         @if (isVerified && role == "User")
         {

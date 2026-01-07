@@ -1,0 +1,41 @@
+@using MyFace.Web.Models.ProfileTemplates
+@model CustomHtmlProfileViewModel
+
+@section HeadExtras {
+    <link rel="stylesheet" href="~/css/profile-templates.css" asp-append-version="true" />
+}
+
+<div class="custom-html-profile-page">
+    <header class="custom-html-warning" role="region" aria-label="Security warning">
+        <p class="warning-eyebrow">Security notice</p>
+        <h1>@Model.WarningText</h1>
+        <p class="warning-subtitle">@Model.Subtitle</p>
+        <ul class="warning-list">
+            <li>No JavaScript or external assets are allowed.</li>
+            <li>Links may be unverified — never share passwords or wallet seeds.</li>
+            <li>Report suspicious activity to the moderators immediately.</li>
+        </ul>
+    </header>
+
+    <section class="custom-html-iframe-panel">
+        <div class="iframe-head">
+            <div>
+                <p class="iframe-eyebrow">Sandboxed profile</p>
+                <h2>@Model.DisplayName</h2>
+            </div>
+            <a class="iframe-open" href="@Model.ProfileUrl" target="_blank" rel="noopener">open in new tab ↗</a>
+        </div>
+        <div class="iframe-wrapper">
+            <iframe
+                src="@Model.ProfileUrl"
+                title="@Model.DisplayName profile"
+                sandbox="allow-same-origin"
+                loading="lazy"
+                referrerpolicy="no-referrer"
+                allow="clipboard-read; clipboard-write"
+                aria-describedby="customHtmlFootnote">
+            </iframe>
+        </div>
+        <p id="customHtmlFootnote" class="custom-html-footnote">The iframe is permanently sandboxed with no scripts, popups, downloads, or top navigation. Content is sanitized and served from our servers only.</p>
+    </section>
+</div>

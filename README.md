@@ -7,7 +7,7 @@ A Tor-hidden service forum MVP built with ASP.NET Core MVC and PostgreSQL. Serve
 - Anonymous and account posts
 - Account registration with optional PGP public key
 - Voting (upvote/downvote) per post
-- User pages at `/user/<username>`
+- User pages at `/u/<username>`
 - Onion monitoring for a set of `.onion` URLs
 - RSS feeds: latest threads (`/rss/threads`), user posts (`/rss/user/<username>`), monitor status (`/rss/monitor`)
 - Updates via polling or RSS (no WebSockets)

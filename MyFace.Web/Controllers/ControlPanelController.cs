@@ -76,7 +76,7 @@ public class ControlPanelController : Controller
     }
 
     [HttpGet("content")]
-    public async Task<IActionResult> Content([FromQuery] string? range)
+    public async Task<IActionResult> ContentSection([FromQuery] string? range)
     {
         var isAdmin = IsAdmin(User);
         var selectedRange = ContentMetricsRangeExtensions.Normalize(range);
@@ -769,7 +769,7 @@ public class ControlPanelController : Controller
         {
             new("dashboard", "Dashboard", Url.Action("Index", "ControlPanel") ?? "#"),
             new("traffic", "Traffic", Url.Action("Traffic", "ControlPanel") ?? "#"),
-            new("content", "Content", Url.Action("Content", "ControlPanel") ?? "#"),
+            new("content", "Content", Url.Action(nameof(ContentSection), "ControlPanel") ?? "#"),
             new("users", "Users", Url.Action("Users", "ControlPanel") ?? "#"),
             new("chat", "Chat", Url.Action("Chat", "ControlPanel") ?? "#"),
             new("security", "Security", Url.Action("Security", "ControlPanel") ?? "#", requiresAdmin: true),

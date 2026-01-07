@@ -39,7 +39,7 @@
 <section class="cp-section">
     <h2>Top Pages (24h)</h2>
     <div class="cp-placeholder" style="padding:0; overflow-x:auto;">
-        @Html.Partial("_MetricTable", Model.Analytics.TopPages)
+        <partial name="_MetricTable" model="Model.Analytics.TopPages" />
     </div>
 </section>
 
@@ -48,11 +48,11 @@
     <div class="cp-card-grid">
         <div class="cp-placeholder" style="padding:0; overflow-x:auto;">
             <h3 style="padding:1rem 1rem 0; margin:0;">Entry pages</h3>
-            @Html.Partial("_MetricTable", Model.Analytics.EntryPages)
+            <partial name="_MetricTable" model="Model.Analytics.EntryPages" />
         </div>
         <div class="cp-placeholder" style="padding:0; overflow-x:auto;">
             <h3 style="padding:1rem 1rem 0; margin:0;">Exit pages</h3>
-            @Html.Partial("_MetricTable", Model.Analytics.ExitPages)
+            <partial name="_MetricTable" model="Model.Analytics.ExitPages" />
         </div>
     </div>
 </section>
@@ -62,7 +62,7 @@
     <section class="cp-section">
         <h2>Referral Sources</h2>
         <div class="cp-placeholder" style="padding:0; overflow-x:auto;">
-            @Html.Partial("_MetricTable", Model.Analytics.Referrers)
+            <partial name="_MetricTable" model="Model.Analytics.Referrers" />
         </div>
     </section>
 

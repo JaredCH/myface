@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\MyFace.Core\MyFace.Core.csproj" />
+    <ProjectReference Include="..\..\MyFace.Data\MyFace.Data.csproj" />
+    <ProjectReference Include="..\..\MyFace.Services\MyFace.Services.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="..\..\MyFace.Web/Services/BBCodeFormatter.cs" Link="Shared/BBCodeFormatter.cs" />
+  </ItemGroup>
+
+</Project>

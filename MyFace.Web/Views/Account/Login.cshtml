@@ -4,12 +4,16 @@
 }
 <h1>Login</h1>
 <form asp-action="Login" method="post">
+    <div asp-validation-summary="All" class="validation-summary" role="alert"></div>
+
     <label asp-for="Username">🔐 Login Name (Private)</label>
     <input asp-for="Username" class="input" placeholder="Your private login name" />
+    <span class="validation-error" asp-validation-for="Username"></span>
     <p class="meta" style="margin-top: 0.25rem; font-size: 0.85rem;">Enter your private login name, not your public username.</p>
 
     <label asp-for="Password"></label>
     <input asp-for="Password" class="input" />
+    <span class="validation-error" asp-validation-for="Password"></span>
 
     <div class="form-captcha">
         @{ var captchaHelpText = "Read the phrase above, then answer the requested word position or simple math. Case insensitive, no punctuation."; }
@@ -17,6 +21,7 @@
             <div class="captcha-code">@Html.Raw(ViewBag.CaptchaContext)</div>
             <label class="captcha-question" for="captchaAnswer">@ViewBag.CaptchaQuestion</label>
             <input name="captchaAnswer" id="captchaAnswer" class="input captcha-input" required autocomplete="off" />
+            @Html.ValidationMessage("captchaAnswer", null, new { @class = "validation-error" })
             <button type="button"
                     class="captcha-help"
                     title="@captchaHelpText"
@@ -28,3 +33,8 @@
         <button type="submit" class="button">Login</button>
     </div>
 </form>
+
+<style>
+    .validation-summary { color: #b91c1c; margin-bottom: 1rem; }
+    .validation-error { color: #b91c1c; display: block; margin-top: 0.25rem; }
+</style>

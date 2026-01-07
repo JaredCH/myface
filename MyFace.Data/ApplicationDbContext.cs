@@ -33,6 +33,8 @@ public class ApplicationDbContext : DbContext
     public DbSet<ControlSetting> ControlSettings { get; set; }
     public DbSet<ControlSettingHistory> ControlSettingHistories { get; set; }
     public DbSet<ControlPanelAuditEntry> ControlPanelAuditEntries { get; set; }
+    public DbSet<UserProfileSettings> UserProfileSettings { get; set; }
+    public DbSet<ProfilePanel> ProfilePanels { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -396,6 +398,58 @@ public class ApplicationDbContext : DbContext
             entity.Property(e => e.CreatedAt).HasDefaultValueSql("CURRENT_TIMESTAMP");
             entity.HasIndex(e => e.CreatedAt);
             entity.HasIndex(e => e.Action);
+        });
+
+        modelBuilder.Entity<UserProfileSettings>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.TemplateType).HasConversion<short>();
+            entity.Property(e => e.ThemePreset).HasMaxLength(64);
+            entity.Property(e => e.ThemeOverridesJson).HasColumnType("text");
+            entity.Property(e => e.CustomHtmlPath).HasMaxLength(256);
+            entity.Property(e => e.CustomHtmlValidationErrors).HasColumnType("text");
+            entity.Property(e => e.CustomHtmlVersion).HasDefaultValue(0);
+            entity.Property(e => e.IsCustomHtml).HasDefaultValue(false);
+            entity.Property(e => e.CustomHtmlValidated).HasDefaultValue(false);
+            entity.Property(e => e.LastEditedAt).HasDefaultValueSql("CURRENT_TIMESTAMP");
+            entity.HasIndex(e => e.UserId).IsUnique();
+            entity.HasIndex(e => e.CustomHtmlValidated);
+
+            entity.HasOne(e => e.User)
+                .WithOne(u => u.ProfileSettings)
+                .HasForeignKey<UserProfileSettings>(e => e.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne(e => e.LastEditedByUser)
+                .WithMany()
+                .HasForeignKey(e => e.LastEditedByUserId)
+                .OnDelete(DeleteBehavior.SetNull);
+        });
+
+        modelBuilder.Entity<ProfilePanel>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.TemplateType).HasConversion<short>();
+            entity.Property(e => e.PanelType).HasConversion<short>();
+            entity.Property(e => e.ContentFormat).HasMaxLength(32).HasDefaultValue("markdown");
+            entity.Property(e => e.Content).HasColumnType("text");
+            entity.Property(e => e.ValidationMessage).HasMaxLength(512);
+            entity.Property(e => e.Position).HasDefaultValue(0);
+            entity.Property(e => e.IsVisible).HasDefaultValue(true);
+            entity.Property(e => e.CreatedAt).HasDefaultValueSql("CURRENT_TIMESTAMP");
+            entity.Property(e => e.UpdatedAt).HasDefaultValueSql("CURRENT_TIMESTAMP");
+            entity.HasIndex(e => new { e.UserId, e.PanelType });
+            entity.HasIndex(e => new { e.UserId, e.Position });
+
+            entity.HasOne(e => e.User)
+                .WithMany(u => u.ProfilePanels)
+                .HasForeignKey(e => e.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne(e => e.LastEditedByUser)
+                .WithMany()
+                .HasForeignKey(e => e.LastEditedByUserId)
+                .OnDelete(DeleteBehavior.SetNull);
         });
     }
 }
