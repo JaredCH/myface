@@ -46,7 +46,9 @@ public class VoteController : Controller
             var expected = HttpContext.Session.GetString("VoteCaptchaAnswer");
             var storedPostId = HttpContext.Session.GetInt32("VotePostId");
             
-            if (storedPostId != postId || !_captchaService.Validate(expected, captchaAnswer))
+            if (storedPostId != postId
+                || string.IsNullOrWhiteSpace(expected)
+                || !_captchaService.Validate(expected, captchaAnswer))
             {
                 // Failed
                 var challenge = _captchaService.GenerateChallenge();
@@ -113,7 +115,9 @@ public class VoteController : Controller
             var expected = HttpContext.Session.GetString("ThreadVoteCaptchaAnswer");
             var storedThreadId = HttpContext.Session.GetInt32("VoteThreadId");
             
-            if (storedThreadId != threadId || !_captchaService.Validate(expected, captchaAnswer))
+            if (storedThreadId != threadId
+                || string.IsNullOrWhiteSpace(expected)
+                || !_captchaService.Validate(expected, captchaAnswer))
             {
                 var challenge = _captchaService.GenerateChallenge();
                 HttpContext.Session.SetString("ThreadVoteCaptchaAnswer", challenge.Answer);

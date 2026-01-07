@@ -179,7 +179,7 @@
             {
                 <tr>
                     <td>
-                        <a href="@Url.Action("Index", "User", new { username = user.Username })"><strong>@user.Username</strong></a>
+                        <a href="@Url.Action("ViewProfile", "ProfileDisplay", new { username = user.Username })"><strong>@user.Username</strong></a>
                         @if (!string.IsNullOrEmpty(user.LoginName))
                         {
                             <span class="text-muted" style="font-size: 0.85rem;">(Login: @user.LoginName)</span>

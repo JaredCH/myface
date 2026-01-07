@@ -1,6 +1,6 @@
-namespace MyFace.Web.Models;
+namespace LegacyProfileMigrator.LegacySupport;
 
-public record SectionLayoutState
+internal record SectionLayoutState
 {
     public bool Enabled { get; init; }
     public string Placement { get; init; } = "c1";

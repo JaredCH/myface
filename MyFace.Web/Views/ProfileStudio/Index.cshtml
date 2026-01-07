@@ -1,0 +1,415 @@
+@using System.Linq
+@using MyFace.Core.Entities
+@using MyFace.Web.Models.ProfileTemplates
+@model ProfileStudioViewModel
+@{
+    var cssVarString = string.Join(";", Model.ThemeTokens.Select(kvp => $"{kvp.Key}:{kvp.Value}"));
+    var templateCards = new (ProfileTemplate Template, string Title, string Description, string Badge)[]
+    {
+        (ProfileTemplate.Minimal, "Minimal", "Single-column with Summary + bio + contact.", "Fastest"),
+        (ProfileTemplate.Expanded, "Expanded", "Two-column board with showcase panels.", "Balanced"),
+        (ProfileTemplate.Pro, "Pro", "Triple-column agency grid with analytics.", "Ops"),
+        (ProfileTemplate.Vendor, "Vendor", "Commerce-first layout for offers & policies.", "Storefront"),
+        (ProfileTemplate.Guru, "Guru", "Creator-forward hero with social proof.", "Broadcast"),
+        (ProfileTemplate.CustomHtml, "Custom HTML", "Upload sanitized HTML (sandbox enforced).", "Advanced")
+    };
+    var selectedTemplate = Model.Snapshot.Settings.TemplateType;
+    var isCustomHtmlTemplate = selectedTemplate == ProfileTemplate.CustomHtml;
+    var customHtmlReady = Model.CustomHtmlStatus?.HasCustomHtml ?? false;
+    var themeOverrides = Model.Snapshot.Theme.Overrides ?? new Dictionary<string, string>();
+    var previewModel = Model.PreviewProfile;
+    var previewCssVars = previewModel != null
+        ? string.Join(";", previewModel.CssVariables.Select(kvp => $"{kvp.Key}:{kvp.Value}"))
+        : string.Empty;
+    var previewSummaryPanel = previewModel?.GetPanel(ProfilePanelType.Summary);
+    var previewHeadline = TemplatePanelContentFormatter.RenderHeadline(previewSummaryPanel);
+    var summaryPanel = Model.Snapshot.Panels.FirstOrDefault(p => p.PanelType == ProfilePanelType.Summary);
+    var previewPartial = previewModel?.Template switch
+    {
+        ProfileTemplate.Minimal => "~/Views/ProfileDisplay/Templates/_TemplateMinimal.cshtml",
+        ProfileTemplate.Expanded => "~/Views/ProfileDisplay/Templates/_TemplateExpanded.cshtml",
+        ProfileTemplate.Pro => "~/Views/ProfileDisplay/Templates/_TemplatePro.cshtml",
+        ProfileTemplate.Vendor => "~/Views/ProfileDisplay/Templates/_TemplateVendor.cshtml",
+        ProfileTemplate.Guru => "~/Views/ProfileDisplay/Templates/_TemplateGuru.cshtml",
+        _ => null
+    };
+}
+
+@section HeadExtras {
+    <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin="anonymous" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600&family=Space+Mono:wght@400;700&display=swap" />
+    <link rel="stylesheet" href="~/css/profile-templates.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/profile-studio.css" asp-append-version="true" />
+}
+
+<div class="profile-studio-shell" style="@cssVarString">
+    <div class="studio-workspace">
+        <section class="studio-preview-panel">
+            <div class="studio-preview-head">
+                <div>
+                    <p class="studio-eyebrow">Live preview · @Model.Username</p>
+                    <p class="studio-preview-subline">Template · @selectedTemplate</p>
+                </div>
+                <div class="studio-preview-actions">
+                    <a class="btn ghost" href="@Url.Action("ViewProfile", "ProfileDisplay", new { username = Model.Username })" target="_blank" rel="noopener">Public profile ↗</a>
+                </div>
+            </div>
+            <div class="studio-preview-stage">
+                @if (previewModel != null && !string.IsNullOrEmpty(previewPartial))
+                {
+                    <div class="profile-template-page profile-template-page--studio" style="@previewCssVars">
+                        <div class="template-hero profile-template-hero">
+                            <div>
+                                <small>Template · @previewModel.Template</small>
+                                <h1>@previewModel.DisplayName</h1>
+                                @if (!string.IsNullOrWhiteSpace(previewHeadline))
+                                {
+                                    <p class="template-hero-tagline">
+                                        @if (summaryPanel != null)
+                                        {
+                                            <span class="panel-chip">Summary hero · slot #@summaryPanel.Position</span>
+                                        }
+                                        <span>@previewHeadline</span>
+                                    </p>
+                                }
+                            </div>
+                            <div class="template-hero-meta">
+                                <span class="status-pill">@previewModel.Template</span>
+                                <span class="status-pill">Mode · Studio</span>
+                            </div>
+                        </div>
+                        <div class="template-runtime">
+                            @await Html.PartialAsync(previewPartial, previewModel)
+                        </div>
+                    </div>
+                }
+                else if (isCustomHtmlTemplate)
+                {
+                    <div class="studio-preview-placeholder">
+                        <strong>Custom HTML active</strong>
+                        <p>Save sanitized markup below, then use the Preview HTML button to see it inside the sandbox.</p>
+                    </div>
+                }
+                else
+                {
+                    <div class="studio-preview-placeholder">
+                        <strong>No preview available</strong>
+                        <p>This template preview is unavailable right now. Refresh the page after saving your latest changes.</p>
+                    </div>
+                }
+            </div>
+        </section>
+
+        <div class="studio-controls-stack">
+            @if (!string.IsNullOrWhiteSpace(Model.SuccessMessage))
+            {
+                <div class="studio-alert success">@Model.SuccessMessage</div>
+            }
+            @if (!string.IsNullOrWhiteSpace(Model.ErrorMessage))
+            {
+                <div class="studio-alert error">@Model.ErrorMessage</div>
+            }
+
+            <section class="studio-card" id="templateSection">
+                <div class="studio-card-head">
+                    <div>
+                        <h2>Template selection</h2>
+                        <p>Pick any starter template or jump into BYO HTML. Changes apply instantly.</p>
+                    </div>
+                </div>
+                <form asp-action="SelectTemplate" method="post" class="template-select-form">
+                    @Html.AntiForgeryToken()
+                    <div class="template-option-grid">
+                        @foreach (var entry in templateCards)
+                        {
+                            var isActive = entry.Template == selectedTemplate;
+                            var requiresHtml = entry.Template == ProfileTemplate.CustomHtml;
+                            var disabled = requiresHtml && !customHtmlReady;
+                            <button type="submit"
+                                name="Template"
+                                value="@entry.Template"
+                                class="template-option @(isActive ? "is-active" : string.Empty) @(disabled ? "is-disabled" : string.Empty)"
+                                    @(disabled ? "disabled" : null)>
+                                <div class="template-option-head">
+                                    <span class="template-option-badge">@entry.Badge</span>
+                                    <strong>@entry.Title</strong>
+                                </div>
+                                <p>@entry.Description</p>
+                                <span class="template-option-foot">@(isActive ? "Active" : disabled ? "Upload HTML first" : "Select template")</span>
+                            </button>
+                        }
+                    </div>
+                </form>
+                <div class="template-hint">
+                    <strong>Current template:</strong>
+                    <span>@selectedTemplate</span>
+                </div>
+                @if (!customHtmlReady)
+                {
+                    <p class="template-warning">Custom HTML mode unlocks after you save sanitized markup in the section below.</p>
+                }
+            </section>
+
+            <section class="studio-card" id="panelSection">
+                <div class="studio-card-head">
+                    <div>
+                        <h2>Panels & content</h2>
+                        <p>Each template ships with predefined slots. Update content, visibility, or order using the forms below.</p>
+                    </div>
+                </div>
+
+                @if (isCustomHtmlTemplate)
+                {
+                    <p class="panel-empty">Panels are hidden while custom HTML mode is active. Switch back to any preset template to resume editing.</p>
+                }
+                else
+                {
+                    <div class="panel-stack">
+                        @if (!Model.Snapshot.Panels.Any())
+                        {
+                            <p class="panel-empty">No panels yet. Use the form below to add one of the available slots.</p>
+                        }
+                        else
+                        {
+                            foreach (var panel in Model.Snapshot.Panels.OrderBy(p => p.Position))
+                            {
+                                <details class="panel-accordion">
+                                    <summary>
+                                        <div>
+                                            <strong>@(Model.PanelLabels.TryGetValue(panel.PanelType, out var label) ? label : panel.PanelType.ToString())</strong>
+                                            <span class="panel-position">#@panel.Position</span>
+                                        </div>
+                                        <span class="panel-status-pill @(panel.IsVisible ? "is-visible" : "is-hidden")">
+                                            @(panel.IsVisible ? "Visible" : "Hidden")
+                                        </span>
+                                    </summary>
+                                    <form asp-action="UpdatePanel" method="post" class="panel-form">
+                                        @Html.AntiForgeryToken()
+                                        <input type="hidden" name="PanelId" value="@panel.Id" />
+                                        <label for="panel-content-@panel.Id">Content</label>
+                                        <textarea id="panel-content-@panel.Id" name="Content" rows="8" class="input monospace">@panel.Content</textarea>
+                                        <label for="panel-format-@panel.Id">Format</label>
+                                        <select id="panel-format-@panel.Id" name="ContentFormat" class="input">
+                                            @{ var panelFormat = (panel.ContentFormat ?? "markdown").ToLowerInvariant(); }
+                                            @if (panelFormat == "markdown")
+                                            {
+                                                <option value="markdown" selected>Markdown</option>
+                                            }
+                                            else
+                                            {
+                                                <option value="markdown">Markdown</option>
+                                            }
+                                            @if (panelFormat == "plaintext")
+                                            {
+                                                <option value="plaintext" selected>Plain text</option>
+                                            }
+                                            else
+                                            {
+                                                <option value="plaintext">Plain text</option>
+                                            }
+                                            @if (panelFormat == "html")
+                                            {
+                                                <option value="html" selected>HTML (trusted)</option>
+                                            }
+                                            else
+                                            {
+                                                <option value="html">HTML (trusted)</option>
+                                            }
+                                        </select>
+                                        <label for="panel-position-@panel.Id">Position</label>
+                                        <input type="number" id="panel-position-@panel.Id" name="Position" class="input" min="1" value="@panel.Position" />
+                                        <label class="panel-visible-toggle">
+                                            <input type="checkbox" name="IsVisible" value="true" @(panel.IsVisible ? "checked" : null) />
+                                            <span>Visible</span>
+                                        </label>
+                                        <div class="panel-form-actions">
+                                            <button type="submit" class="btn solid">Save panel</button>
+                                        </div>
+                                    </form>
+                                    <form asp-action="DeletePanel" method="post" class="panel-delete-form">
+                                        @Html.AntiForgeryToken()
+                                        <input type="hidden" name="PanelId" value="@panel.Id" />
+                                        <button type="submit" class="btn danger">Delete panel</button>
+                                    </form>
+                                </details>
+                            }
+                        }
+                    </div>
+
+                    @if (summaryPanel != null)
+                    {
+                        <p class="panel-hint">Summary hero powers the headline in the live preview above.</p>
+                    }
+
+                    <div class="panel-create">
+                        <h3>Add panel</h3>
+                        <form asp-action="CreatePanel" method="post">
+                            @Html.AntiForgeryToken()
+                            <label for="panelTypeSelect">Panel type</label>
+                            @{ var availableOptions = Model.PanelTypeOptions.Where(o => o.IsAvailable).ToList(); var hasAvailable = availableOptions.Any(); }
+                            <select id="panelTypeSelect" name="PanelType" class="input" @(hasAvailable ? null : "disabled")>
+                                @if (!hasAvailable)
+                                {
+                                    <option>No panel slots available for this template.</option>
+                                }
+                                else
+                                {
+                                    foreach (var option in availableOptions)
+                                    {
+                                        <option value="@option.Type">@option.Label</option>
+                                    }
+                                }
+                            </select>
+                            <label for="panelCreateFormat">Format</label>
+                            <select id="panelCreateFormat" name="ContentFormat" class="input">
+                                <option value="markdown">Markdown</option>
+                                <option value="plaintext">Plain text</option>
+                                <option value="html">HTML (trusted)</option>
+                            </select>
+                            <label for="panelCreateContent">Starter content (optional)</label>
+                            <textarea id="panelCreateContent" name="Content" class="input monospace" rows="3" placeholder="Tell your story..."></textarea>
+                            <div class="panel-form-actions">
+                                <button type="submit" class="btn solid" @(hasAvailable ? null : "disabled")>Add panel</button>
+                            </div>
+                        </form>
+                    </div>
+                }
+            </section>
+
+            <section class="studio-card" id="themeSection">
+                <div class="studio-card-head">
+                    <div>
+                        <h2>Theme & colors</h2>
+                        <p>Pick a preset, then override individual tokens only where needed.</p>
+                    </div>
+                </div>
+                <form asp-action="ApplyTheme" method="post" class="theme-form">
+                    @Html.AntiForgeryToken()
+                    <fieldset class="theme-preset-list">
+                        <legend>Theme preset</legend>
+                        <label class="theme-chip">
+                            <input type="radio" name="Preset" value="" @(string.IsNullOrEmpty(Model.Snapshot.Theme.Preset) ? "checked" : null) />
+                            <span class="theme-chip-body">
+                                <span class="theme-chip-title">Custom mix</span>
+                                <span class="theme-chip-swatches">
+                                    <span style="--swatch-color: #374151"></span>
+                                    <span style="--swatch-color: #f3f4f6"></span>
+                                    <span style="--swatch-color: #60a5fa"></span>
+                                </span>
+                            </span>
+                        </label>
+                        @foreach (var preset in Model.ThemePresets)
+                        {
+                            var isChecked = string.Equals(Model.Snapshot.Theme.Preset, preset.Key, StringComparison.OrdinalIgnoreCase);
+                            <label class="theme-chip">
+                                <input type="radio" name="Preset" value="@preset.Key" @(isChecked ? "checked" : null) />
+                                <span class="theme-chip-body">
+                                    <span class="theme-chip-title">@preset.Label</span>
+                                    <span class="theme-chip-swatches">
+                                        <span style="--swatch-color: @preset.Background"></span>
+                                        <span style="--swatch-color: @preset.Text"></span>
+                                        <span style="--swatch-color: @preset.Accent"></span>
+                                    </span>
+                                </span>
+                            </label>
+                        }
+                    </fieldset>
+
+                    <details class="theme-overrides" @(themeOverrides.Any() ? "open" : null)>
+                        <summary>Advanced token overrides</summary>
+                        <div class="theme-grid">
+                            <div>
+                                <label for="theme-bg">Background</label>
+                                <input type="text" id="theme-bg" name="Bg" class="input" placeholder="#050816" value="@(themeOverrides.TryGetValue("bg", out var bg) ? bg : string.Empty)" />
+                            </div>
+                            <div>
+                                <label for="theme-text">Text</label>
+                                <input type="text" id="theme-text" name="Text" class="input" placeholder="#e5e7eb" value="@(themeOverrides.TryGetValue("text", out var text) ? text : string.Empty)" />
+                            </div>
+                            <div>
+                                <label for="theme-accent">Accent</label>
+                                <input type="text" id="theme-accent" name="Accent" class="input" placeholder="#60a5fa" value="@(themeOverrides.TryGetValue("accent", out var accent) ? accent : string.Empty)" />
+                            </div>
+                            <div>
+                                <label for="theme-border">Border</label>
+                                <input type="text" id="theme-border" name="Border" class="input" placeholder="#1f2937" value="@(themeOverrides.TryGetValue("border", out var border) ? border : string.Empty)" />
+                            </div>
+                            <div>
+                                <label for="theme-panel">Panel surface</label>
+                                <input type="text" id="theme-panel" name="Panel" class="input" placeholder="#0f172a" value="@(themeOverrides.TryGetValue("panel", out var panel) ? panel : string.Empty)" />
+                            </div>
+                            <div>
+                                <label for="theme-button-bg">Button background</label>
+                                <input type="text" id="theme-button-bg" name="ButtonBg" class="input" placeholder="#2563eb" value="@(themeOverrides.TryGetValue("buttonBg", out var buttonBg) ? buttonBg : string.Empty)" />
+                            </div>
+                            <div>
+                                <label for="theme-button-text">Button text</label>
+                                <input type="text" id="theme-button-text" name="ButtonText" class="input" placeholder="#ffffff" value="@(themeOverrides.TryGetValue("buttonText", out var buttonText) ? buttonText : string.Empty)" />
+                            </div>
+                            <div>
+                                <label for="theme-button-border">Button border</label>
+                                <input type="text" id="theme-button-border" name="ButtonBorder" class="input" placeholder="#2563eb" value="@(themeOverrides.TryGetValue("buttonBorder", out var buttonBorder) ? buttonBorder : string.Empty)" />
+                            </div>
+                        </div>
+                    </details>
+
+                    <div class="theme-actions">
+                        <button type="reset" class="btn ghost">Reset form</button>
+                        <button type="submit" class="btn solid">Apply theme</button>
+                    </div>
+                </form>
+            </section>
+
+            <section class="studio-card" id="customHtmlSection">
+                <div class="studio-card-head">
+                    <div>
+                        <h2>Custom HTML</h2>
+                        <p>Paste HTML (max 500KB). We sanitize it inline before saving to the sandbox.</p>
+                    </div>
+                </div>
+                <div class="custom-html-status">
+                    @if (Model.CustomHtmlStatus is { } status)
+                    {
+                        <p><strong>@(status.HasCustomHtml ? "File uploaded" : "No file")</strong> · @(status.TemplateActive ? "Template active" : "Template inactive")</p>
+                        <p>Version @status.Version · @(status.UploadedAt?.ToString("u") ?? "Never uploaded")</p>
+                        @if (!string.IsNullOrWhiteSpace(status.RelativePath))
+                        {
+                            <p>Storage path: @status.RelativePath</p>
+                        }
+                        @if (!status.ValidationPassed && status.ValidationErrors.Any())
+                        {
+                            <div class="custom-html-errors">
+                                <strong>Validation errors</strong>
+                                <ul>
+                                    @foreach (var error in status.ValidationErrors)
+                                    {
+                                        <li>@error</li>
+                                    }
+                                </ul>
+                            </div>
+                        }
+                    }
+                    else
+                    {
+                        <p>Custom HTML status unavailable.</p>
+                    }
+                </div>
+                <form asp-action="UploadCustomHtml" method="post" class="custom-html-form">
+                    @Html.AntiForgeryToken()
+                    <label for="customHtmlInput">Paste HTML markup</label>
+                    <textarea id="customHtmlInput" name="Html" class="input monospace" rows="10" placeholder="&lt;section class=&quot;profile&quot;&gt;...&lt;/section&gt;"></textarea>
+                    <div class="custom-html-actions">
+                        <button type="submit" class="btn solid">Save & sanitize</button>
+                        <a class="btn ghost" href="@Url.Action("Preview", "CustomHtml")" target="_blank" rel="noopener">Preview HTML</a>
+                    </div>
+                    <p class="custom-html-note">Security reminder: scripts, external assets, and inline styles are stripped automatically. Profiles always render behind a warning overlay.</p>
+                </form>
+                <form asp-action="DeleteCustomHtml" method="post" class="custom-html-delete">
+                    @Html.AntiForgeryToken()
+                    <button type="submit" class="btn danger" @(Model.CustomHtmlStatus?.HasCustomHtml == true ? null : "disabled")>Remove HTML</button>
+                </form>
+            </section>
+        </div>
+    </div>
+</div>

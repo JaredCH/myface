@@ -143,7 +143,12 @@
 <section class="cp-section">
     <h2>Top Categories (7d)</h2>
     <div class="cp-placeholder" style="padding:0; overflow-x:auto;">
-        @Html.Partial("_MetricTable", Model.Data.TopCategories.Select(c => new MetricCount(c.Label, c.Count)).ToList())
+        @{
+            var topCategories = Model.Data.TopCategories
+                .Select(c => new MetricCount(c.Label, c.Count))
+                .ToList();
+        }
+        <partial name="_MetricTable" model="topCategories" />
     </div>
 </section>
 

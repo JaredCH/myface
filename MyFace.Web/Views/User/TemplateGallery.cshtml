@@ -1,0 +1,46 @@
+@model MyFace.Web.Models.ProfileTemplates.TemplateShowcaseViewModel
+@{
+    ViewData["Title"] = "Profile Template Gallery";
+}
+
+@section HeadExtras {
+    <link rel="stylesheet" href="~/css/profile-templates.css" asp-append-version="true" />
+}
+
+<div class="template-gallery-shell">
+    <div class="template-gallery-head">
+        <p class="template-banner">Phase 4 · Step 4.1 — Visual prototypes for every template option are rendered below using the same color token contract the new backend exposes.</p>
+        <h1>Template Gallery</h1>
+        <p>Each layout mirrors the new `ProfileTemplate` contract and intentionally showcases how panels, analytics, and warning rails will feel when populated with real data. These prototypes are static for now and will be wired to live data in Step 4.2.</p>
+    </div>
+    <div class="template-gallery-grid">
+        @foreach (var template in Model.Templates)
+        {
+            <section class="template-gallery-entry" id="template-@template.Key">
+                <div class="template-gallery-meta">
+                    <div>
+                        <h2>@template.Name Template</h2>
+                        <p>@template.Summary</p>
+                    </div>
+                    <div class="template-tag-list">
+                        @foreach (var tag in template.FeatureTags)
+                        {
+                            <span class="template-tag">@tag</span>
+                        }
+                    </div>
+                </div>
+                @{
+                    var partial = template.Key switch
+                    {
+                        "expanded" => "Templates/_ExpandedTemplate",
+                        "pro" => "Templates/_ProTemplate",
+                        "vendor" => "Templates/_VendorTemplate",
+                        "guru" => "Templates/_GuruTemplate",
+                        _ => "Templates/_MinimalTemplate"
+                    };
+                }
+                @await Html.PartialAsync(partial, template)
+            </section>
+        }
+    </div>
+</div>

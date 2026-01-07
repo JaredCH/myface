@@ -1,0 +1,16 @@
+@using MyFace.Core.Entities
+@using MyFace.Web.Models.ProfileTemplates
+@model TemplateRenderViewModel
+
+<div class="template-card template-guru" data-template="guru">
+    <div class="template-columns">
+        <div class="template-panels">
+            @await Html.PartialAsync("~/Views/ProfileDisplay/Templates/_PanelCard.cshtml", new TemplatePanelCardModel("About", Model.GetPanel(ProfilePanelType.About), "🎙️"))
+            @await Html.PartialAsync("~/Views/ProfileDisplay/Templates/_PanelCard.cshtml", new TemplatePanelCardModel("Community", Model.GetPanel(ProfilePanelType.Activity), "👥"))
+        </div>
+        <div class="template-panels">
+            @await Html.PartialAsync("~/Views/ProfileDisplay/Templates/_PanelCard.cshtml", new TemplatePanelCardModel("Testimonials", Model.GetPanel(ProfilePanelType.Testimonials), "💡"))
+            @await Html.PartialAsync("~/Views/ProfileDisplay/Templates/_PanelCard.cshtml", new TemplatePanelCardModel("Contact", Model.GetPanel(ProfilePanelType.Contact), "🔗"))
+        </div>
+    </div>
+</div>

@@ -1,0 +1,17 @@
+@using MyFace.Core.Entities
+@using MyFace.Web.Models.ProfileTemplates
+@model TemplateRenderViewModel
+
+<div class="template-card template-vendor" data-template="vendor">
+    <div class="template-panels">
+        @await Html.PartialAsync("~/Views/ProfileDisplay/Templates/_PanelCard.cshtml", new TemplatePanelCardModel("Featured Shop", Model.GetPanel(ProfilePanelType.Shop), "🔥", true))
+    </div>
+    <div class="template-columns">
+        @await Html.PartialAsync("~/Views/ProfileDisplay/Templates/_PanelCard.cshtml", new TemplatePanelCardModel("Policies", Model.GetPanel(ProfilePanelType.Policies), "📜"))
+        @await Html.PartialAsync("~/Views/ProfileDisplay/Templates/_PanelCard.cshtml", new TemplatePanelCardModel("Payments", Model.GetPanel(ProfilePanelType.Payments), "💳"))
+    </div>
+    <div class="template-columns">
+        @await Html.PartialAsync("~/Views/ProfileDisplay/Templates/_PanelCard.cshtml", new TemplatePanelCardModel("References", Model.GetPanel(ProfilePanelType.References), "🧾"))
+        @await Html.PartialAsync("~/Views/ProfileDisplay/Templates/_PanelCard.cshtml", new TemplatePanelCardModel("Contact", Model.GetPanel(ProfilePanelType.Contact), "📦"))
+    </div>
+</div>

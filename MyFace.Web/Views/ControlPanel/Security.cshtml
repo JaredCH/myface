@@ -27,11 +27,21 @@
     <div class="cp-card-grid">
         <div class="cp-placeholder" style="padding:0; overflow-x:auto;">
             <h3 style="padding:1rem 1rem 0; margin:0;">Login hashes</h3>
-            @Html.Partial("_MetricTable", Model.Data.TopLoginTargets.Select(m => new MyFace.Services.MetricCount(m.Label, m.Count)).ToList())
+            @{
+                var topLoginTargets = Model.Data.TopLoginTargets
+                    .Select(m => new MyFace.Services.MetricCount(m.Label, m.Count))
+                    .ToList();
+            }
+            <partial name="_MetricTable" model="topLoginTargets" />
         </div>
         <div class="cp-placeholder" style="padding:0; overflow-x:auto;">
             <h3 style="padding:1rem 1rem 0; margin:0;">IP hashes</h3>
-            @Html.Partial("_MetricTable", Model.Data.TopIpHashes.Select(m => new MyFace.Services.MetricCount(m.Label, m.Count)).ToList())
+            @{
+                var topIpHashes = Model.Data.TopIpHashes
+                    .Select(m => new MyFace.Services.MetricCount(m.Label, m.Count))
+                    .ToList();
+            }
+            <partial name="_MetricTable" model="topIpHashes" />
         </div>
     </div>
 </section>

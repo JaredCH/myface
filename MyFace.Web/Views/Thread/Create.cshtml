@@ -48,14 +48,18 @@
         </div>
 
         <div class="form-captcha">
-            @{ var captchaHelpText = "Read the phrase above, then answer the requested word position or simple math. Case insensitive, no punctuation."; }
+            @{
+                var captchaHelpText = "Read the phrase above, then answer the requested word position or simple math. Case insensitive, no punctuation.";
+                var captchaContext = ViewBag.CaptchaContext as string ?? string.Empty;
+                var captchaQuestion = ViewBag.CaptchaQuestion as string ?? string.Empty;
+            }
             <div class="captcha-box">
-                <div class="captcha-code">@Html.Raw(ViewBag.CaptchaContext)</div>
-                <label class="captcha-question" for="captchaAnswer">@ViewBag.CaptchaQuestion</label>
+                <div class="captcha-code">@Html.Raw(captchaContext)</div>
+                <label class="captcha-question" for="captchaAnswer">@captchaQuestion</label>
                 <input name="captchaAnswer" id="captchaAnswer" class="input captcha-input" required autocomplete="off" />
-                @if (ViewData.ModelState["Captcha"] != null && ViewData.ModelState["Captcha"].Errors.Count > 0)
+                @if (ViewData.ModelState.TryGetValue("Captcha", out var captchaState) && (captchaState?.Errors.Count ?? 0) > 0)
                 {
-                    <span class="validation">@ViewData.ModelState["Captcha"].Errors[0].ErrorMessage</span>
+                    <span class="validation">@captchaState!.Errors[0].ErrorMessage</span>
                 }
                 <button type="button"
                         class="captcha-help"

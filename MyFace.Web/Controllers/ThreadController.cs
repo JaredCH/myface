@@ -110,7 +110,7 @@ public class ThreadController : Controller
     public async Task<IActionResult> Create(CreateThreadViewModel model, string captchaAnswer, CancellationToken cancellationToken)
     {
         var expected = HttpContext.Session.GetString("ThreadCaptchaAnswer");
-        if (!_captchaService.Validate(expected, captchaAnswer))
+        if (string.IsNullOrWhiteSpace(expected) || !_captchaService.Validate(expected, captchaAnswer))
         {
             ModelState.AddModelError("Captcha", "Incorrect security check answer.");
             PrepareCreateCaptcha();
@@ -255,7 +255,7 @@ public class ThreadController : Controller
     public async Task<IActionResult> Reply(ThreadReplyViewModel model, string captchaAnswer, CancellationToken cancellationToken)
     {
         var expected = HttpContext.Session.GetString("ReplyCaptchaAnswer");
-        if (!_captchaService.Validate(expected, captchaAnswer))
+        if (string.IsNullOrWhiteSpace(expected) || !_captchaService.Validate(expected, captchaAnswer))
         {
             return RedirectToAction("View", new { id = model.ThreadId, error = "CaptchaFailed" });
         }

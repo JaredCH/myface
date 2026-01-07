@@ -281,3 +281,6 @@
 /home/server/myface/MyFace.Web/obj/Debug/net8.0/MyFace.Web.pdb
 /home/server/myface/MyFace.Web/obj/Debug/net8.0/MyFace.Web.genruntimeconfig.cache
 /home/server/myface/MyFace.Web/obj/Debug/net8.0/ref/MyFace.Web.dll
+/home/server/myface/MyFace.Web/bin/Debug/net8.0/AngleSharp.dll
+/home/server/myface/MyFace.Web/bin/Debug/net8.0/AngleSharp.Css.dll
+/home/server/myface/MyFace.Web/bin/Debug/net8.0/HtmlSanitizer.dll

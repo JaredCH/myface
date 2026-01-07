@@ -765,6 +765,75 @@ namespace MyFace.Data.Migrations
                     b.ToTable("ProfileChatMessages");
                 });
 
+            modelBuilder.Entity("MyFace.Core.Entities.ProfilePanel", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Content")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("ContentFormat")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)")
+                        .HasDefaultValue("markdown");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+                    b.Property<bool>("IsVisible")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(true);
+
+                    b.Property<int?>("LastEditedByUserId")
+                        .HasColumnType("integer");
+
+                    b.Property<short>("PanelType")
+                        .HasColumnType("smallint");
+
+                    b.Property<int>("Position")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(0);
+
+                    b.Property<bool>("RequiresModeration")
+                        .HasColumnType("boolean");
+
+                    b.Property<short>("TemplateType")
+                        .HasColumnType("smallint");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("ValidationMessage")
+                        .HasMaxLength(512)
+                        .HasColumnType("character varying(512)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("LastEditedByUserId");
+
+                    b.HasIndex("UserId", "PanelType");
+
+                    b.HasIndex("UserId", "Position");
+
+                    b.ToTable("ProfilePanels");
+                });
+
             modelBuilder.Entity("MyFace.Core.Entities.Thread", b =>
                 {
                     b.Property<int>("Id")
@@ -1108,6 +1177,73 @@ namespace MyFace.Data.Migrations
                     b.ToTable("UserNews");
                 });
 
+            modelBuilder.Entity("MyFace.Core.Entities.UserProfileSettings", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("CustomHtmlPath")
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)");
+
+                    b.Property<DateTime?>("CustomHtmlUploadDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<bool>("CustomHtmlValidated")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(false);
+
+                    b.Property<string>("CustomHtmlValidationErrors")
+                        .HasColumnType("text");
+
+                    b.Property<int>("CustomHtmlVersion")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(0);
+
+                    b.Property<bool>("IsCustomHtml")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(false);
+
+                    b.Property<DateTime>("LastEditedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+                    b.Property<int?>("LastEditedByUserId")
+                        .HasColumnType("integer");
+
+                    b.Property<short>("TemplateType")
+                        .HasColumnType("smallint");
+
+                    b.Property<string>("ThemeOverridesJson")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("ThemePreset")
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CustomHtmlValidated");
+
+                    b.HasIndex("LastEditedByUserId");
+
+                    b.HasIndex("UserId")
+                        .IsUnique();
+
+                    b.ToTable("UserProfileSettings");
+                });
+
             modelBuilder.Entity("MyFace.Core.Entities.UserReview", b =>
                 {
                     b.Property<int>("Id")
@@ -1362,6 +1498,24 @@ namespace MyFace.Data.Migrations
                     b.Navigation("TargetUser");
                 });
 
+            modelBuilder.Entity("MyFace.Core.Entities.ProfilePanel", b =>
+                {
+                    b.HasOne("MyFace.Core.Entities.User", "LastEditedByUser")
+                        .WithMany()
+                        .HasForeignKey("LastEditedByUserId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.HasOne("MyFace.Core.Entities.User", "User")
+                        .WithMany("ProfilePanels")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("LastEditedByUser");
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("MyFace.Core.Entities.Thread", b =>
                 {
                     b.HasOne("MyFace.Core.Entities.User", "User")
@@ -1390,6 +1544,24 @@ namespace MyFace.Data.Migrations
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("MyFace.Core.Entities.UserProfileSettings", b =>
+                {
+                    b.HasOne("MyFace.Core.Entities.User", "LastEditedByUser")
+                        .WithMany()
+                        .HasForeignKey("LastEditedByUserId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.HasOne("MyFace.Core.Entities.User", "User")
+                        .WithOne("ProfileSettings")
+                        .HasForeignKey("MyFace.Core.Entities.UserProfileSettings", "UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("LastEditedByUser");
 
                     b.Navigation("User");
                 });
@@ -1488,6 +1660,10 @@ namespace MyFace.Data.Migrations
                     b.Navigation("ProfileChatMessagesAuthored");
 
                     b.Navigation("ProfileChatWall");
+
+                    b.Navigation("ProfilePanels");
+
+                    b.Navigation("ProfileSettings");
 
                     b.Navigation("ReviewsAuthored");
 

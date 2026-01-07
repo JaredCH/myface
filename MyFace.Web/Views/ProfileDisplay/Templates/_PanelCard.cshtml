@@ -1,0 +1,20 @@
+@using MyFace.Web.Models.ProfileTemplates
+@model TemplatePanelCardModel
+
+<article class="template-panel @(Model.Emphasized ? "emphasized" : string.Empty)">
+    <h4>
+        @if (!string.IsNullOrWhiteSpace(Model.Icon))
+        {
+            <span>@Model.Icon</span>
+        }
+        @Model.Title
+    </h4>
+    @if (Model.Panel == null)
+    {
+        <p class="template-panel-placeholder">No content yet.</p>
+    }
+    else
+    {
+        @Html.Raw(TemplatePanelContentFormatter.Render(Model.Panel))
+    }
+</article>

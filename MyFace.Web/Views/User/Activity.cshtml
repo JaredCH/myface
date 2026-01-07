@@ -3,6 +3,7 @@
 @{
     ViewData["Title"] = $"{Model.Username} - Recent Activity";
     string activityTitle = $"{Model.Username}'s Recent Activity";
+    var profileUrl = Url.Action("ViewProfile", "ProfileDisplay", new { username = Model.Username }) ?? $"/u/{Model.Username}";
 }
 
 <div class="container mt-3">
@@ -12,7 +13,7 @@
             <p class="meta" style="margin: 0;">Posts, comments, threads, and news</p>
         </div>
         <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
-            <a class="theme-button ghost" href="@Url.Action("Index", "User", new { username = Model.Username })">← Back to Profile</a>
+            <a class="theme-button ghost" href="@profileUrl">← Back to Profile</a>
             @if (Model.IsSelf)
             {
                 <a class="theme-button" href="@Url.Action("Index", "Mail", new { tab = "new", to = Model.Username })">✉️ Message Myself</a>

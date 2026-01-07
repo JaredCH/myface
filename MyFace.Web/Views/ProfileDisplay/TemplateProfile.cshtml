@@ -1,0 +1,45 @@
+@using System.Linq
+@using MyFace.Core.Entities
+@using MyFace.Web.Models.ProfileTemplates
+@model TemplateRenderViewModel
+@{
+    var cssVarString = string.Join(";", Model.CssVariables.Select(kvp => $"{kvp.Key}:{kvp.Value}"));
+    var summaryPanel = Model.GetPanel(ProfilePanelType.Summary);
+    var summaryHeadline = TemplatePanelContentFormatter.RenderHeadline(summaryPanel);
+    var templateName = Model.Template.ToString();
+}
+
+@section HeadExtras {
+    <link rel="stylesheet" href="~/css/profile-templates.css" asp-append-version="true" />
+}
+
+<div class="profile-template-page" style="@cssVarString">
+    <div class="template-hero profile-template-hero">
+        <div>
+            <small>Template · @templateName</small>
+            <h1>@Model.DisplayName</h1>
+            @if (!string.IsNullOrWhiteSpace(summaryHeadline))
+            {
+                <p class="template-hero-tagline">@summaryHeadline</p>
+            }
+        </div>
+        <div class="template-hero-meta">
+            <span class="status-pill">@templateName</span>
+            <span class="status-pill">Mode · @Model.Mode</span>
+        </div>
+    </div>
+
+    <div class="template-runtime">
+        @{ var partial = Model.Template switch
+           {
+               ProfileTemplate.Minimal => "Templates/_TemplateMinimal",
+               ProfileTemplate.Expanded => "Templates/_TemplateExpanded",
+               ProfileTemplate.Pro => "Templates/_TemplatePro",
+               ProfileTemplate.Vendor => "Templates/_TemplateVendor",
+               ProfileTemplate.Guru => "Templates/_TemplateGuru",
+               _ => "Templates/_TemplateMinimal"
+           };
+        }
+        @await Html.PartialAsync(partial, Model)
+    </div>
+</div>

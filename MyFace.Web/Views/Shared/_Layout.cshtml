@@ -49,7 +49,8 @@
                         {
                             <li><a href="@Url.Action("Index", "ControlPanel")">Control Panel</a></li>
                         }
-                        <li><a href="@Url.Action("Index", "User", new { username = User.Identity.Name })">My Profile</a></li>
+                        <li><a href="/profile/studio">Profile Studio</a></li>
+                        <li><a href="@Url.Action("ViewProfile", "ProfileDisplay", new { username = User.Identity.Name })">My Profile</a></li>
                         <li><a href="@Url.Action("Logout", "Account")">Logout</a></li>
                     }
                     else
@@ -78,7 +79,8 @@
                             {
                                 <li><a href="@Url.Action("Index", "ControlPanel")">Control Panel</a></li>
                             }
-                            <li><a href="@Url.Action("Index", "User", new { username = User.Identity.Name })">My Profile</a></li>
+                            <li><a href="/profile/studio">Profile Studio</a></li>
+                            <li><a href="@Url.Action("ViewProfile", "ProfileDisplay", new { username = User.Identity.Name })">My Profile</a></li>
                         }
                         else
                         {

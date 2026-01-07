@@ -6,6 +6,8 @@
     var currentKey = ViewBag.CurrentKey as string;
     var error = ViewBag.Error as string;
     var message = ViewBag.Message as string;
+    var username = ViewBag.Username as string ?? "user";
+    var profileUrl = Url.Action("ViewProfile", "ProfileDisplay", new { username }) ?? $"/u/{username}";
 
     var step1State = step == "1" ? "active" : (step == "2" || step == "3" ? "complete" : string.Empty);
     var step2State = step == "2" ? "active" : (step == "3" ? "complete" : string.Empty);
@@ -61,7 +63,7 @@
                 
                 <div class="pgp-actions">
                     <button type="submit" class="button button-primary">Next: Generate Challenge →</button>
-                    <a href="/user/@ViewBag.Username" class="button button-secondary button-narrow">Cancel</a>
+                    <a href="@profileUrl" class="button button-secondary button-narrow">Cancel</a>
                 </div>
             </form>
         </div>
@@ -111,7 +113,7 @@
             }
             
             <div style="margin-top: 2rem;">
-                <a href="/user/@ViewBag.Username" class="button button-primary">Return to Profile</a>
+                <a href="@profileUrl" class="button button-primary">Return to Profile</a>
             </div>
         </div>
     }

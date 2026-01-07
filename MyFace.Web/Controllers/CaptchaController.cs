@@ -30,7 +30,7 @@ public class CaptchaController : Controller
     public async Task<IActionResult> Verify(string answer, string returnUrl)
     {
         var expected = HttpContext.Session.GetString("CaptchaAnswer");
-        if (_captchaService.Validate(expected, answer))
+        if (!string.IsNullOrWhiteSpace(expected) && _captchaService.Validate(expected, answer))
         {
             // Reset page view count
             HttpContext.Session.SetInt32("PageViews", 0);
