@@ -12,8 +12,7 @@ using MyFace.Web.Services;
 
 namespace MyFace.Web.Controllers;
 
-[Route("control-panel")]
-[Route("ControlPanel")]
+[Route("SigilStaff")]
 [AdminAuthorization]
 public class ControlPanelController : Controller
 {
@@ -26,6 +25,8 @@ public class ControlPanelController : Controller
     private readonly ForumService _forumService;
     private readonly ControlSettingsReader _settingsReader;
     private readonly ControlSettingsService _controlSettingsService;
+    private readonly ContentFilteringService _contentFilteringService;
+    private readonly InfractionsService _infractionsService;
 
     public ControlPanelController(
         VisitTrackingService visitTrackingService,
@@ -36,7 +37,9 @@ public class ControlPanelController : Controller
         UserService userService,
         ForumService forumService,
         ControlSettingsReader settingsReader,
-        ControlSettingsService controlSettingsService)
+        ControlSettingsService controlSettingsService,
+        ContentFilteringService contentFilteringService,
+        InfractionsService infractionsService)
     {
         _visitTrackingService = visitTrackingService;
         _auditService = auditService;
@@ -47,6 +50,8 @@ public class ControlPanelController : Controller
         _forumService = forumService;
         _settingsReader = settingsReader;
         _controlSettingsService = controlSettingsService;
+        _contentFilteringService = contentFilteringService;
+        _infractionsService = infractionsService;
     }
 
     [HttpGet("")]
@@ -106,6 +111,27 @@ public class ControlPanelController : Controller
         ViewData["MetaRefreshSeconds"] = await GetRefreshAsync(ControlSettingKeys.RefreshUsers, 300);
         var vm = new UserEngagementViewModel(data);
         return View("Users", vm);
+    }
+
+    [HttpGet("overview")]
+    public async Task<IActionResult> Overview()
+    {
+        var isAdmin = IsAdmin(User);
+        var stats = await _visitTrackingService.GetStatisticsAsync();
+        var snapshot = await _visitTrackingService.GetControlPanelSnapshotAsync();
+        var nav = BuildNavigation("overview", isAdmin);
+        
+        ViewBag.HideSidebars = true;
+        ViewData["Title"] = "Sigil Staff · Overview";
+        ViewData["ControlPanelNav"] = nav;
+        ViewData["ControlPanelActive"] = "overview";
+        ViewData["ControlPanelRole"] = "Administrator";
+        ViewData["MetaRefreshSeconds"] = 30;
+        
+        ViewBag.Statistics = stats;
+        ViewBag.Snapshot = snapshot;
+        
+        return View();
     }
 
     [HttpGet("users/manage")]
@@ -499,6 +525,140 @@ public class ControlPanelController : Controller
     }
 
     [OnlyAdminAuthorization]
+    [HttpGet("wordlist")]
+    public async Task<IActionResult> WordList()
+    {
+        var entries = await _dataService.GetWordListEntriesAsync();
+        var nav = BuildNavigation("wordlist", isAdmin: true);
+        ViewBag.HideSidebars = true;
+        ViewData["Title"] = "Control Panel · Word Filter";
+        ViewData["ControlPanelNav"] = nav;
+        ViewData["ControlPanelActive"] = "wordlist";
+        ViewData["ControlPanelRole"] = "Administrator";
+        return View("WordList", entries);
+    }
+
+    [OnlyAdminAuthorization]
+    [HttpPost("wordlist/add")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> AddWordListEntry(AddWordListEntryViewModel model)
+    {
+        if (!ModelState.IsValid)
+        {
+            TempData["Error"] = "Invalid input. Please check all fields.";
+            return RedirectToAction(nameof(WordList));
+        }
+
+        var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+        await _dataService.AddWordListEntryAsync(
+            model.WordPattern,
+            model.MatchType,
+            model.ActionType,
+            model.MuteDurationHours,
+            model.ReplacementText,
+            model.CaseSensitive,
+            model.AppliesTo,
+            model.Notes,
+            userId);
+        _contentFilteringService.InvalidateCache();
+        
+        await LogAuditAsync("WordList.Add", $"Pattern: {model.WordPattern}, Action: {model.ActionType}", target: "WordList");
+        
+        TempData["Success"] = "Word filter added successfully.";
+        return RedirectToAction(nameof(WordList));
+    }
+
+    [OnlyAdminAuthorization]
+    [HttpPost("wordlist/toggle/{id}")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> ToggleWordListEntry(int id)
+    {
+        await _dataService.ToggleWordListEntryAsync(id);
+        _contentFilteringService.InvalidateCache();
+        
+        await LogAuditAsync("WordList.Toggle", $"Entry ID: {id}", target: "WordList");
+        
+        return RedirectToAction(nameof(WordList));
+    }
+
+    [OnlyAdminAuthorization]
+    [HttpPost("wordlist/delete/{id}")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> DeleteWordListEntry(int id)
+    {
+        await _dataService.DeleteWordListEntryAsync(id);
+        _contentFilteringService.InvalidateCache();
+        
+        await LogAuditAsync("WordList.Delete", $"Entry ID: {id}", target: "WordList");
+        
+        TempData["Success"] = "Word filter deleted.";
+        return RedirectToAction(nameof(WordList));
+    }
+
+    [OnlyAdminAuthorization]
+    [HttpGet("infractions")]
+    public async Task<IActionResult> Infractions([FromQuery] int? userId, [FromQuery] bool? onlyActive)
+    {
+        var infractions = await _infractionsService.GetRecentInfractionsAsync(limit: 100, userId: userId, onlyActive: onlyActive);
+        var metrics = await _infractionsService.GetMetricsAsync(TimeSpan.FromHours(24));
+        
+        var nav = BuildNavigation("infractions", isAdmin: true);
+        ViewBag.HideSidebars = true;
+        ViewData["Title"] = "Control Panel · Infractions";
+        ViewData["ControlPanelNav"] = nav;
+        ViewData["ControlPanelActive"] = "infractions";
+        ViewData["ControlPanelRole"] = "Administrator";
+        ViewData["MetaRefreshSeconds"] = await GetRefreshAsync("ControlPanel.RefreshInfractions", 60);
+        
+        var vm = new InfractionsViewModel
+        {
+            Infractions = infractions,
+            Metrics = metrics,
+            FilterUserId = userId,
+            FilterOnlyActive = onlyActive
+        };
+        
+        return View("Infractions", vm);
+    }
+
+    [OnlyAdminAuthorization]
+    [HttpPost("infractions/reset/{userId}")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> ResetUserInfractions(int userId, bool returnToManage = false)
+    {
+        var count = await _infractionsService.ResetUserInfractionsAsync(userId);
+        await LogAuditAsync("Infractions.Reset", $"Reset {count} infractions", target: $"User {userId}");
+        
+        TempData["Success"] = $"Reset {count} infractions for user.";
+        
+        if (returnToManage)
+        {
+            return RedirectToAction(nameof(ManageUser), new { userId });
+        }
+        
+        return RedirectToAction(nameof(Infractions), new { userId });
+    }
+
+    [OnlyAdminAuthorization]
+    [HttpPost("infractions/liftban/{userId}")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> LiftBan(int userId)
+    {
+        var success = await _infractionsService.LiftBanAsync(userId);
+        if (success)
+        {
+            await LogAuditAsync("Infractions.LiftBan", "Lifted ban/suspension", target: $"User {userId}");
+            TempData["Success"] = "Ban lifted successfully.";
+        }
+        else
+        {
+            TempData["Error"] = "User is not currently banned.";
+        }
+        
+        return RedirectToAction(nameof(ManageUser), new { userId });
+    }
+
+    [OnlyAdminAuthorization]
     [HttpGet("settings")]
     public async Task<IActionResult> Settings([FromQuery] string? highlight)
     {
@@ -765,30 +925,42 @@ public class ControlPanelController : Controller
 
     private IReadOnlyList<ControlPanelNavLink> BuildNavigation(string activeKey, bool isAdmin)
     {
-        var items = new List<ControlPanelNavLink>
+        // Moderator links (alphabetical)
+        var moderatorLinks = new List<ControlPanelNavLink>
         {
-            new("dashboard", "Dashboard", Url.Action("Index", "ControlPanel") ?? "#"),
-            new("traffic", "Traffic", Url.Action("Traffic", "ControlPanel") ?? "#"),
-            new("content", "Content", Url.Action(nameof(ContentSection), "ControlPanel") ?? "#"),
-            new("users", "Users", Url.Action("Users", "ControlPanel") ?? "#"),
-            new("chat", "Chat", Url.Action("Chat", "ControlPanel") ?? "#"),
-            new("security", "Security", Url.Action("Security", "ControlPanel") ?? "#", requiresAdmin: true),
-            new("monitor", "Monitor Queue", Url.Action("Rollup", "Monitor") ?? "#", requiresAdmin: true),
-            new("moderator", "Moderation", Url.Action("Index", "Moderator") ?? "#"),
-            new("admin", "Admin Panel", Url.Action("Index", "Admin") ?? "#", requiresAdmin: true),
-            new("settings", "Settings", Url.Action("Settings", "ControlPanel") ?? "#", requiresAdmin: true)
+            new("chat", "Chat", "/SigilStaff/Chat"),
+            new("content", "Content", "/SigilStaff/Content"),
+            new("dashboard", "Dashboard", "/SigilStaff"),
+            new("users", "Users", "/SigilStaff/Users"),
+            new("usercontrol", "UserControl", "/SigilStaff/UserControl")
         };
 
-        var filtered = items
-            .Where(link => isAdmin || !link.RequiresAdmin)
-            .ToList();
+        // Admin-only links (alphabetical)
+        var adminLinks = new List<ControlPanelNavLink>
+        {
+            new("infractions", "Infractions", "/SigilStaff/Infractions", requiresAdmin: true),
+            new("monitor", "Monitor Queue", "/SigilStaff/MonitorQueue", requiresAdmin: true),
+            new("overview", "Overview", "/SigilStaff/Overview", requiresAdmin: true),
+            new("security", "Security", "/SigilStaff/Security", requiresAdmin: true),
+            new("settings", "Settings", "/SigilStaff/Settings", requiresAdmin: true),
+            new("traffic", "Traffic", "/SigilStaff/Traffic", requiresAdmin: true),
+            new("wordlist", "Word Filters", "/SigilStaff/WordList", requiresAdmin: true)
+        };
 
-        foreach (var link in filtered)
+        // Combine lists: moderator first, then admin
+        var items = new List<ControlPanelNavLink>();
+        items.AddRange(moderatorLinks);
+        if (isAdmin)
+        {
+            items.AddRange(adminLinks);
+        }
+
+        foreach (var link in items)
         {
             link.IsActive = string.Equals(link.Key, activeKey, StringComparison.OrdinalIgnoreCase);
         }
 
-        return filtered;
+        return items;
     }
 
     private static bool IsAdmin(ClaimsPrincipal user)

@@ -1,0 +1,218 @@
+@model List<MyFace.Core.Entities.WordListEntry>
+@{
+    ViewData["Title"] = "Word Filters · Control Panel";
+}
+
+<div class="control-panel-section">
+    <h2>Word Filters & Content Moderation</h2>
+    
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success">@TempData["Success"]</div>
+    }
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger">@TempData["Error"]</div>
+    }
+    
+    <div class="card mb-4">
+        <div class="card-header">
+            <h3>Add New Word Filter</h3>
+        </div>
+        <div class="card-body">
+            <form asp-action="AddWordListEntry" method="post">
+                @Html.AntiForgeryToken()
+                
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="WordPattern">Word/Pattern *</label>
+                            <input type="text" class="form-control" id="WordPattern" name="WordPattern" required />
+                            <small class="form-text text-muted">Enter the word or regex pattern to filter</small>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <label for="MatchType">Match Type</label>
+                            <select class="form-control" id="MatchType" name="MatchType">
+                                <option value="0">Exact</option>
+                                <option value="1" selected>Word Boundary</option>
+                                <option value="2">Regex</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <label for="ActionType">Action</label>
+                            <select class="form-control" id="ActionType" name="ActionType" onchange="toggleMuteDuration(this)">
+                                <option value="0" selected>Infraction + Mute</option>
+                                <option value="1">Swap Only</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="form-group" id="muteDurationGroup">
+                            <label for="MuteDurationHours">Mute Duration</label>
+                            <select class="form-control" id="MuteDurationHours" name="MuteDurationHours">
+                                <option value="">No Mute</option>
+                                <option value="12">12 hours</option>
+                                <option value="24" selected>24 hours</option>
+                                <option value="72">72 hours</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label for="ReplacementText">Replacement Text</label>
+                            <input type="text" class="form-control" id="ReplacementText" name="ReplacementText" placeholder="[censored]" />
+                            <small class="form-text text-muted">Leave empty to block entirely</small>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label for="AppliesTo">Applies To</label>
+                            <select class="form-control" id="AppliesTo" name="AppliesTo">
+                                <option value="7" selected>All (Threads/Comments/Chats)</option>
+                                <option value="1">Threads Only</option>
+                                <option value="2">Comments Only</option>
+                                <option value="4">Chats Only</option>
+                                <option value="3">Threads + Comments</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="row">
+                    <div class="col-md-8">
+                        <div class="form-group">
+                            <label for="Notes">Notes (optional)</label>
+                            <input type="text" class="form-control" id="Notes" name="Notes" placeholder="Internal notes about this filter" />
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-2">
+                        <div class="form-group">
+                            <label class="d-block">&nbsp;</label>
+                            <div class="form-check">
+                                <input type="checkbox" class="form-check-input" id="CaseSensitive" name="CaseSensitive" value="true" />
+                                <label class="form-check-label" for="CaseSensitive">Case Sensitive</label>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-2">
+                        <label class="d-block">&nbsp;</label>
+                        <button type="submit" class="btn btn-primary btn-block">Add Filter</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <div class="card">
+        <div class="card-header">
+            <h3>Active Word Filters (@Model.Count)</h3>
+        </div>
+        <div class="card-body">
+            @if (Model.Any())
+            {
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Pattern</th>
+                                <th>Match</th>
+                                <th>Action</th>
+                                <th>Mute</th>
+                                <th>Replacement</th>
+                                <th>Applies To</th>
+                                <th>Created</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var entry in Model)
+                            {
+                                <tr class="@(entry.Enabled ? "" : "text-muted")">
+                                    <td><code>@entry.WordPattern</code></td>
+                                    <td>@entry.MatchType</td>
+                                    <td>@(entry.ActionType == MyFace.Core.Entities.WordActionType.InfractionAndMute ? "Infraction" : "Swap")</td>
+                                    <td>@(entry.MuteDurationHours?.ToString() ?? "-") h</td>
+                                    <td>@(entry.ReplacementText ?? "[block]")</td>
+                                    <td>@FormatScope(entry.AppliesTo)</td>
+                                    <td>
+                                        <small>@entry.CreatedAt.ToString("MM/dd HH:mm")</small><br/>
+                                        <small class="text-muted">by @(entry.CreatedBy?.Username ?? "System")</small>
+                                    </td>
+                                    <td>
+                                        @if (entry.Enabled)
+                                        {
+                                            <span class="badge badge-success">Enabled</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge badge-secondary">Disabled</span>
+                                        }
+                                    </td>
+                                    <td>
+                                        <form asp-action="ToggleWordListEntry" asp-route-id="@entry.Id" method="post" style="display:inline;">
+                                            @Html.AntiForgeryToken()
+                                            <button type="submit" class="btn btn-sm btn-@(entry.Enabled ? "warning" : "success")">
+                                                @(entry.Enabled ? "Disable" : "Enable")
+                                            </button>
+                                        </form>
+                                        <form asp-action="DeleteWordListEntry" asp-route-id="@entry.Id" method="post" style="display:inline;" onsubmit="return confirm('Delete this filter?');">
+                                            @Html.AntiForgeryToken()
+                                            <button type="submit" class="btn btn-sm btn-danger">Delete</button>
+                                        </form>
+                                    </td>
+                                </tr>
+                                @if (!string.IsNullOrEmpty(entry.Notes))
+                                {
+                                    <tr class="@(entry.Enabled ? "" : "text-muted")">
+                                        <td colspan="9"><small><em>Note: @entry.Notes</em></small></td>
+                                    </tr>
+                                }
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+            else
+            {
+                <p class="text-muted">No word filters configured yet.</p>
+            }
+        </div>
+    </div>
+</div>
+
+<script>
+function toggleMuteDuration(select) {
+    var muteGroup = document.getElementById('muteDurationGroup');
+    if (select.value === '0') { // InfractionAndMute
+        muteGroup.style.display = 'block';
+    } else {
+        muteGroup.style.display = 'none';
+    }
+}
+</script>
+
+@functions {
+    string FormatScope(MyFace.Core.Entities.ContentScope scope)
+    {
+        if (scope == MyFace.Core.Entities.ContentScope.All) return "All";
+        var parts = new List<string>();
+        if (scope.HasFlag(MyFace.Core.Entities.ContentScope.Threads)) parts.Add("Threads");
+        if (scope.HasFlag(MyFace.Core.Entities.ContentScope.Comments)) parts.Add("Comments");
+        if (scope.HasFlag(MyFace.Core.Entities.ContentScope.Chats)) parts.Add("Chats");
+        return string.Join(", ", parts);
+    }
+}

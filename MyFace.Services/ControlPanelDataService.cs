@@ -552,7 +552,22 @@ public class ControlPanelDataService
                 p.ReportCount))
             .ToListAsync(ct);
 
-        return new UserManagementDetail(user, loginAttempts, sessionHistory, recentPosts);
+        var now = DateTime.UtcNow;
+        var sevenDaysAgo = now.AddDays(-7);
+        var oneDayAgo = now.AddHours(-24);
+
+        var infractions = await _context.UserInfractions
+            .AsNoTracking()
+            .Where(i => i.UserId == userId)
+            .ToListAsync(ct);
+
+        var infractionStats = new UserInfractionStats(
+            TotalCount: infractions.Count,
+            Last7DaysCount: infractions.Count(i => i.OccurredAt >= sevenDaysAgo),
+            Last24HoursCount: infractions.Count(i => i.OccurredAt >= oneDayAgo),
+            MostRecentAt: infractions.Any() ? infractions.Max(i => i.OccurredAt) : null);
+
+        return new UserManagementDetail(user, loginAttempts, sessionHistory, recentPosts, infractionStats);
     }
 
     private static string HashLoginName(string loginName)
@@ -561,6 +576,65 @@ public class ControlPanelDataService
         var bytes = Encoding.UTF8.GetBytes(loginName.ToLowerInvariant());
         var hash = sha.ComputeHash(bytes);
         return Convert.ToHexString(hash);
+    }
+
+    // Word List Management
+    public async Task<List<WordListEntry>> GetWordListEntriesAsync()
+    {
+        return await _context.WordListEntries
+            .Include(w => w.CreatedBy)
+            .OrderByDescending(w => w.CreatedAt)
+            .ToListAsync();
+    }
+
+    public async Task AddWordListEntryAsync(
+        string wordPattern,
+        WordMatchType matchType,
+        WordActionType actionType,
+        int? muteDurationHours,
+        string? replacementText,
+        bool caseSensitive,
+        ContentScope appliesTo,
+        string? notes,
+        int createdByUserId)
+    {
+        var entry = new WordListEntry
+        {
+            WordPattern = wordPattern,
+            MatchType = matchType,
+            ActionType = actionType,
+            MuteDurationHours = muteDurationHours,
+            ReplacementText = replacementText,
+            CaseSensitive = caseSensitive,
+            AppliesTo = appliesTo,
+            CreatedByUserId = createdByUserId,
+            CreatedAt = DateTime.UtcNow,
+            Enabled = true,
+            Notes = notes
+        };
+
+        _context.WordListEntries.Add(entry);
+        await _context.SaveChangesAsync();
+    }
+
+    public async Task ToggleWordListEntryAsync(int id)
+    {
+        var entry = await _context.WordListEntries.FindAsync(id);
+        if (entry != null)
+        {
+            entry.Enabled = !entry.Enabled;
+            await _context.SaveChangesAsync();
+        }
+    }
+
+    public async Task DeleteWordListEntryAsync(int id)
+    {
+        var entry = await _context.WordListEntries.FindAsync(id);
+        if (entry != null)
+        {
+            _context.WordListEntries.Remove(entry);
+            await _context.SaveChangesAsync();
+        }
     }
 }
 
@@ -624,7 +698,14 @@ public record UserManagementDetail(
     ControlPanelUserSummary User,
     IReadOnlyList<LoginAttemptSummary> LoginAttempts,
     IReadOnlyList<SessionVisitSummary> RecentSessions,
-    IReadOnlyList<PostModerationSummary> RecentPosts);
+    IReadOnlyList<PostModerationSummary> RecentPosts,
+    UserInfractionStats InfractionStats);
+
+public record UserInfractionStats(
+    int TotalCount,
+    int Last7DaysCount,
+    int Last24HoursCount,
+    DateTime? MostRecentAt);
 
 public record ControlPanelUserSummary(
     int UserId,

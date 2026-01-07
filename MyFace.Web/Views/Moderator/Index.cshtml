@@ -5,20 +5,19 @@
 @inject IConfiguration Configuration
 
 @{
-    ViewData["Title"] = "Moderator Panel";
+    ViewData["Title"] = "UserControl - Moderation Panel";
     var username = User.Identity?.Name;
     var viewerRole = User.FindFirstValue(ClaimTypes.Role);
     var viewerIsAdmin = string.Equals(viewerRole, "Admin", StringComparison.OrdinalIgnoreCase);
     var viewerIsMod = string.Equals(viewerRole, "Moderator", StringComparison.OrdinalIgnoreCase);
     var isAdminOrMod = viewerIsAdmin || viewerIsMod;
-    var moderatorReturnUrl = $"{Context.Request.Path}{Context.Request.QueryString}";
 }
 
-<h1>Moderator Panel</h1>
+<h1>User Control Panel</h1>
 
 <section class="panel-section">
-    <h2>🔒 User Suspension Management</h2>
-    <p>Manage user suspensions and access control:</p>
+    <h2>🔒 User Management</h2>
+    <p>Manage user suspensions and access control</p>
 
     @if (TempData["Success"] != null)
     {
@@ -29,11 +28,24 @@
         <div class="alert-error">@TempData["Error"]</div>
     }
 
-    <form method="get" class="mb-3">
-        <input name="search" placeholder="Search by username..." class="input" value="@(ViewBag.SearchQuery ?? "")" />
-        <button type="submit" class="button">Search</button>
-        <a href="@Url.Action("Index")" class="button">Clear</a>
-    </form>
+    <div class="mod-filters mb-3">
+        <form method="get" style="display:flex;gap:0.5rem;flex-wrap:wrap;align-items:flex-end;">
+            <div>
+                <label for="search">Search Username:</label>
+                <input id="search" name="search" placeholder="Username..." class="input" value="@(Model.SearchQuery ?? "")" />
+            </div>
+            <div>
+                <label for="sortBy">Sort By:</label>
+                <select id="sortBy" name="sortBy" class="input">
+                    <option value="username" selected="@(Model.SortBy == "username")">Username (A-Z)</option>
+                    <option value="date-desc" selected="@(Model.SortBy == "date-desc")">Newest First</option>
+                    <option value="date-asc" selected="@(Model.SortBy == "date-asc")">Oldest First</option>
+                </select>
+            </div>
+            <button type="submit" class="button">Search</button>
+            <a href="@Url.Action("Index")" class="button">Clear</a>
+        </form>
+    </div>
 
     <div class="mod-user-list">
         @foreach (var user in Model.Users)
@@ -54,6 +66,7 @@
                     <div class="mod-user-meta">
                         <a class="mod-user-name" href="@Url.Action("ViewProfile", "ProfileDisplay", new { username = user.Username })">@user.Username</a>
                         <span class="role-badge role-@roleClass">@user.Role</span>
+                        <span class="text-muted" style="font-size:0.85em;">Joined: @user.CreatedAt.ToString("MMM dd, yyyy")</span>
                     </div>
                     <div class="@statusClass">@statusCopy</div>
                 </div>
@@ -62,126 +75,44 @@
                     {
                         <form asp-action="SuspendUser" method="post" class="mod-inline-form">
                             <input type="hidden" name="userId" value="@user.Id" />
+                            <input type="hidden" name="page" value="@Model.CurrentPage" />
+                            <input type="hidden" name="search" value="@Model.SearchQuery" />
+                            <input type="hidden" name="sortBy" value="@Model.SortBy" />
                             <select name="duration" class="mod-select" aria-label="Suspension duration">
-                                <option value="24h">24h</option>
-                                <option value="72h">72h</option>
-                                <option value="1w">1w</option>
-                                <option value="2w">2w</option>
-                                <option value="1m">1m</option>
-                                <option value="forever">Forever</option>
-                                <option value="unsuspend">Unsuspend</option>
+                                <option value="24h">Mute 24h</option>
+                                <option value="72h">Mute 72h</option>
+                                <option value="1w">Suspend 1w</option>
+                                <option value="2w">Suspend 2w</option>
+                                <option value="1m">Suspend 1m</option>
+                                <option value="forever">Ban Forever</option>
+                                <option value="unsuspend">Unmute/Unsuspend</option>
                             </select>
                             <button type="submit" class="mod-action-btn">Apply</button>
                             @Html.AntiForgeryToken()
                         </form>
-
-                        <form asp-action="ChangeUsername" method="post" class="mod-inline-form">
-                            <input type="hidden" name="userId" value="@user.Id" />
-                            <input type="text" name="newUsername" placeholder="Reset name" class="mod-input" aria-label="Temporary username" />
-                            <input type="text" name="adminNote" placeholder="Note" class="mod-input mod-note-input" aria-label="Moderator note" />
-                            <button type="submit" class="mod-action-btn">Rename</button>
-                            @Html.AntiForgeryToken()
-                        </form>
+                        <a href="@Url.Action("ManageUser", "ControlPanel", new { userId = user.Id })" class="button button-sm">View Details</a>
                     }
                     else
                     {
-                        <span class="text-muted mod-user-note">Actions unavailable</span>
+                        <span class="text-muted mod-user-note">@(isSelf ? "Cannot modify self" : "Protected account")</span>
                     }
                 </div>
             </article>
         }
     </div>
-</section>
 
-@if (isAdminOrMod)
-{
-    <details class="panel-section" style="margin-top: 1rem;" aria-label="Manage Service Monitor">
-        <summary style="cursor: pointer; display: flex; align-items: center; gap: 0.5rem; font-size: 1.1rem;">
-            📊 Manage Service Monitor
-        </summary>
-        <div style="margin-top: 0.5rem;">
-            <p>Add, edit, or remove monitored onion services directly here.</p>
-
-            <h3>Add Service</h3>
-            <form asp-controller="Monitor" asp-action="Add" method="post" class="mb-3 monitor-add-form">
-                <input type="hidden" name="returnUrl" value="@moderatorReturnUrl" />
-                <div class="row g-2">
-                    <div class="col-sm-3">
-                        <label for="Name">Name</label>
-                        <input name="Name" class="input w-100" />
-                    </div>
-                    <div class="col-sm-5">
-                        <label for="OnionUrl">Onion URL</label>
-                        <input name="OnionUrl" class="input w-100" />
-                    </div>
-                    <div class="col-sm-4">
-                        <label for="Description">Description</label>
-                        <input name="Description" class="input w-100" />
-                    </div>
-                </div>
-                <div class="mt-2">
-                    <label for="PgpSignedMessages">PGP Signed Messages (optional)</label>
-                    <textarea name="PgpSignedMessages" class="input monospace pgp-input" rows="4" placeholder="Paste signed onion announcements. Multiple blocks are supported."></textarea>
-                </div>
-                <div class="form-actions mt-2">
-                    <button type="submit" class="button">➕ Add Service</button>
-                </div>
-                @Html.AntiForgeryToken()
-            </form>
-
-            <h3>Existing Services</h3>
-            <table class="table monitor-admin-table">
-                <thead>
-                    <tr>
-                        <th>Name</th>
-                        <th>Onion URL</th>
-                        <th>Description</th>
-                        <th>Status</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach (var m in Model.Monitors)
-                    {
-                        var preferredProof = m.Proofs?.OrderByDescending(p => p.CreatedAt).FirstOrDefault();
-                        var hasProofs = preferredProof != null;
-                        <tr class="monitor-row @(hasProofs ? "monitor-row--preferred" : string.Empty)">
-                            <td>
-                                <input name="Name" value="@m.Name" class="input" placeholder="Name" form="edit-@m.Id" />
-                            </td>
-                            <td>
-                                <div class="monitor-url">
-                                    <input name="OnionUrl" value="@m.OnionUrl" class="input" placeholder="Onion URL" form="edit-@m.Id" />
-                                    @if (preferredProof != null)
-                                    {
-                                        <a class="monitor-proof-link" href="@Url.Action("Proof", "Monitor", new { proofId = preferredProof.Id })" title="View signed proof" target="_blank" rel="noopener">
-                                            🔐
-                                        </a>
-                                    }
-                                </div>
-                            </td>
-                            <td>
-                                <input name="Description" value="@m.Description" class="input" placeholder="Description" form="edit-@m.Id" />
-                            </td>
-                            <td>
-                                <span class="status-badge">@m.Status</span>
-                            </td>
-                            <td>
-                                <form id="edit-@m.Id" asp-controller="Monitor" asp-action="Edit" asp-route-id="@m.Id" method="post" class="d-inline-block">
-                                    <input type="hidden" name="returnUrl" value="@moderatorReturnUrl" />
-                                    <button type="submit" class="button button-sm">💾 Save</button>
-                                    @Html.AntiForgeryToken()
-                                </form>
-                                <form asp-controller="Monitor" asp-action="Remove" asp-route-id="@m.Id" method="post" class="d-inline-block ms-1">
-                                    <input type="hidden" name="returnUrl" value="@moderatorReturnUrl" />
-                                    <button type="submit" class="button button-sm">🗑️ Remove</button>
-                                    @Html.AntiForgeryToken()
-                                </form>
-                            </td>
-                        </tr>
-                    }
-                </tbody>
-            </table>
+    @if (Model.TotalPages > 1)
+    {
+        <div class="pagination" style="margin-top:1rem;display:flex;gap:0.5rem;justify-content:center;">
+            @if (Model.CurrentPage > 1)
+            {
+                <a href="@Url.Action("Index", new { page = Model.CurrentPage - 1, search = Model.SearchQuery, sortBy = Model.SortBy })" class="button">← Previous</a>
+            }
+            <span class="pagination-info">Page @Model.CurrentPage of @Model.TotalPages</span>
+            @if (Model.CurrentPage < Model.TotalPages)
+            {
+                <a href="@Url.Action("Index", new { page = Model.CurrentPage + 1, search = Model.SearchQuery, sortBy = Model.SortBy })" class="button">Next →</a>
+            }
         </div>
-    </details>
-}
+    }
+</section>

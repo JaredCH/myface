@@ -2,6 +2,7 @@
 @model IEnumerable<dynamic>
 @{
     ViewData["Title"] = "Monitor Link Rollup & Submissions";
+    Layout = "_ControlPanelLayout";
     var pendingSubmissions = ViewBag.PendingSubmissions as List<MyFace.Core.Entities.OnionSubmission> ?? new List<MyFace.Core.Entities.OnionSubmission>();
     var categories = new[] { "Markets", "Shops", "Forums", "Services", "Uncategorized" };
 }
@@ -245,6 +246,68 @@
             color: var(--rollup-muted);
         }
 
+        .delete-mirror-btn {
+            color: #dc2626;
+            cursor: pointer;
+            font-weight: bold;
+            margin-left: 0.5rem;
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: color 0.15s ease;
+        }
+
+        .delete-mirror-btn:hover {
+            color: #991b1b;
+        }
+
+        .delete-service-btn {
+            background: #dc2626;
+            color: #fff;
+            border: none;
+            border-radius: 999px;
+            padding: 0.35rem 0.95rem;
+            font-size: 0.75rem;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            font-weight: 700;
+            cursor: pointer;
+            transition: transform 0.15s ease, box-shadow 0.15s ease;
+            margin-top: 0.5rem;
+        }
+
+        .delete-service-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 14px rgba(220, 38, 38, 0.3);
+            background: #991b1b;
+        }
+
+        .add-service-form {
+            border: 1px solid var(--rollup-border);
+            border-radius: 1rem;
+            padding: 1.15rem 1.35rem;
+            background: var(--rollup-card-bg);
+            box-shadow: 0 8px 24px rgba(15, 23, 42, 0.06);
+            margin-bottom: 1.5rem;
+        }
+
+        .add-service-form h3 {
+            margin: 0 0 1rem 0;
+            font-size: 1.2rem;
+        }
+
+        .form-row {
+            margin-bottom: 1rem;
+        }
+
+        .form-row label {
+            font-size: 0.68rem;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: var(--rollup-muted);
+            margin-bottom: 0.15rem;
+            display: block;
+        }
+
         .panel-empty {
             border: 1px dashed var(--rollup-border);
             border-radius: 0.85rem;
@@ -453,6 +516,31 @@
         <div class="rollup-flash">@TempData["Message"]</div>
     }
 
+    <section class="add-service-form">
+        <h3>Add New Service</h3>
+        <form method="post" action="@Url.Action("Add", "Monitor")">
+            <input type="hidden" name="returnUrl" value="@Url.Action("Rollup")" />
+            <div class="form-row">
+                <label for="add_name">Service Name</label>
+                <input type="text" id="add_name" name="Name" class="rollup-input" required />
+            </div>
+            <div class="form-row">
+                <label for="add_url">Onion URL</label>
+                <input type="text" id="add_url" name="OnionUrl" class="rollup-input" placeholder="http://...onion" required />
+            </div>
+            <div class="form-row">
+                <label for="add_category">Category</label>
+                <select id="add_category" name="Category" class="rollup-input">
+                    @foreach (var category in categories)
+                    {
+                        <option value="@category">@category</option>
+                    }
+                </select>
+            </div>
+            <button type="submit" class="rollup-btn rollup-btn--approve">Add Service</button>
+        </form>
+    </section>
+
     <section class="rollup-panel">
         <div class="panel-head">
             <div>
@@ -605,6 +693,9 @@
                             <li>
                                 <span class="link-pill link-pill--primary">Primary</span>
                                 <span class="link-url">@group.PrimaryService.OnionUrl</span>
+                                <a href="@Url.Action("Remove", "Monitor", new { id = group.PrimaryService.Id, returnUrl = Url.Action("Rollup") })" 
+                                   class="delete-mirror-btn" 
+                                   onclick="return confirm('Remove this primary service link?');">×</a>
                             </li>
                         }
                         @foreach (var mirror in group.Mirrors)
@@ -612,9 +703,37 @@
                             <li>
                                 <span class="link-pill link-pill--mirror">Mirror</span>
                                 <span class="link-url">@mirror.OnionUrl</span>
+                                <a href="@Url.Action("Remove", "Monitor", new { id = mirror.Id, returnUrl = Url.Action("Rollup") })" 
+                                   class="delete-mirror-btn" 
+                                   onclick="return confirm('Remove this mirror link?');">×</a>
                             </li>
                         }
                     </ul>
+                    @{
+                        var allServiceIds = new List<int>();
+                        if (group.PrimaryService != null) allServiceIds.Add(group.PrimaryService.Id);
+                        if (group.Mirrors != null)
+                        {
+                            foreach (var mirror in group.Mirrors)
+                            {
+                                allServiceIds.Add(mirror.Id);
+                            }
+                        }
+                    }
+                    @if (allServiceIds.Any())
+                    {
+                        <form method="post" action="@Url.Action("RemoveMultiple", "Monitor")" style="display: inline;">
+                            <input type="hidden" name="returnUrl" value="@Url.Action("Rollup")" />
+                            @foreach (var id in allServiceIds)
+                            {
+                                <input type="hidden" name="ids" value="@id" />
+                            }
+                            <button type="submit" class="delete-service-btn" 
+                                    onclick="return confirm('Delete @canonicalName and all its mirrors?');">
+                                Delete Service
+                            </button>
+                        </form>
+                    }
                 </article>
             }
         </div>

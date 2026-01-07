@@ -86,8 +86,16 @@ build_metadata.AdditionalFiles.CssScope =
 build_metadata.AdditionalFiles.TargetPath = Vmlld3MvQ29udHJvbFBhbmVsL0luZGV4LmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
+[/home/server/myface/MyFace.Web/Views/ControlPanel/Infractions.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvQ29udHJvbFBhbmVsL0luZnJhY3Rpb25zLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
 [/home/server/myface/MyFace.Web/Views/ControlPanel/ManageUser.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3MvQ29udHJvbFBhbmVsL01hbmFnZVVzZXIuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[/home/server/myface/MyFace.Web/Views/ControlPanel/Overview.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvQ29udHJvbFBhbmVsL092ZXJ2aWV3LmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
 [/home/server/myface/MyFace.Web/Views/ControlPanel/Placeholder.cshtml]
@@ -108,6 +116,10 @@ build_metadata.AdditionalFiles.CssScope =
 
 [/home/server/myface/MyFace.Web/Views/ControlPanel/Users.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3MvQ29udHJvbFBhbmVsL1VzZXJzLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[/home/server/myface/MyFace.Web/Views/ControlPanel/WordList.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvQ29udHJvbFBhbmVsL1dvcmRMaXN0LmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
 [/home/server/myface/MyFace.Web/Views/ControlPanel/_MetricTable.cshtml]

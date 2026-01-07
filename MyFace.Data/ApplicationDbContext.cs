@@ -35,6 +35,8 @@ public class ApplicationDbContext : DbContext
     public DbSet<ControlPanelAuditEntry> ControlPanelAuditEntries { get; set; }
     public DbSet<UserProfileSettings> UserProfileSettings { get; set; }
     public DbSet<ProfilePanel> ProfilePanels { get; set; }
+    public DbSet<WordListEntry> WordListEntries { get; set; }
+    public DbSet<UserInfraction> UserInfractions { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -449,6 +451,59 @@ public class ApplicationDbContext : DbContext
             entity.HasOne(e => e.LastEditedByUser)
                 .WithMany()
                 .HasForeignKey(e => e.LastEditedByUserId)
+                .OnDelete(DeleteBehavior.SetNull);
+        });
+
+        // WordListEntry configuration
+        modelBuilder.Entity<WordListEntry>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.WordPattern).HasMaxLength(500).IsRequired();
+            entity.Property(e => e.MatchType).IsRequired();
+            entity.Property(e => e.ActionType).IsRequired();
+            entity.Property(e => e.AppliesTo).IsRequired();
+            entity.Property(e => e.CreatedAt).HasDefaultValueSql("CURRENT_TIMESTAMP");
+            entity.Property(e => e.Enabled).HasDefaultValue(true);
+            entity.Property(e => e.CaseSensitive).HasDefaultValue(false);
+            entity.Property(e => e.ReplacementText).HasMaxLength(500);
+            entity.Property(e => e.Notes).HasMaxLength(1000);
+            
+            entity.HasIndex(e => e.Enabled);
+            entity.HasIndex(e => e.CreatedAt);
+            
+            entity.HasOne(e => e.CreatedBy)
+                .WithMany()
+                .HasForeignKey(e => e.CreatedByUserId)
+                .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        // UserInfraction configuration
+        modelBuilder.Entity<UserInfraction>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.ContentType).HasMaxLength(50).IsRequired();
+            entity.Property(e => e.MatchedPattern).HasMaxLength(500).IsRequired();
+            entity.Property(e => e.ActionTaken).HasMaxLength(200).IsRequired();
+            entity.Property(e => e.OccurredAt).HasDefaultValueSql("CURRENT_TIMESTAMP");
+            entity.Property(e => e.SessionFingerprint).HasMaxLength(64);
+            entity.Property(e => e.TorFingerprint).HasMaxLength(128);
+            entity.Property(e => e.AdminNotes).HasMaxLength(2000);
+            
+            entity.HasIndex(e => e.UserId);
+            entity.HasIndex(e => e.OccurredAt);
+            entity.HasIndex(e => e.MuteExpiresAt);
+            entity.HasIndex(e => new { e.UserId, e.MuteExpiresAt });
+            entity.HasIndex(e => e.SessionFingerprint);
+            entity.HasIndex(e => e.TorFingerprint);
+            
+            entity.HasOne(e => e.User)
+                .WithMany()
+                .HasForeignKey(e => e.UserId)
+                .OnDelete(DeleteBehavior.Restrict);
+            
+            entity.HasOne(e => e.WordListEntry)
+                .WithMany()
+                .HasForeignKey(e => e.WordListEntryId)
                 .OnDelete(DeleteBehavior.SetNull);
         });
     }

@@ -10,11 +10,19 @@ public class ForumService
     private readonly ApplicationDbContext _context;
     private const int ReportHideThreshold = 2;
     private readonly ControlSettingsReader _settings;
+    private readonly ContentFilteringService _contentFilteringService;
+    private readonly InfractionsService _infractionsService;
 
-    public ForumService(ApplicationDbContext context, ControlSettingsReader settings)
+    public ForumService(
+        ApplicationDbContext context, 
+        ControlSettingsReader settings,
+        ContentFilteringService contentFilteringService,
+        InfractionsService infractionsService)
     {
         _context = context;
         _settings = settings;
+        _contentFilteringService = contentFilteringService;
+        _infractionsService = infractionsService;
     }
 
     // Helper to track activity (just adds to context, doesn't save)
@@ -30,11 +38,49 @@ public class ForumService
     }
 
     // Thread operations
-    public async Task<ThreadEntity> CreateThreadAsync(string title, int? userId, bool isAnonymous)
+    public async Task<ThreadEntity> CreateThreadAsync(string title, int? userId, bool isAnonymous,
+        string? sessionFingerprint = null, string? torFingerprint = null)
     {
+        // Apply content filtering to title
+        string filteredTitle = title;
+        string? originalTitle = null;
+        bool wasFiltered = false;
+
+        if (userId.HasValue)
+        {
+            // Filter title
+            var filterResult = await _contentFilteringService.FilterContentAsync(
+                title, 
+                ContentScope.Threads, 
+                userId.Value,
+                sessionFingerprint,
+                torFingerprint);
+
+            if (filterResult.WasModified)
+            {
+                filteredTitle = filterResult.SanitizedContent;
+                originalTitle = filterResult.OriginalContent;
+                wasFiltered = true;
+
+                // Log infractions
+                foreach (var triggeredFilter in filterResult.TriggeredFilters)
+                {
+                    await _infractionsService.LogInfractionAsync(
+                        userId.Value,
+                        null, // Will be set after thread is created
+                        "Thread",
+                        triggeredFilter,
+                        originalTitle,
+                        sessionFingerprint,
+                        torFingerprint,
+                        contentModified: true);
+                }
+            }
+        }
+
         var thread = new ThreadEntity
         {
-            Title = title,
+            Title = filteredTitle,
             UserId = userId,
             IsAnonymous = isAnonymous,
             CreatedAt = DateTime.UtcNow,
@@ -45,6 +91,25 @@ public class ForumService
         _context.Threads.Add(thread);
         TrackActivity("thread", userId);
         await _context.SaveChangesAsync();
+
+        // Update infraction records with the thread ID
+        if (wasFiltered && userId.HasValue)
+        {
+            var recentInfractions = await _context.UserInfractions
+                .Where(i => i.UserId == userId.Value && 
+                           i.ContentId == null && 
+                           i.ContentType == "Thread")
+                .OrderByDescending(i => i.OccurredAt)
+                .Take(10)
+                .ToListAsync();
+
+            foreach (var infraction in recentInfractions)
+            {
+                infraction.ContentId = thread.Id;
+            }
+            await _context.SaveChangesAsync();
+        }
+
         return thread;
     }
 
@@ -105,7 +170,8 @@ public class ForumService
     // Post operations
     public int GetReportHideThreshold() => ReportHideThreshold;
 
-    public async Task<Post> CreatePostAsync(int threadId, string content, int? userId, bool isAnonymous)
+    public async Task<Post> CreatePostAsync(int threadId, string content, int? userId, bool isAnonymous, 
+        string? sessionFingerprint = null, string? torFingerprint = null)
     {
         var maxLength = await _settings.GetIntAsync(ControlSettingKeys.PostMaxLength, 4000);
         if (!string.IsNullOrEmpty(content) && content.Length > maxLength)
@@ -119,22 +185,78 @@ public class ForumService
             isAnonymous = false;
         }
 
+        // Apply content filtering
+        string filteredContent = content;
+        string? originalContent = null;
+        bool wasFiltered = false;
+
+        if (userId.HasValue)
+        {
+            // Filter content
+            var filterResult = await _contentFilteringService.FilterContentAsync(
+                content, 
+                ContentScope.Comments, 
+                userId.Value,
+                sessionFingerprint,
+                torFingerprint);
+
+            if (filterResult.WasModified)
+            {
+                filteredContent = filterResult.SanitizedContent;
+                originalContent = filterResult.OriginalContent;
+                wasFiltered = true;
+
+                // Log infractions
+                foreach (var triggeredFilter in filterResult.TriggeredFilters)
+                {
+                    await _infractionsService.LogInfractionAsync(
+                        userId.Value,
+                        null, // Will be set after post is created
+                        "Comment",
+                        triggeredFilter,
+                        originalContent,
+                        sessionFingerprint,
+                        torFingerprint,
+                        contentModified: true);
+                }
+            }
+        }
+
         var post = new Post
         {
             ThreadId = threadId,
-            Content = content,
+            Content = filteredContent,
             UserId = userId,
             IsAnonymous = isAnonymous,
             CreatedAt = DateTime.UtcNow,
             IsDeleted = false,
             ReportCount = 0,
             IsReportHidden = false,
-            WasModerated = false
+            WasModerated = wasFiltered
         };
 
         _context.Posts.Add(post);
         TrackActivity("comment", userId);
         await _context.SaveChangesAsync();
+
+        // Update infraction records with the post ID
+        if (wasFiltered && userId.HasValue)
+        {
+            var recentInfractions = await _context.UserInfractions
+                .Where(i => i.UserId == userId.Value && 
+                           i.ContentId == null && 
+                           i.ContentType == "Comment")
+                .OrderByDescending(i => i.OccurredAt)
+                .Take(10)
+                .ToListAsync();
+
+            foreach (var infraction in recentInfractions)
+            {
+                infraction.ContentId = post.Id;
+            }
+            await _context.SaveChangesAsync();
+        }
+
         return post;
     }
 

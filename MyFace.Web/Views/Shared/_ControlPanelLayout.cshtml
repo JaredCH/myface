@@ -6,6 +6,10 @@
     var pageTitle = ViewData["Title"] as string ?? "Control Panel";
 }
 
+@section HeadExtras {
+    @RenderSection("HeadExtras", required: false)
+}
+
 <div class="control-panel-wrapper">
     <header class="cp-header">
         <div>

@@ -6,36 +6,61 @@ using System.Security.Claims;
 
 namespace MyFace.Web.Controllers;
 
+[Route("SigilStaff/UserControl")]
 [AdminAuthorization]
 public class ModeratorController : Controller
 {
     private readonly UserService _userService;
     private readonly ForumService _forumService;
-    private readonly OnionStatusService _onionService;
 
-    public ModeratorController(UserService userService, ForumService forumService, OnionStatusService onionService)
+    public ModeratorController(UserService userService, ForumService forumService)
     {
         _userService = userService;
         _forumService = forumService;
-        _onionService = onionService;
     }
 
-    public async Task<IActionResult> Index(string? search)
+    public async Task<IActionResult> Index(string? search, int page = 1, string sortBy = "username")
     {
-        var users = await _userService.SearchUsersByUsernameAsync(search) ?? new List<MyFace.Core.Entities.User>();
-        var monitors = await _onionService.GetAllAsync();
+        const int pageSize = 30;
+        var allUsers = await _userService.GetAllUsersAsync();
+        
+        // Apply search filter
+        if (!string.IsNullOrWhiteSpace(search))
+        {
+            allUsers = allUsers.Where(u => u.Username.Contains(search, StringComparison.OrdinalIgnoreCase)).ToList();
+        }
+
+        // Apply sorting
+        allUsers = sortBy.ToLower() switch
+        {
+            "date-desc" => allUsers.OrderByDescending(u => u.CreatedAt).ToList(),
+            "date-asc" => allUsers.OrderBy(u => u.CreatedAt).ToList(),
+            _ => allUsers.OrderBy(u => u.Username).ToList()
+        };
+
+        var totalUsers = allUsers.Count;
+        var totalPages = (int)Math.Ceiling(totalUsers / (double)pageSize);
+        page = Math.Max(1, Math.Min(page, Math.Max(1, totalPages)));
+
+        var pagedUsers = allUsers.Skip((page - 1) * pageSize).Take(pageSize).ToList();
+
         var vm = new ModeratorDashboardViewModel
         {
-            Users = users,
-            Monitors = monitors
+            Users = pagedUsers,
+            CurrentPage = page,
+            TotalPages = totalPages,
+            SortBy = sortBy,
+            SearchQuery = search
         };
+
         ViewBag.SearchQuery = search;
+        ViewBag.SortBy = sortBy;
         return View(vm);
     }
 
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> SuspendUser(int userId, string duration)
+    public async Task<IActionResult> SuspendUser(int userId, string duration, int page = 1, string? search = null, string sortBy = "username")
     {
         var currentUser = await _userService.GetByUsernameAsync(User.Identity?.Name ?? "");
         var targetUser = await _userService.GetUserByIdAsync(userId);
@@ -85,7 +110,8 @@ public class ModeratorController : Controller
         }
 
         await _userService.SuspendUserAsync(userId, suspendedUntil);
-        return RedirectToAction("Index");
+        TempData["Success"] = $"User {targetUser.Username} has been " + (suspendedUntil.HasValue ? "suspended" : "unsuspended");
+        return RedirectToAction("Index", new { page, search, sortBy });
     }
 
     [HttpPost]
