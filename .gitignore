@@ -24,3 +24,4 @@ appsettings.Local.json
 # Node (if accidentally added)
 node_modules/
 tor/data/state
+tor/data/state
